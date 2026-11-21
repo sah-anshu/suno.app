@@ -138,12 +138,12 @@ min SDK 26, NDK 30, CMake 4.1.2, ktlint and detekt.
 | `local-storage` | EarCast | Android | Profiles and preferences (DataStore) |
 | `audio-quality` | EarCast | Tooling | Offline audio regression bench |
 | `audio-graph` | New (Phase 2) | Kotlin/JVM | `Resampler`, `JitterBuffer`, `RemoteAudioHub` (companions' voices), `VoiceMixer` (ducks the room while a person talks). `OutputPolicy` comes with hearing-aid mode |
-| `link` | New (Phase 2) | Kotlin/JVM | `JoinCode` (QR payload), `LinkCrypto` (HKDF + AES-GCM), `LinkMessage`, `LinkHost` / `LinkClient`, `StreamChannel`, socket transport. Relay comes in Phase 4 |
-| `link-android` | New (Phase 2) | Android | Default transports without Google services: `WifiDirectHost/Joiner`, `BluetoothHost/Joiner` (L2CAP), `OpusCodec`, `LinkPermissions` |
+| `link` | New (Phase 2) | Kotlin/JVM | `JoinCode` (QR payload), `LinkCrypto` (HKDF + AES-GCM), `LinkMessage`, `LinkHost` / `LinkClient`, `StreamChannel`, socket transport. `Sos` / `SosReply` messages, `LinkRelay` (two-hop mesh relay) |
+| `link-android` | New (Phase 2) | Android | Default transports without Google services: `WifiDirectHost/Joiner`, `BluetoothHost/Joiner` (L2CAP, relay flag in the advert), `OpusCodec`, `LinkPermissions`, `LinkConnector` / `LinkHosting` / `RelayHosting` |
 | `link-nearby` | New, optional | Android | Google Nearby Connections, only in the optional `gms` build |
 | `sender-core` | New | Android | Playback capture and mic capture → Opus → `link`. Used by `companion` and `tv` |
 | `telephony` | New | Android | Phone-app role, call screens, call routing, call screening. `patient` only |
-| `sos` | New | Android | SOS flow and alert fan-out. Trigger in `patient`; alert receiver in all flavours |
+| `sos` (package in `app`, built in Phase 4) | New | Android | `SosController`, `SosActions` (calls, texts, GPS, speaker alarm), `SosService`. Trigger in `patient`; alerts shown in `companion` (`FamilyLinkService`, SOS card) and `tv` (banner). A package, not a module |
 | `captions` | New (Proposed) | Android | Offline speech-to-text for people talking through Suno |
 | `app` | EarCast, restructured | Android app | Flavours `patient`, `companion`, `tv`; shared EarCast screens in `main` |
 
@@ -245,6 +245,12 @@ A set-up code is never accepted as a patient code, and a TV only takes a patient
 - Audio uses short direct links, centred on the patient's phone (star).
 - **Mesh mode (Decided):** devices forward for each other. Audio is relayed **at most 2 hops** to keep delay low.
   SOS, presence and control messages flood the **whole** mesh and cannot be switched off.
+- **Built in Phase 4:** one relay level. A companion connected directly to the patient advertises the patient's session
+  on Bluetooth LE with a relay flag. A phone that cannot reach the patient connects to it, and each of its connections
+  is piped to a new connection from the relay to the patient (`LinkRelay`). The relay forwards encrypted bytes it
+  cannot read; keys stay end to end and the patient still allows or refuses the far phone. Joiners prefer the patient's
+  own advert; a phone that joined through a relay never relays, so everything stays within 2 hops, and the SOS reaches
+  every device in the mesh (all are connections of the patient's phone).
 - Google Nearby Connections does not relay by itself; forwarding is Suno code in `link`.
 - "Anywhere" means within radio range of the mesh (a house or building). There is no online mode.
 
@@ -255,6 +261,7 @@ A set-up code is never accepted as a patient code, and a TV only takes a patient
 | Patient hub | Status, SOS, approvals, relayed audio | All audio sources, remote-help commands |
 | Companion | Talk audio, shared playback or mic audio, remote-help commands, SOS replies | Patient status, SOS alerts |
 | TV | TV playback audio (media stream) | The patient's join code from a companion (set-up), SOS banner |
+| Relay (a companion) | Piped bytes of far phones, unread | Piped bytes for far phones |
 
 Remote help from a companion is limited to listening on/off, volume up to the helper's cap, and place. The patient's
 phone shows who changed what.
@@ -302,15 +309,32 @@ Suno requests the default phone-app role (`RoleManager.ROLE_DIALER`).
 - The role gives control of call routing and volume and lets SOS place calls directly. It does **not** give access to
   call audio ([section 6.1](#61-the-audiogram-rule)).
 
-### 10.2 SOS — Decided
+### 10.2 SOS — Decided, built in Phase 4
 
-1. One tap on SOS opens a calm question: "Do you need help?" with **Yes, get help** and **No, go back**. No countdown.
-2. On Yes, Suno: calls the helper, then 112 if unanswered; texts the GPS location to chosen contacts; alerts every
-   device in the mesh (companions get a full-screen alert, the TV shows a banner); sounds a loud alarm on the speaker.
-3. A companion can reply **I'm on my way**, which appears on the patient's SOS screen.
+1. One tap on the vermillion octagon **SOS** opens a calm question: "Do you need help?" with **Yes, get help** and
+   **No, go back**. No countdown.
+2. On Yes, Suno (`SosController`):
+   - alerts every device on the family link at once. The link starts hosting if it was not, and phones that reconnect
+     during the SOS are told when they join. The place is sent again once GPS finds it;
+   - stops listening (no amplified sound during SOS);
+   - calls the helper (`ACTION_CALL` with CALL_PHONE, or the phone app prefilled without it);
+   - finds the GPS place without internet (about 20 s, else the last known place);
+   - texts the helper's numbers with the place. This is automatic when SEND_SMS is allowed; otherwise one tap opens
+     the messaging app prefilled;
+   - shows **Call 112** (the helper can change the number) as a big button. It opens the phone app prefilled, because
+     Android does not let apps call emergency numbers directly.
+3. **Alarm:** a big **Sound alarm / Stop alarm** button. The helper can make it start on its own. It plays only on the
+   built-in speaker (`USAGE_ALARM`, preferred device); if the speaker cannot be chosen it stays silent and never plays
+   into earphones or hearing aids.
+4. Companions get a full-screen alert (`FamilyLinkService`, alarm-category notification) and an SOS card with the
+   place, **Open map** and **I'm on my way**. Answers appear on the patient's SOS screen and on every other companion.
+   The TV shows a banner.
+5. **I'm safe now** ends it: everyone is told and the alarm stops. `SosService` keeps Suno running during the call.
 
-`SEND_SMS` is restricted on Google Play; the fallback is opening the messaging app with the text prefilled *(To verify)*.
-GPS works without internet.
+Not yet: automatic "112 if the helper does not answer". It needs call state from the phone-app role, so it comes in
+Phase 5. SEND_SMS is restricted on Google Play; a Play build would drop it and use the prefilled messaging app
+*(To verify)*. GPS works without internet. The companion stays linked in the background with a notification, and
+reconnects after 15 s, 30 s, then every 60 s. It does not start after a reboot until Suno Companion is opened.
 
 ## 11. User interface
 
@@ -426,7 +450,8 @@ Either way, `link` hides the transport behind one interface, so the choice can w
 5. Fire OS version and capture support on current Fire TV devices.
 6. Phones not exposing A2DP sink; Auracast source being system-only.
 7. Default phone-app role behaviour across OEMs (Samsung, Xiaomi, Pixel); `CallScreeningService`; auto-answer.
-8. `SEND_SMS` policy route on Google Play for SOS.
+8. `SEND_SMS` policy route on Google Play for SOS; full-screen alerts on Android 14+ (`USE_FULL_SCREEN_INTENT` is
+   limited to calling and alarm apps); alarm routing to the speaker only; background link battery; relay range.
 9. Hearing-aid detection and hearing-aid mode with ASHA and LE Audio aids.
 10. Offline Hindi speech recognition quality and cost (captions).
 11. CPU, heat and battery of each noise-reduction engine on budget phones.
@@ -445,7 +470,7 @@ Each slice is usable on its own.
 | 1 | Patient layout: Listen, volume, places, Home levels, zero-tap, Pictures mode, Hindi, themes, Helper PIN |
 | 2 | `audio-graph` + `link`: companion joins by QR and talks; captions if verified |
 | 3 | TV sound: cable sender in `companion`, then the `tv` flavour **(built, not on a device)** |
-| 4 | SOS and companion alerts; mesh relay |
+| 4 | SOS and companion alerts; mesh relay **(built, not on a device)** |
 | 5 | Phone app, contacts, home-screen role (store policy review needed) |
 
 Checks for every slice: `./gradlew ktlintCheck detekt test testDebugUnitTest` plus assembling all three flavours.
@@ -481,3 +506,9 @@ Anything involving real sound, radios or calls needs physical devices and a writ
 | 2026-11-21 | Companion "Share sound": TV by cable (USB-C audio adapter), microphone near the TV, or this phone's playback (MediaProjection). |
 | 2026-11-21 | TVs are set up by a companion phone scanning the TV's set-up QR and handing over the patient's code over the encrypted link (TVs have no camera). |
 | 2026-11-21 | Phase 3 done: media streams, companion Share sound and Set up a TV, Suno TV app (10-foot screen, remote focus, playback capture), screenshot tests. Not on a device yet. |
+| 2026-11-21 | SOS texts are sent automatically when SEND_SMS is allowed, otherwise the messaging app opens prefilled; the patient app declares SEND_SMS (GitHub / F-Droid builds). |
+| 2026-11-21 | The SOS alarm is a button (the helper can make it automatic), so it does not drown out the call; speaker only, silent if the speaker cannot be chosen. This changes "sounds a loud alarm" in 10.2. |
+| 2026-11-21 | Emergency number is a button that opens the phone app; automatic escalation waits for the phone-app role (Phase 5). |
+| 2026-11-21 | The companion stays linked in the background (foreground notification, reconnect backoff) so SOS alerts arrive. |
+| 2026-11-21 | Mesh relay: one level over Bluetooth LE, transparent and end-to-end encrypted, at most 2 hops. |
+| 2026-11-21 | Phase 4 done: SOS (patient), SOS alerts and I'm on my way (companion), TV banner, background link, relay, screenshot tests. Not on a device yet. |

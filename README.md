@@ -12,9 +12,11 @@ Suno is a sound-amplification tool. **It is not a medical device** and does not 
 
 ## Status
 
-Early development. Phases 0–3 are built: the EarCast code base imported, renamed and split into three apps with
+Early development. Phases 0–4 are built: the EarCast code base imported, renamed and split into three apps with
 safety fixes; the patient's simple Home with a helper PIN; the family link, where a companion joins by QR and talks to
-the patient; and TV sound, sent from a phone by cable or from the Suno TV app, set up by a family member's phone. The architecture, decisions and build plan are in [arch.md](arch.md). Nothing has been validated
+the patient; TV sound, sent from a phone by cable or from the Suno TV app, set up by a family member's phone; and SOS,
+which alerts family phones and the TV, calls the helper and texts the patient's place, with a relay for phones out of
+range. The architecture, decisions and build plan are in [arch.md](arch.md). Nothing has been validated
 on real hardware yet.
 
 ## Build
@@ -44,7 +46,8 @@ Suno is designed to work without internet, an account, analytics or recordings. 
 devices that the user has approved, over Wi-Fi Direct or Bluetooth, and every frame is encrypted. The patient,
 companion and TV apps declare the `INTERNET` permission only because Android requires it for any network socket, including the
 local Wi-Fi Direct group; Suno makes no internet connections. A companion can only send its voice; nobody can listen
-through the patient's phone.
+through the patient's phone. In an SOS the patient's phone texts its GPS place to the numbers the helper chose, through
+the phone's own SMS.
 
 ## License
 

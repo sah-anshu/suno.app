@@ -9,6 +9,30 @@ checks and emulator runs do not validate acoustic loudness, latency or clarity.
 adb install -r app/build/outputs/apk/patient/debug/app-patient-debug.apk
 ```
 
+## Suno SOS and mesh (Phase 4, not yet checked on a device)
+
+Needs the patient phone with a SIM, two companion phones and, if possible, a Suno TV. Use a family member's number as
+the helper and as the emergency number for testing; **do not test with real 112**.
+
+- Helper mode → Settings → SOS: enter the helper and text numbers, set the emergency number to a test number, and tap
+  Allow calls, texts and location.
+- Tap SOS → No, go back: nothing is sent. Tap SOS → Yes, get help:
+  - every connected companion shows the full-screen alert, including with its screen locked and Suno Companion closed;
+  - the helper's phone rings;
+  - texts arrive with the place (check accuracy indoors and outdoors, with mobile data off);
+  - the TV shows the banner.
+- Without SMS permission: the SOS screen shows Send text with my place, which opens the messaging app prefilled.
+- The emergency button opens the phone app with the number filled in.
+- Alarm with wired and Bluetooth earphones connected: sound comes only from the phone speaker, never in the
+  earphones. On a phone where the speaker cannot be chosen, the button stays off.
+- Companion: I'm on my way appears on the patient's SOS screen and on the other companion. I'm safe now: companions
+  show safe now, the notification changes, the alarm stops.
+- Late joiner: with the patient not listening, a companion out of range comes in range during an SOS. It should get
+  the alert within about a minute.
+- Background link: leave Suno Companion closed for an hour; note battery use and whether the notification stays.
+- Relay: companion A near the patient, companion B out of the patient's range but near A. B shows Through another
+  family phone, can talk, and gets the SOS. Note the range and the delay.
+
 ## Suno TV sound (Phase 3, not yet checked on a device)
 
 Needs the two phones above plus, where available, an Android TV / Google TV (Android 10+) and a Fire TV.
