@@ -12,7 +12,25 @@ Suno is a sound-amplification tool. **It is not a medical device** and does not 
 
 ## Status
 
-Design stage. There is no app code yet. The architecture, decisions and build plan are in [arch.md](arch.md).
+Early development. Phase 0 is done: the EarCast code base is imported, renamed and split into three apps, with
+safety fixes. Suno's own screens come next. The architecture, decisions and build plan are in [arch.md](arch.md).
+Nothing has been validated on real hardware yet.
+
+## Build
+
+Requirements: Android SDK with platform 37, NDK 30.0.16248370 and CMake 4.1.2 (set `sdk.dir` in
+`local.properties`). Gradle downloads JDK 27 itself.
+
+```bash
+./gradlew ktlintCheck detekt test testPatientDebugUnitTest
+./gradlew assemblePatientDebug assembleCompanionDebug assembleTvDebug
+```
+
+| App | Package | Build output |
+|---|---|---|
+| Suno (patient) | `au.remotiq.suno` | `app/build/outputs/apk/patient/debug/` |
+| Suno Companion | `au.remotiq.suno.companion` | `app/build/outputs/apk/companion/debug/` |
+| Suno TV | `au.remotiq.suno.tv` | `app/build/outputs/apk/tv/debug/` |
 
 ## Privacy
 

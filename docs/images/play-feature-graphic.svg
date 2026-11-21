@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
-  <title>EarCast — Personal sound amplification</title>
+  <title>Suno — Personal sound amplification</title>
   <rect width="1024" height="500" fill="#182230"/>
   <circle cx="819" cy="250" r="205" fill="#1e2c40"/>
   <circle cx="819" cy="250" r="160" fill="none" stroke="#2a3d57"/>
@@ -10,7 +10,7 @@
     <path d="M60.64,49.35 A8.1,8.1 0,1 0,58.65 60.64"/>
   </g>
   <rect x="80" y="144" width="44" height="4" rx="2" fill="#a9c7ff"/>
-  <text x="76" y="241" font-family="DejaVu Sans, sans-serif" font-size="74" font-weight="600" letter-spacing="-3" fill="#f5f7fb">EarCast</text>
+  <text x="76" y="241" font-family="DejaVu Sans, sans-serif" font-size="74" font-weight="600" letter-spacing="-3" fill="#f5f7fb">Suno</text>
   <text x="80" y="303" font-family="DejaVu Sans, sans-serif" font-size="27" fill="#cfdae9">Personal sound amplification</text>
   <text x="80" y="346" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#a9c7ff">Your headphones. Your sound profile.</text>
 </svg>

@@ -28,7 +28,7 @@ See [RELEASE.md](RELEASE.md).
   the app has no backend or analytics. User-selected exports must be assessed against Google's applicable exceptions.
   Review the merged release manifest and all SDK behavior before submitting;
   do not copy a blanket “no data collected” answer from old documentation.
-- There is no EarCast account creation. Profiles can be removed in-app; all local data (including any recordings left
+- There is no Suno account creation. Profiles can be removed in-app; all local data (including any recordings left
   by older versions) can be removed by clearing storage or uninstalling. Previously exported copies are separate.
 - Declare `FOREGROUND_SERVICE_MICROPHONE` with the Background Audio Access use case.
   Suggested explanation: “The user starts live sound amplification to headphones.

@@ -1,6 +1,9 @@
-# Inside EarCast
+# Inside Suno (inherited code map)
 
-EarCast connects an editable audiogram to two listening features: microphone
+> This describes the code inherited from EarCast, renamed to Suno. The Suno architecture, decisions and build
+> phases are in [arch.md](arch.md), which takes precedence where the two differ.
+
+Suno connects an editable audiogram to two listening features: microphone
 assist and media playback effects. This guide describes the code currently
 included by [settings.gradle.kts](settings.gradle.kts), with entry points for
 following each operation.

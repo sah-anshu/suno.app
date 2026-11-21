@@ -2,16 +2,16 @@
 
 _Last updated: 2026-10-02_
 
-EarCast processes your audio and sound profiles on your device. All features are free, with no purchases. All builds contain no advertising or ad SDK.
+Suno processes your audio and sound profiles on your device. All features are free, with no purchases. All builds contain no advertising or ad SDK.
 
-## What EarCast does with your data
+## What Suno does with your data
 
-- **Microphone:** In assist mode, EarCast captures audio from the selected
+- **Microphone:** In assist mode, Suno captures audio from the selected
   phone or headset microphone, processes it on the phone in real time, and plays
   it back to your headset. Audio streams locally between the connected headset
-  and phone. **It is not uploaded by EarCast.** Live audio exists only momentarily in memory while being processed and is then discarded. The app does not save microphone recordings. Assist can continue with the screen off or while using other apps; an ongoing notification provides a Stop action.
+  and phone. **It is not uploaded by Suno.** Live audio exists only momentarily in memory while being processed and is then discarded. The app does not save microphone recordings. Assist can continue with the screen off or while using other apps; an ongoing notification provides a Stop action.
 - **Hearing screening results & profile:** Your audiogram and settings are stored
-  **only on your device** (local app storage). EarCast does not upload them. App data is excluded from Android cloud backup and device transfer.
+  **only on your device** (local app storage). Suno does not upload them. App data is excluded from Android cloud backup and device transfer.
 - **Terms acceptance:** The accepted terms version and acceptance time are stored
   only on your device. They are used to ask for renewed consent when the terms change.
 - **No purchases, ads, accounts or backend.** All features work without Google Play.
@@ -35,7 +35,7 @@ your results chart, Android sends it to the app you choose.
 
 ## Retention and deletion
 
-Hearing profiles and preferences remain until you delete them, clear EarCast's
+Hearing profiles and preferences remain until you delete them, clear Suno's
 storage in Android Settings, or uninstall the app. Recordings and cached audio
 exports saved by older versions remain in private storage until you clear app
 storage or uninstall; this update does not erase existing files. The app no longer
@@ -44,7 +44,7 @@ apps. Reinstalling does not restore local hearing profiles.
 
 ## Children
 
-EarCast is a general-audience hearing-assistance tool and is not directed at
+Suno is a general-audience hearing-assistance tool and is not directed at
 children.
 
 ## Contact
@@ -55,5 +55,5 @@ policy at a public HTTPS URL and configure `earcastPrivacyPolicyUrl` and
 `earcastSupportEmail` for the release build. This source is a publication draft
 until that contact is supplied.
 
-> EarCast is a hearing-assistance tool, not a medical device. See the README
+> Suno is a hearing-assistance tool, not a medical device. See the README
 > and docs/SAFETY.md.

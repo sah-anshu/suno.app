@@ -1,37 +1,56 @@
-# EarCast project context
+# Suno: project guide
 
-Android hearing-assistance app: audiograms, live microphone processing and media
-EQ. All features are free; no ads, billing, accounts, uploads or microphone recording.
-The app is not a medical device. See [README](README.md) and
-[architecture](ARCHITECTURE.md) for features and code ownership.
+Suno is an offline Android hearing-assist system for elderly people and for children and adults with neurological or
+cognitive disabilities. It is a fork of [EarCast](https://github.com/octavian-negru/ear-cast) and is licensed
+GPL-3.0-only.
 
-## Safety
+**Read [arch.md](arch.md) first.** It holds the architecture, the decisions and their state (Decided / Proposed /
+To verify), and the build phases. Update it, including its decision log, whenever a decision changes.
 
-- Keep the output limiter last. Shared bounds live in `AudioLimits`.
-- Clamp gain, ramp tones and fail quietly. Stop/mute must remain available.
-- Digital ceilings and uncalibrated hearing checks do not establish dB SPL or
-  clinical accuracy. Real-device safety and calibration are release prerequisites.
-- Preserve third-party licenses, model checksums and documented native patches.
+## Build and check
 
-## Build
+The Android SDK path goes in `local.properties` (`sdk.dir=...`), which is gitignored. Gradle provisions JDK 27 itself.
 
-Use JDK 27, the Gradle wrapper and the Android SDK. The Gradle runtime is pinned
-in `gradle/gradle-daemon-jvm.properties`; source and bytecode compatibility stay
-at Java 17 for Android. Other versions are in `gradle/libs.versions.toml` and
-`gradle/wrapper/gradle-wrapper.properties`.
-
-```sh
-./gradlew test ktlintCheck detekt :app:assembleDebug :app:lintRelease
-just build-prod
+```bash
+./gradlew ktlintCheck detekt test testPatientDebugUnitTest
+./gradlew assemblePatientDebug assembleCompanionDebug assembleTvDebug
 ```
 
-Native/Python evaluation: [audio-quality/README.md](audio-quality/README.md).
-Hardware checks: [DEVICE_TESTING](docs/DEVICE_TESTING.md).
-Signing and publication: [RELEASE](docs/RELEASE.md).
+Behind a rate-limited proxy, Maven Central can answer 429 during the first dependency download. Rerun with
+`--max-workers=1`; Gradle keeps what it already downloaded.
+
+## Layout
+
+| Path | What |
+|---|---|
+| `foundation` | Units and `AudioLimits` (all output limits live here) |
+| `sound-profile` | Audiogram, tone check, fitting, ready-made profiles |
+| `audio-engine` | Streams, routing, DSP chain, native noise reduction (`src/main/cpp`), media EQ |
+| `local-storage` | DataStore profiles and preferences |
+| `app` | Flavours `patient` (`au.remotiq.suno`), `companion` (`.companion`), `tv` (`.tv`); shared EarCast screens in `src/main` |
+| `audio-quality` | Offline audio regression bench (not an app module) |
+| `docs/` | Safety, fitting, calibration, device testing, release |
+
+Kotlin packages are `au.remotiq.suno.*`.
+
+## Rules that are never broken
+
+- The limiter is the last processing stage. Nothing reaches an output without it. Limits live only in `AudioLimits`.
+- The patient's own active audiogram is applied on the patient's phone to every source. Senders send clean audio.
+  Hearing-aid output gets no profile gain.
+- Amplified sound never plays through the phone speaker. Fail quiet, never loud.
+- The patient's microphone audio never leaves the patient's phone, except in SOS and calls.
+- Offline only: no analytics, no accounts, no uploads. The device-to-device link works without Google services by
+  default; Google Nearby is an optional extra.
+- Patient-facing screens follow the accessibility rules in arch.md section 11.3: large targets, never colour alone,
+  Okabe–Ito palette, no timeouts.
+- User-facing copy never says diagnose, treat or medical, except to say Suno is not a medical device.
 
 ## Working agreement
 
-- Keep changes small and reviewable; use Conventional Commits.
-- Run tests and ask permission before pushing or creating the first commit.
-- Do not add an AI co-author; the maintainer is the sole author.
-- Report hardware/calibration uncertainty accurately; do not invent protocol behavior.
+- Build in the phases listed in arch.md section 15. Commit small, working steps with Conventional Commit messages.
+- Run the checks above before every commit. Do not skip or weaken a test to make it pass.
+- Keep vendored code under `audio-engine/src/main/cpp/vendor`, model files and their checksums unchanged.
+- Keep upstream copyright and third-party notices. New files carry `// SPDX-License-Identifier: GPL-3.0-only`.
+- Be explicit about what is unverified: anything about real audio latency, feedback, Bluetooth, calls or TVs needs a
+  physical device and goes into `docs/DEVICE_TESTING.md`.

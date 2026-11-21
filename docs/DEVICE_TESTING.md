@@ -5,9 +5,25 @@ low, comfortable volume. Stop immediately if sound is unpleasant. Automated
 checks and emulator runs do not validate acoustic loudness, latency or clarity.
 
 ```sh
-./gradlew :app:assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+./gradlew :app:assemblePatientDebug
+adb install -r app/build/outputs/apk/patient/debug/app-patient-debug.apk
 ```
+
+## Suno Phase 0 changes (not yet checked on a device)
+
+- **Feedback guard at the live block size.** With earphones close to the phone microphone and gain raised slowly,
+  a whistle between about 600 Hz and 3 kHz should be pulled down within a fraction of a second. Normal speech, a
+  low voice and music should not be ducked. Record the pitch of any whistle that is not caught.
+- **Short interruptions.** Play a notification sound, then a navigation prompt or voice assistant reply, while
+  listening. Listening should continue through the notification, fade out during the prompt and fade back in
+  afterwards without a click. A phone call or another app's long playback should still end the session quietly.
+- **Headphones only.** Starting with no headphones connected must fail with a message, never play through the
+  speaker. Unplugging during listening must stop sound.
+- **No profile yet.** On a fresh install with no saved profile, listening should start with the Mild ready-made
+  profile.
+- **Volume cap.** The master volume slider tops out at +20 dB.
+- **Still to measure:** capture backlog after a scheduling stall (latency should not keep growing over a long
+  session).
 
 ## Hearing checks and profiles
 

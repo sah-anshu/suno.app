@@ -1,6 +1,6 @@
 # Hearing safety policy
 
-EarCast plays calibrated tones (the screening) and amplifies live sound (the
+Suno plays calibrated tones (the screening) and amplifies live sound (the
 assist mode) **directly into people's ears**. Hearing safety is non-negotiable.
 Any code path that could exceed these limits is treated as a **critical bug**.
 
@@ -53,13 +53,13 @@ headroom and keep generous margin.
 
 ## Disclaimers (must appear in-app and in docs)
 
-EarCast is **not a medical device**, not a certified hearing aid, and not a
+Suno is **not a medical device**, not a certified hearing aid, and not a
 substitute for a professional hearing exam. It does not diagnose or treat anything.
 This disclaimer appears in the README, in onboarding, and before any test starts.
 
 ## Terms and consent
 
-Before using EarCast, users explicitly acknowledge its non-medical purpose and
+Before using Suno, users explicitly acknowledge its non-medical purpose and
 accept the [terms and safe-use guidance](TERMS.md) using two unchecked boxes.
 The accepted terms version and time are stored locally. Legacy disclaimer
 acknowledgment does not satisfy the current terms. Increment the stored terms

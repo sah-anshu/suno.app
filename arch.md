@@ -3,7 +3,7 @@
 Reference document for the Suno project. Update it when a decision changes, and add a line to the
 [decision log](#16-decision-log).
 
-- **Status (2026-11-21):** design only. No app code exists yet. The repository holds this file, `README.md` and `LICENSE`.
+- **Status (2026-11-21):** Phase 0 complete. The repository is the EarCast fork, renamed to `au.remotiq.suno`, with three flavours and the Phase 0 safety fixes. No Suno-specific screens yet.
 - **Licence:** GPL-3.0-only ([section 13](#13-licensing)).
 - **Baseline:** [EarCast](https://github.com/octavian-negru/ear-cast) at commit `0a2213b` (GPLv3), which Suno forks.
 - **UI mockup (v10):** https://claude.ai/artifact/PSLPf47Vd5DeC63ac5v3xH (private to its owner until shared).
@@ -75,8 +75,8 @@ android {
   ([section 9](#9-tv-platforms)) is also the `companion` flavour.
 - **Consequence:** the setup question "How will this phone be used?" and the Mode switch in Settings, both shown in
   mockup v10, are superseded. Each app opens directly in its role.
-- **Proposed:** a second flavour dimension `services` (`gms` / `nogms`) for devices without Google Play Services
-  such as Fire TV. Decide when the TV work starts ([section 8.4](#84-transports)).
+- **Decided:** the default builds contain no Google services. An optional `gms` build adds Nearby Connections
+  ([section 8.4](#84-transports)); add it as a second flavour dimension when Phase 2 starts.
 
 Build commands once the code exists:
 
@@ -109,15 +109,18 @@ tests and has **never been validated on real hardware** (its own docs say so).
 
 ### 4.2 Changed or fixed
 
+Status after Phase 0: done, except two items deferred to Phase 1 because they need a real phone or are part of
+the Hindi work (marked *deferred*).
+
 | Issue found in the study | Change |
 |---|---|
-| `FeedbackSuppressor` normalises by full-block energy, so at the real 192-frame block it misses howls below about 2.5 kHz. Tests pass only because they use 1024-sample blocks. *(Found by reading the code; not confirmed on a device.)* | Normalise over the overlapping window; add a 192-frame regression test at 1.5, 2 and 3 kHz. |
-| Master gain up to +40 dB on top of +40 dB of profile gain. | Lower cap for the patient layout, set by the helper. |
-| No listening without a hearing test. | Ready-made profiles: Mild, Moderate, Child-safe. |
-| Any audio-focus loss, even "can duck", stops the session. | Pause and resume on transient loss. |
-| Up to 100 ms capture backlog is never drained; latency unmeasured. | Drain backlog; measure on devices. |
-| About 26 English error strings hard-coded in `audio-engine`. | Error codes mapped to string resources (needed for Hindi). |
-| `requireHeadphones` is never set for on-body listening. | Set it; amplified sound never plays on the phone speaker. |
+| `FeedbackSuppressor` normalises by full-block energy, so at the real 192-frame block it misses howls below about 2.5 kHz. Tests passed only because they used 1024-sample blocks. **Confirmed by a unit test:** a 1.5 kHz howl got no protection. | Fixed: per-lag overlap normalisation plus a pitch-detector rule (a lag counts only after the autocorrelation dips below zero). Tests at 192 frames: 600 Hz–3 kHz howls duck; noise, rumble and a voiced vowel stay open. Device check pending. |
+| Master gain up to +40 dB on top of +40 dB of profile gain. | `MAX_MASTER_GAIN_CAP_DB` lowered to 20 dB. A helper-set lower cap comes with the patient layout. |
+| No listening without a hearing test. | `ReadyMadeProfile` (Mild, Moderate, Child-safe); live listening falls back to Mild. |
+| Any audio-focus loss, even "can duck", stops the session. | `FocusPolicy` + `FocusGate`: continue on can-duck, fade out and back in on transient loss, stop only on permanent loss. |
+| Up to 100 ms capture backlog is never drained; latency unmeasured. | *Deferred:* measure on a device first, then drain. |
+| About 26 English error strings hard-coded in `audio-engine`. | *Deferred to Phase 1:* error codes mapped to string resources (needed for Hindi). |
+| `requireHeadphones` is never set for on-body listening. | Set for every live session. |
 | Universal APK about 150 MB. | Ship an App Bundle with per-ABI splits (about 75–80 MB on arm64, estimated). |
 
 ### 4.3 Toolchain inherited
@@ -136,8 +139,8 @@ min SDK 26, NDK 30, CMake 4.1.2, ktlint and detekt.
 | `audio-quality` | EarCast | Tooling | Offline audio regression bench |
 | `audio-graph` | New | Kotlin/JVM | `AudioSource` / `AudioSink`, `Mixer` with priority ducking, `JitterBuffer`, `OutputPolicy` |
 | `link` | New | Android | Transport abstraction, QR pairing, session and membership, Opus framing, message relay |
-| `link-nearby` | New | Android | Google Nearby Connections transport |
-| `link-direct` | New (Proposed) | Android | Transport without Play Services: Wi-Fi Direct / LAN, BLE L2CAP |
+| `link-direct` | New | Android | Default transport without Google services: Wi-Fi Direct / LAN, BLE L2CAP |
+| `link-nearby` | New, optional | Android | Google Nearby Connections, only in the optional `gms` build |
 | `sender-core` | New | Android | Playback capture and mic capture → Opus → `link`. Used by `companion` and `tv` |
 | `telephony` | New | Android | Phone-app role, call screens, call routing, call screening. `patient` only |
 | `sos` | New | Android | SOS flow and alert fan-out. Trigger in `patient`; alert receiver in all flavours |
@@ -241,8 +244,8 @@ phone shows who changed what.
 
 | Transport | Used for | Notes |
 |---|---|---|
-| Google Nearby Connections (`link-nearby`) | Default on phones and Android TV **(Decided)** | Needs Google Play Services. Offline: Bluetooth, BLE, Wi-Fi Direct |
-| Wi-Fi Direct / LAN, BLE L2CAP (`link-direct`) | Fire TV and devices without Play Services *(Proposed)* | Also removes the licensing question in [section 13](#13-licensing) |
+| Wi-Fi Direct / LAN, BLE L2CAP (`link-direct`) | **Default in every build (Decided)** | No Google services. Works on Fire TV and phones without Play Services, suits F-Droid, avoids the licensing question in [section 13](#13-licensing) |
+| Google Nearby Connections (`link-nearby`) | Optional extra, in a separate `gms` build only **(Decided)** | Needs Google Play Services |
 
 ## 9. TV platforms
 
@@ -433,3 +436,5 @@ Anything involving real sound, radios or calls needs physical devices and a writ
 | 2026-11-21 | Companion apps are built as product flavours (`patient`, `companion`, `tv`); this replaces the setup-time mode question. |
 | 2026-11-21 | Primary package name is `au.remotiq.suno`; flavours use the suffixes `.companion` and `.tv`. |
 | 2026-11-21 | Suno is free and open source under GPL-3.0-only (matching EarCast). |
+| 2026-11-21 | The device-to-device link works without Google services by default (Wi-Fi Direct / Bluetooth); Nearby is an optional `gms` build. |
+| 2026-11-21 | Phase 0 done: EarCast merged with history, renamed, three flavours, safety fixes. |

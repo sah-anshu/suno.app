@@ -4,7 +4,7 @@ Version 5 · September 29, 2026
 
 ## Purpose and limitations
 
-EarCast is a personal sound-amplification tool, not a medical device or a certified hearing aid. Tone checks and sound profiles are uncalibrated estimates. They are not a diagnosis or a substitute for a professional hearing exam or care. For hearing concerns, consult an audiologist or doctor.
+Suno is a personal sound-amplification tool, not a medical device or a certified hearing aid. Tone checks and sound profiles are uncalibrated estimates. They are not a diagnosis or a substitute for a professional hearing exam or care. For hearing concerns, consult an audiologist or doctor.
 
 ## Loud and harsh sounds
 
@@ -12,11 +12,11 @@ Start with low device volume and increase slowly. Loud sounds can damage hearing
 
 ## Use with care
 
-EarCast cannot measure the sound level at your ear or guarantee safe listening. Output limits and the listening meter are relative guides. Use headphones to reduce feedback, and keep the microphone away from speakers. Do not rely on EarCast for alarms, traffic awareness or situations where hearing is essential to safety.
+Suno cannot measure the sound level at your ear or guarantee safe listening. Output limits and the listening meter are relative guides. Use headphones to reduce feedback, and keep the microphone away from speakers. Do not rely on Suno for alarms, traffic awareness or situations where hearing is essential to safety.
 
 ## Privacy
 
-Live audio is processed on your phone. Sound profiles and preferences are stored locally. Microphone audio is not saved. You choose whether to share your hearing-check results. EarCast does not upload your audio or sound profiles. All features are free, with no purchases, advertisements or account required.
+Live audio is processed on your phone. Sound profiles and preferences are stored locally. Microphone audio is not saved. You choose whether to share your hearing-check results. Suno does not upload your audio or sound profiles. All features are free, with no purchases, advertisements or account required.
 
 ## Your agreement
 
