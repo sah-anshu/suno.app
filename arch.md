@@ -3,7 +3,8 @@
 Reference document for the Suno project. Update it when a decision changes, and add a line to the
 [decision log](#16-decision-log).
 
-- **Status (2026-11-21):** design only. No app code exists yet. This repository contains this file.
+- **Status (2026-11-21):** design only. No app code exists yet. The repository holds this file, `README.md` and `LICENSE`.
+- **Licence:** GPL-3.0-only ([section 13](#13-licensing)).
 - **Baseline:** [EarCast](https://github.com/octavian-negru/ear-cast) at commit `0a2213b` (GPLv3), which Suno forks.
 - **UI mockup (v10):** https://claude.ai/artifact/PSLPf47Vd5DeC63ac5v3xH (private to its owner until shared).
   People named in it (Dadi, Priya, Rahul, Nana) are examples.
@@ -338,13 +339,49 @@ Treat a violation of any of these as a critical bug.
 
 ## 13. Licensing
 
-- EarCast is GPLv3, so Suno is GPLv3. Keep `LICENSE`, upstream copyright notices, third-party notices and model
-  checksums. Credit: "Based on EarCast by Octavian Negru, which was inspired by OpenHearing."
-- Third-party parts: RNNoise and SpeexDSP (BSD), sherpa-onnx (Apache-2.0), ONNX Runtime (MIT), DPDFNet model files
-  (bundled licence text is Apache-2.0; upstream model-card terms not checked), eSpeak-NG inside the sherpa runtime (GPLv3).
-- **Open risk — needs a legal check:** Google Play Services (Nearby Connections) is proprietary. Linking it into a
-  GPLv3 work derived from EarCast may conflict with the GPL unless the EarCast author grants an additional permission.
-  `link-direct` avoids the question, and F-Droid distribution would require it anyway.
+**Decided:** Suno is free and open-source software under **GPL-3.0-only**. This matches EarCast, which states
+"GPL-3.0" without "or later".
+
+- The repository root has the verbatim GPLv3 text in `LICENSE`.
+- Source files carry `// SPDX-License-Identifier: GPL-3.0-only`. Files taken from EarCast keep their origin; new
+  files are "Copyright (C) 2026 Suno contributors" unless the owner chooses another holder name.
+- Credit in the README and the About screen: "Based on EarCast by Octavian Negru, which was inspired by OpenHearing."
+- Keep third-party notices and model checksums from EarCast:
+
+| Component | Licence |
+|---|---|
+| RNNoise, SpeexDSP | BSD |
+| sherpa-onnx | Apache-2.0 |
+| ONNX Runtime | MIT |
+| DPDFNet model files | Bundled licence text is Apache-2.0; upstream model-card terms not checked *(To verify)* |
+| eSpeak-NG (inside the sherpa runtime) | GPLv3 |
+
+- **Contributions** *(Proposed)*: contributions are accepted under the same licence, with a `Signed-off-by` line
+  (Developer Certificate of Origin).
+
+### 13.1 Distribution
+
+| Channel | Fit | What it needs |
+|---|---|---|
+| Google Play | GPL apps are allowed | Policy review for the phone-app role, SMS and background microphone |
+| F-Droid | Natural home for a GPL app | No proprietary libraries, so a build without Google Play Services (`link-direct`). Native code built from source: EarCast ships a **prebuilt** sherpa-onnx / ONNX Runtime archive, which F-Droid normally does not accept *(To verify)* |
+| GitHub releases | Simple | Signed APKs per flavour |
+
+### 13.2 Open risk: Google Play Services and the GPL
+
+Google Nearby Connections is part of Google Play Services, which is proprietary. Shipping it inside a GPLv3 app is
+widely considered a licence conflict unless the copyright holders allow it. This is not legal advice; get a legal
+opinion before the first release.
+
+Options:
+
+1. **Additional permission (GPLv3 section 7).** Suno's own code adds a permission to link with Google Play Services.
+   EarCast-derived code needs the same permission from its copyright holders: Octavian Negru, and the OpenHearing
+   author if EarCast contains copied OpenHearing code. Ask early.
+2. **No Google transport by default.** Use `link-direct` (Wi-Fi Direct / LAN / BLE) in all builds, with Nearby only in
+   an optional `gms` build. This also suits F-Droid and Fire TV.
+
+Either way, `link` hides the transport behind one interface, so the choice can wait until Phase 2 starts.
 
 ## 14. Platform facts to verify on real devices
 
@@ -395,3 +432,4 @@ Anything involving real sound, radios or calls needs physical devices and a writ
 | 2026-11-21 | The patient's applicable audiogram is applied to everything the patient hears. |
 | 2026-11-21 | Companion apps are built as product flavours (`patient`, `companion`, `tv`); this replaces the setup-time mode question. |
 | 2026-11-21 | Primary package name is `au.remotiq.suno`; flavours use the suffixes `.companion` and `.tv`. |
+| 2026-11-21 | Suno is free and open source under GPL-3.0-only (matching EarCast). |
