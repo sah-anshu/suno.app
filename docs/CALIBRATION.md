@@ -1,6 +1,6 @@
 # Calibration
 
-EarCast produces and amplifies sound, but Android gives no portable way to
+Suno produces and amplifies sound, but Android gives no portable way to
 know the true sound pressure level (dB SPL) reaching a given user's ear — it
 depends on the phone, its DAC, the headset/earbuds, and fit. This document is
 honest about what that means and how we stay safe anyway.

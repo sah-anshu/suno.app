@@ -13,11 +13,11 @@ test:
 
 # Signed release APK per architecture.
 build-prod:
-    bash ./gradlew :app:assembleLocalRelease -PearcastLocalRelease=true -PearcastSplitApks=true
+    bash ./gradlew :app:assembleLocalRelease -PsunoLocalRelease=true -PsunoSplitApks=true
 
 # Universal release APK.
 build-prod-universal:
-    bash ./gradlew :app:assembleLocalRelease -PearcastLocalRelease=true -PearcastSplitApks=false
+    bash ./gradlew :app:assembleLocalRelease -PsunoLocalRelease=true -PsunoSplitApks=false
 
 apk-size:
     python3 scripts/apk_size.py

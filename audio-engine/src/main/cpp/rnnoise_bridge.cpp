@@ -5,7 +5,7 @@
 
 namespace {
 struct Session {
-    earcast::RnnoiseFilter denoiser;
+    suno::RnnoiseFilter denoiser;
     std::vector<float> frame;
     Session(int rate, int suppression, float boost)
         : denoiser(rate, suppression, boost), frame(denoiser.frame_size()) {}
@@ -18,7 +18,7 @@ void fail(JNIEnv* env, const char* message) {
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_app_earcast_core_audio_speech_RnnoiseBridge_create(
+Java_au_remotiq_suno_core_audio_speech_RnnoiseBridge_create(
     JNIEnv* env, jobject, jint rate, jint suppression, jfloat boost) {
     try {
         return reinterpret_cast<jlong>(new Session(rate, suppression, boost));
@@ -29,7 +29,7 @@ Java_app_earcast_core_audio_speech_RnnoiseBridge_create(
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_app_earcast_core_audio_speech_RnnoiseBridge_delaySamples(
+Java_au_remotiq_suno_core_audio_speech_RnnoiseBridge_delaySamples(
     JNIEnv* env, jobject, jlong handle) {
     auto* session = reinterpret_cast<Session*>(handle);
     if (!session) {
@@ -40,7 +40,7 @@ Java_app_earcast_core_audio_speech_RnnoiseBridge_delaySamples(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_app_earcast_core_audio_speech_RnnoiseBridge_processFrame(
+Java_au_remotiq_suno_core_audio_speech_RnnoiseBridge_processFrame(
     JNIEnv* env, jobject, jlong handle, jfloatArray frame) {
     auto* session = reinterpret_cast<Session*>(handle);
     if (!session || !frame || env->GetArrayLength(frame) != static_cast<jsize>(session->frame.size())) {
@@ -60,6 +60,6 @@ Java_app_earcast_core_audio_speech_RnnoiseBridge_processFrame(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_app_earcast_core_audio_speech_RnnoiseBridge_destroy(JNIEnv*, jobject, jlong handle) {
+Java_au_remotiq_suno_core_audio_speech_RnnoiseBridge_destroy(JNIEnv*, jobject, jlong handle) {
     delete reinterpret_cast<Session*>(handle);
 }

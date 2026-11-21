@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<resources>
+    <string name="app_name">Suno TV</string>
+    <string name="tv_title">TV sound, right in their earphones</string>
+    <string name="tv_step1">Open Suno Companion on a family member\'s phone</string>
+    <string name="tv_step2">Family → Set up a TV</string>
+    <string name="tv_step3">Point the camera at this code</string>
+    <string name="tv_setup_code">TV setup code</string>
+    <string name="tv_connecting">Connecting to %1$s\'s Suno…</string>
+    <string name="tv_waiting">Waiting for %1$s\'s phone to allow this TV</string>
+    <string name="tv_connected">Connected to %1$s\'s Suno</string>
+    <string name="tv_via_wifi">Over Wi-Fi Direct</string>
+    <string name="tv_via_bluetooth">Over Bluetooth</string>
+    <string name="tv_start_sharing">Start sharing TV sound</string>
+    <string name="tv_stop_sharing">Stop sharing</string>
+    <string name="tv_sharing_pill">Sharing TV sound</string>
+    <string name="tv_denied">%1$s did not allow this TV.</string>
+    <string name="tv_set_up_again">Show setup code again</string>
+    <string name="tv_not_connected">Not connected. %1$s\'s phone must be listening and nearby.</string>
+    <string name="tv_try_again">Try again</string>
+    <string name="tv_speakers_note">TV speakers stay at normal volume for everyone else. Each Suno phone applies its own hearing profile.</string>
+    <string name="tv_capture_not_allowed">This TV does not allow sharing its sound. Use Share sound → TV by cable on a phone instead.</string>
+    <string name="tv_unsupported">Suno TV needs Android 10 or later.</string>
+    <string name="tv_sos_title">%1$s needs help</string>
+    <string name="tv_sos_body">Check on them now. Family phones have been told.</string>
+</resources>

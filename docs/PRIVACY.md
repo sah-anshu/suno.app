@@ -1,59 +1,84 @@
 # Privacy Policy
 
-_Last updated: 2026-10-02_
+_Last updated: 2026-11-21 (Suno 0.1.0)_
 
-EarCast processes your audio and sound profiles on your device. All features are free, with no purchases. All builds contain no advertising or ad SDK.
+Suno is three apps built from one code base: **Suno** (for the person being helped, called the patient here),
+**Suno Companion** (for family and carers) and **Suno TV**. Suno works without internet. It has no accounts, no
+analytics, no advertising and no purchases, and it has no server: nothing is sent to the publisher.
 
-## What EarCast does with your data
+## What stays on the patient's phone
 
-- **Microphone:** In assist mode, EarCast captures audio from the selected
-  phone or headset microphone, processes it on the phone in real time, and plays
-  it back to your headset. Audio streams locally between the connected headset
-  and phone. **It is not uploaded by EarCast.** Live audio exists only momentarily in memory while being processed and is then discarded. The app does not save microphone recordings. Assist can continue with the screen off or while using other apps; an ongoing notification provides a Stop action.
-- **Hearing screening results & profile:** Your audiogram and settings are stored
-  **only on your device** (local app storage). EarCast does not upload them. App data is excluded from Android cloud backup and device transfer.
-- **Terms acceptance:** The accepted terms version and acceptance time are stored
-  only on your device. They are used to ask for renewed consent when the terms change.
-- **No purchases, ads, accounts or backend.** All features work without Google Play.
+- **Microphone.** While listening is on, Suno captures sound from the chosen microphone, processes it in memory and
+  plays it to the connected earphones or hearing aid. It is not recorded or saved, and it never leaves the patient's
+  phone. The only exceptions are a phone call or an SOS call the patient makes or answers, which Android handles.
+- **Hearing profiles, settings, helper PIN.** Stored in the app's private storage only. The PIN is stored as a salted
+  hash. App data is excluded from Android cloud backup and device transfer.
+- **People and SOS numbers.** Names and numbers the helper enters for People and SOS stay in the app's private storage.
+- **Contacts.** If allowed, Suno looks up the names of people who call, on the phone itself. It does not copy the
+  contact list.
 
-## Permissions
+## Between the family's own devices (family link)
 
-- **RECORD_AUDIO** — required for assist mode (live amplification). Used only while
-  assist mode is on.
-- **FOREGROUND_SERVICE / FOREGROUND_SERVICE_MICROPHONE** — to keep assist mode
-  running with a visible, ongoing notification while you use other apps.
-- **POST_NOTIFICATIONS** — to show that notification (Android 13+).
-- **MODIFY_AUDIO_SETTINGS** — to select audio devices, establish Bluetooth
-  communication audio, and apply the optional media EQ effect.
-- **WAKE_LOCK** — to keep microphone processing active with the screen off.
+- A family member's phone or a TV joins the patient's phone only after scanning its QR code **and** the patient's
+  phone allowing it. Devices talk directly over Wi-Fi Direct or Bluetooth, never over the internet.
+- What travels: a family member's voice and shared sound (for example TV sound) **to** the patient's phone, SOS alerts
+  and "I'm on my way" answers, and the device names people chose. Every message is encrypted end to end
+  (AES-256-GCM). A family phone that relays for another phone cannot read what it forwards.
+- The patient's microphone sound is **never** sent over the family link.
+- Suno asks for location permission on older Android versions only because Android requires it for Wi-Fi Direct and
+  Bluetooth scanning. Suno does not use location for the family link.
 
-## Data sharing
+## SOS
 
-Live audio is sent only
-between the phone and your connected listening device. If you explicitly share
-your results chart, Android sends it to the app you choose.
+When the patient taps SOS and confirms:
+
+- the patient's phone sends an alert to the family devices that are linked, with the phone's GPS position if it was
+  found;
+- if the helper allowed it, a text message with that position goes to the numbers the helper chose, through the
+  phone's own SMS;
+- the phone calls the helper, and the emergency number if the helper set that up.
+
+These are ordinary calls and texts made by the phone. Your mobile operator handles them under its own terms. Suno
+keeps no history of SOS events.
+
+## Phone calls
+
+If the helper makes Suno the phone app, Android gives Suno control of the call screens, call routing and call volume.
+Suno never gets the call sound. With "calls from contacts only" on, Suno declines unknown callers before the phone
+rings. Those calls still appear in the phone's call log.
+
+## Suno TV
+
+Suno TV sends what the TV plays to the patient's phone only after the TV owner allows screen and sound capture in
+Android's own prompt. It stores the patient's join code so it can reconnect.
+
+## Permissions and why
+
+| Permission | App | Why |
+|---|---|---|
+| Microphone (`RECORD_AUDIO`) | all | Listening (patient); Talk and Share sound (companion); capture (TV) |
+| Nearby devices / Wi-Fi / Bluetooth; location on Android 12 and older | all | The family link (Wi-Fi Direct, Bluetooth LE). No location use |
+| `INTERNET` | all | Android requires it for any network socket, including the local Wi-Fi Direct group. No internet connections are made |
+| Camera | companion | Scan QR codes |
+| Location (`ACCESS_FINE_LOCATION`) | patient | GPS position in an SOS |
+| Phone calls (`CALL_PHONE`), phone-app role | patient | Calling People, the helper and the emergency number; call screens |
+| Contacts (`READ_CONTACTS`) | patient | Names of callers |
+| SMS (`SEND_SMS`) | patient | SOS text with the position (not in a Google Play build) |
+| Notifications, foreground services | all | Visible notifications while listening, talking, sharing, linked, or in an SOS |
+| Full-screen notifications | companion | Show an SOS alert over the lock screen |
 
 ## Retention and deletion
 
-Hearing profiles and preferences remain until you delete them, clear EarCast's
-storage in Android Settings, or uninstall the app. Recordings and cached audio
-exports saved by older versions remain in private storage until you clear app
-storage or uninstall; this update does not erase existing files. The app no longer
-provides recording or audio export controls. Uninstalling does not delete copies you exported to other
-apps. Reinstalling does not restore local hearing profiles.
+Everything stays until you delete it in the app, clear Suno's storage in Android Settings, or uninstall. Leave in the
+companion's Family tab forgets the patient's code. Remove in Helper mode, Settings forgets a family device.
 
 ## Children
 
-EarCast is a general-audience hearing-assistance tool and is not directed at
-children.
+Suno can be set up by a parent or carer for a child. It collects no personal data and sends nothing to the publisher.
 
 ## Contact
 
-Before publication, the publisher must replace this paragraph with its public
-name and monitored privacy contact email, matching the Play listing. Publish this
-policy at a public HTTPS URL and configure `earcastPrivacyPolicyUrl` and
-`earcastSupportEmail` for the release build. This source is a publication draft
-until that contact is supplied.
+Before publication the publisher must add its public name and a monitored privacy contact here, publish this
+policy at a public HTTPS address, and set `sunoPrivacyPolicyUrl` and `sunoSupportEmail` for the release build.
 
-> EarCast is a hearing-assistance tool, not a medical device. See the README
-> and docs/SAFETY.md.
+> Suno is a hearing-assistance tool, not a medical device. See the README and docs/SAFETY.md.

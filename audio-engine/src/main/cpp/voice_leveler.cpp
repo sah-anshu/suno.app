@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace earcast {
+namespace suno {
 
 VoiceLeveler::VoiceLeveler(float maximum_gain_db) : maximum_gain_(1.0f) {
     if (!std::isfinite(maximum_gain_db) || maximum_gain_db < 0 || maximum_gain_db > 12) {
@@ -43,4 +43,4 @@ void VoiceLeveler::process(float* samples, int count, float speech_probability) 
     }
 }
 
-}  // namespace earcast
+}  // namespace suno

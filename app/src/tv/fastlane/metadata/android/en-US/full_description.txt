@@ -1,0 +1,10 @@
+Suno TV sends what your TV plays to the Suno phone of someone who is hard of hearing, so they hear it in their own earphones with their own hearing profile, while the TV speakers stay normal for everyone else.
+
+* Set up once: a family member scans the code on the TV with Suno Companion
+* The patient's phone asks to allow the TV
+* Start sharing TV sound with the remote; Android asks to allow capture
+* Shows a large banner if the patient presses SOS
+
+Needs Android TV or Google TV 10 or later (Fire TV not yet checked). Some streaming apps block capture; then use the cable route with a phone. Works without internet; devices connect directly over Wi-Fi Direct or Bluetooth.
+
+IMPORTANT: Suno is not a medical device or a certified hearing aid and does not diagnose or treat any condition. Hearing checks are uncalibrated estimates. SOS helps get attention but does not replace emergency services and can fail without signal or battery. Start quietly and stop if sound is too loud. This is an early test release, not yet checked on real devices.

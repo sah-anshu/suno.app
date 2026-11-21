@@ -1,0 +1,13 @@
+Suno Companion is for the family and carers of someone who uses Suno.
+
+* Join the patient's Suno by scanning its QR code; their phone asks them to allow you
+* Talk: your voice goes straight into their earphones, with their own hearing profile applied on their phone
+* Share sound: TV by cable (USB-C audio adapter), a microphone near the TV, or what plays on your phone
+* Set up a Suno TV by scanning the code it shows
+* SOS alerts: a full-screen alert with their position and "I'm on my way", even when the app is closed
+* Help a family phone that is out of range connect through yours
+* EarCast's full hearing tools for your own listening
+
+Works without internet, accounts or ads. Devices connect directly over Wi-Fi Direct or Bluetooth, and everything is encrypted.
+
+IMPORTANT: Suno is not a medical device or a certified hearing aid and does not diagnose or treat any condition. Hearing checks are uncalibrated estimates. SOS helps get attention but does not replace emergency services and can fail without signal or battery. Start quietly and stop if sound is too loud. This is an early test release, not yet checked on real devices.

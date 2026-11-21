@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">EarCast</string>
+    <string name="app_name">Suno</string>
     <string name="tagline">Check your hearing, create a sound profile, and listen through headphones.</string>
 
     <string name="disclaimer_title">Not a medical device</string>
-    <string name="disclaimer_body">EarCast is a sound-amplification and hearing-assistance tool. It is NOT a medical device and NOT a substitute for a professional hearing exam. It does not diagnose, treat, cure, or prevent any condition. If you have concerns about your hearing, please see an audiologist or doctor. Always keep the volume at a comfortable level and stop if you feel any discomfort.</string>
+    <string name="disclaimer_body">Suno is a sound-amplification and hearing-assistance tool. It is NOT a medical device and NOT a substitute for a professional hearing exam. It does not diagnose, treat, cure, or prevent any condition. If you have concerns about your hearing, please see an audiologist or doctor. Always keep the volume at a comfortable level and stop if you feel any discomfort.</string>
 
     <string name="assist_channel_name">Hearing assist</string>
     <string name="assist_active_title">Hearing assist is on</string>
@@ -15,7 +15,7 @@
 
     <!-- Onboarding -->
     <string name="onboarding_welcome">Welcome</string>
-    <string name="onboarding_ack">Please read and acknowledge the above before using EarCast.</string>
+    <string name="onboarding_ack">Please read and acknowledge the above before using Suno.</string>
     <string name="onboarding_agree">I understand and agree</string>
     <string name="onboarding_private_title">Private by default</string>
     <string name="onboarding_private_detail">Your audio and sound profiles stay on this device. All features are free, with no ads or purchases.</string>
@@ -28,7 +28,7 @@
     <string name="home_settings">Settings</string>
     <string name="home_start_section">Your first step</string>
     <string name="home_tools_section">More tools</string>
-    <string name="loading_app">Loading EarCast</string>
+    <string name="loading_app">Loading Suno</string>
     <string name="home_media_section">Media playback</string>
     <string name="home_profile_ready">Profile ready</string>
     <string name="home_profile_needed">Profile needed</string>
@@ -134,7 +134,7 @@
     <!-- Manual entry -->
     <string name="manual_title">Enter results manually</string>
     <string name="manual_notice_title">Before you enter results</string>
-    <string name="manual_intro">If you have results from a professional hearing test, enter the threshold for each pitch (in dB HL, as printed on your report). EarCast builds your sound profile from them, but does not validate the report or provide medical care.</string>
+    <string name="manual_intro">If you have results from a professional hearing test, enter the threshold for each pitch (in dB HL, as printed on your report). Suno builds your sound profile from them, but does not validate the report or provide medical care.</string>
     <string name="manual_save">Save profile</string>
     <string name="manual_value">%1$d dB HL</string>
     <string name="manual_chart_title">Enter your audiogram</string>
@@ -230,12 +230,13 @@
     <!-- About -->
     <string name="about_title">About</string>
     <string name="about_version">Version %1$s</string>
-    <string name="about_body">EarCast is free and open source under GPL-3.0. All audio options, including DPDFNet8 and Strong quiet-speech boost, are included. Audio is processed on your device. No account is needed. Live microphone audio is processed in memory and is not saved.</string>
+    <string name="about_body">Suno is free and open source under GPL-3.0. All audio options, including DPDFNet8 and Strong quiet-speech boost, are included. Audio is processed on your device. No account is needed. Live microphone audio is processed in memory and is not saved.</string>
     <string name="nav_home">Home</string>
     <string name="nav_listen">Listen</string>
     <string name="nav_profile_label">Audiogram</string>
     <string name="nav_profile">Your audiogram</string>
     <string name="nav_settings">Settings</string>
+    <string name="nav_family">Family</string>
     <string name="section_expanded">Expanded</string>
     <string name="section_collapsed">Collapsed</string>
     <string name="notice_details">Details</string>
@@ -244,7 +245,7 @@
     <string name="notice_collapse">Hide notice details</string>
     <string name="welcome_title">Make sound feel closer.</string>
     <string name="welcome_detail">Start with your audiogram. Personalize music, videos and the sounds around you.</string>
-    <string name="welcome_action">Set up EarCast</string>
+    <string name="welcome_action">Set up Suno</string>
     <string name="home_subtitle">Your hearing. Your sound.</string>
     <string name="listen_card_title">Listen to the world around you</string>
     <string name="listen_card_detail">Hear your microphone through headphones, shaped by your audiogram.</string>
@@ -253,7 +254,7 @@
     <string name="profile_card_detail">Create a personal sound profile to shape live listening, music and videos.</string>
     <string name="profile_card_action">Create my audiogram</string>
     <string name="profile_manage_title">Your sound profile</string>
-    <string name="profile_manage_detail">Review your saved profile or update how EarCast shapes sound.</string>
+    <string name="profile_manage_detail">Review your saved profile or update how Suno shapes sound.</string>
     <string name="profile_manage_action">Manage profile</string>
     <string name="profile_subtitle">See how you hear across pitches. Use your results to personalize sound.</string>
     <string name="profile_editor_title">Have an audiogram?</string>
@@ -271,8 +272,8 @@
     <string name="preview_section">Try your sound profile</string>
     <string name="details_section">Detailed results</string>
     <string name="privacy_title">Privacy &amp; credits</string>
-    <string name="privacy_body">Live audio is processed on your phone. Sound profiles and preferences are stored locally. Microphone audio is not saved. You choose whether to share your hearing-check results. EarCast does not upload your audio or sound profiles. All features are free, with no purchases, advertisements or account required.</string>
-    <string name="credits_body">EarCast is based on EarCast, licensed under GPL v3. It includes RNNoise, SpeexDSP, DPDFNet8 and sherpa-onnx. Original copyright and third-party license notices are retained with the source.</string>
+    <string name="privacy_body">Live audio is processed on the patient\'s phone and never sent anywhere. Profiles, settings, People and SOS numbers are stored only on the phone. Family devices connect directly (Wi-Fi Direct or Bluetooth) after the patient\'s phone allows them, and every message is encrypted. Suno has no account, server, analytics, purchases or advertisements.</string>
+    <string name="credits_body">Suno is based on EarCast by Octavian Negru, which was inspired by OpenHearing. It is free software under GPL v3 and includes RNNoise, SpeexDSP, DPDFNet8, sherpa-onnx, ONNX Runtime and ZXing. Original copyright and third-party license notices are retained with the source (THIRD_PARTY_NOTICES.md).</string>
     <string name="listen_subtitle">Connect headphones, then start listening.</string>
     <string name="settings_subtitle">Small adjustments. More comfortable listening.</string>
     <string name="manual_subtitle">Choose an ear and place its points on the chart.</string>
@@ -308,7 +309,7 @@
     <string name="identity_guided_label">GUIDED · HEADPHONES NEEDED</string>
     <string name="identity_manual_label">FROM AN EXISTING TEST</string>
     <string name="identity_speech_detail">Explore how well you understand speech with background noise.</string>
-    <string name="identity_welcome_title">Welcome to EarCast</string>
+    <string name="identity_welcome_title">Welcome to Suno</string>
     <string name="identity_welcome_detail">Personalize sound on your headphones. Please review the essentials before you begin.</string>
     <string name="identity_listen_title">Live listening</string>
     <string name="identity_listen_ready">Ready when you are</string>
@@ -319,10 +320,10 @@
     <string name="identity_input_section">Sound source</string>
     <string name="identity_preset_section">Listening style</string>
     <string name="identity_settings_title">Settings</string>
-    <string name="identity_settings_detail">Make EarCast comfortable to see and hear.</string>
+    <string name="identity_settings_detail">Make Suno comfortable to see and hear.</string>
     <string name="identity_settings_accessibility">Display</string>
     <string name="identity_settings_comfort">Volume limit</string>
-    <string name="identity_settings_about">About EarCast</string>
+    <string name="identity_settings_about">About Suno</string>
     <string name="identity_tone_title">Tone check</string>
     <string name="identity_prepare_one">Put on your headphones</string>
     <string name="identity_prepare_one_detail">Keep the left and right sides on the correct ears.</string>
@@ -339,16 +340,16 @@
     <string name="terms_title">Terms and conditions</string>
     <string name="terms_version">Version 5 · September 29, 2026</string>
     <string name="terms_purpose_title">Purpose and limitations</string>
-    <string name="terms_purpose_body">EarCast is a personal sound-amplification tool, not a medical device or a certified hearing aid. Tone checks and sound profiles are uncalibrated estimates. They are not a diagnosis or a substitute for a professional hearing exam or care. For hearing concerns, consult an audiologist or doctor.</string>
+    <string name="terms_purpose_body">Suno is a personal sound-amplification tool, not a medical device or a certified hearing aid. Tone checks and sound profiles are uncalibrated estimates. They are not a diagnosis or a substitute for a professional hearing exam or care. For hearing concerns, consult an audiologist or doctor.</string>
     <string name="listening_safety_title">Loud and harsh sounds</string>
     <string name="listening_safety_body">Start with low device volume and increase slowly. Loud sounds can damage hearing, even when they do not hurt. If sound is harsh, painfully loud or uncomfortable, stop playback and lower the volume. Take regular quiet breaks; do not turn up the volume to cover background noise. If you notice ringing, muffled hearing or persistent discomfort, stop using the app and seek professional advice.</string>
     <string name="terms_limits_title">Use with care</string>
-    <string name="terms_limits_body">EarCast cannot measure the sound level at your ear or guarantee safe listening. Output limits and the listening meter are relative guides. Use headphones to reduce feedback, and keep the microphone away from speakers. Do not rely on EarCast for alarms, traffic awareness or situations where hearing is essential to safety.</string>
+    <string name="terms_limits_body">Suno cannot measure the sound level at your ear or guarantee safe listening. Output limits and the listening meter are relative guides. Use headphones to reduce feedback, and keep the microphone away from speakers. Do not rely on Suno for alarms, traffic awareness or situations where hearing is essential to safety.</string>
     <string name="terms_privacy_title">Privacy</string>
-    <string name="terms_privacy_body">Live audio is processed on your phone. Sound profiles and preferences are stored locally. Microphone audio is not saved. You choose whether to share your hearing-check results. EarCast does not upload your audio or sound profiles. All features are free, with no purchases, advertisements or account required.</string>
+    <string name="terms_privacy_body">Live audio is processed on the patient\'s phone and never sent anywhere. Profiles, settings, People and SOS numbers are stored only on the phone. Family devices connect directly (Wi-Fi Direct or Bluetooth) after the patient\'s phone allows them, and every message is encrypted. Suno has no account, server, analytics, purchases or advertisements.</string>
     <string name="terms_agreement_title">Your agreement</string>
     <string name="terms_agreement_body">By selecting the consent boxes and continuing, you acknowledge these limitations and agree to follow the safe-use guidance. Acceptance is saved on this device with the terms version and time. You can review these terms in Settings. If the terms change, you will be asked to review them again. If you do not agree, close the app. These terms do not limit rights you have under applicable law.</string>
-    <string name="consent_medical">I understand that EarCast is not a medical device and does not replace professional hearing care.</string>
+    <string name="consent_medical">I understand that Suno is not a medical device and does not replace professional hearing care.</string>
     <string name="consent_terms">I have read and agree to the terms and conditions and the loud-sound safety guidance.</string>
     <string name="consent_continue">Agree and continue</string>
     <string name="consent_required_hint">Select both boxes to continue. Acceptance is saved on this device.</string>
@@ -357,17 +358,217 @@
     <string name="safety_source">Safe listening guidance: World Health Organization</string>
     <string name="safety_source_url" translatable="false">https://www.who.int/news-room/questions-and-answers/item/deafness-and-hearing-loss-safe-listening</string>
     <string name="privacy_policy_title">Privacy policy</string>
-    <string name="privacy_policy_body">EarCast processes microphone audio on your phone to play amplified sound to your headset. Assist can continue while the screen is off or you use other apps, with an ongoing notification. Stop assist to stop microphone access. Live audio is discarded after processing and is not saved.\n\nSound profiles, hearing-check results and settings remain in app-private storage. EarCast excludes its data from Android cloud backup and device transfer.\n\nHearing-check results leave the app only when you choose to share them. The receiving app then handles that copy under its own policies. EarCast has no account, backend or analytics and does not upload your hearing data.\n\nAll features are free. EarCast contains no billing or advertising SDK in any build.\n\nRecordings saved by older versions remain in private storage until you clear app storage or uninstall. Clear app storage in Android Settings or uninstall EarCast to remove its local data. Copies you exported are not removed by this. Reinstalling does not restore local profiles.\n\nFor privacy questions, use the support contact in the Play store listing or the published policy below.</string>
+    <string name="privacy_policy_body">Suno processes microphone audio on the patient\'s phone to play amplified sound to the earphones or hearing aid. Listening can continue while the screen is off, with an ongoing notification. Live audio is discarded after processing, is not saved and never leaves the patient\'s phone.
+
+Sound profiles, hearing-check results, settings, People and SOS numbers remain in app-private storage. Suno excludes its data from Android cloud backup and device transfer.
+
+Family link: family phones and TVs connect directly over Wi-Fi Direct or Bluetooth, only after scanning the QR code and the patient\'s phone allowing them. They send voice, shared sound, SOS alerts and answers. Everything is encrypted; a phone that relays for another cannot read it. Nothing goes over the internet.
+
+SOS: alerts linked family devices with the phone\'s GPS position, texts that position to the numbers the helper chose (if allowed), and calls the helper and, if set, the emergency number. These are ordinary calls and texts made by the phone.
+
+Calls: as the phone app, Suno shows caller names from your contacts and controls call screens and routing. It never gets the call sound.
+
+Hearing-check results leave the app only when you choose to share them. Suno has no account, backend or analytics, and contains no billing or advertising SDK.
+
+Clear app storage in Android Settings or uninstall Suno to remove its local data. Reinstalling does not restore local data.
+
+For privacy questions, use the support contact in the store listing or the published policy below.</string>
     <string name="privacy_policy_online">Read published privacy policy</string>
     <string name="privacy_support">Privacy contact: %1$s</string>
     <string name="background_listening_title">Background listening</string>
     <string name="background_listening_explanation">Hearing Assist can continue while the screen is off or you use other apps. Some phones interrupt it to save battery. Allowing unrestricted battery use can help, but uses more battery. Listening starts only when you start Assist; use Stop in the app or its notification to end it.</string>
-    <string name="background_battery_instructions">In Android battery settings, choose All apps if needed, find EarCast, and select Don’t optimize or Unrestricted. Some phones also have an Allow background activity setting under EarCast’s app settings. Names vary by phone. You can do this later in Settings → Background listening. This cannot prevent every system interruption.</string>
+    <string name="background_battery_instructions">In Android battery settings, choose All apps if needed, find Suno, and select Don’t optimize or Unrestricted. Some phones also have an Allow background activity setting under Suno’s app settings. Names vary by phone. You can do this later in Settings → Background listening. This cannot prevent every system interruption.</string>
     <string name="background_open_battery_settings">Open battery settings</string>
     <string name="background_open_app_settings">Open app settings</string>
     <string name="background_not_now">Not now</string>
     <string name="background_status_restricted">Android reports background activity is restricted</string>
-    <string name="background_status_exempt">Android battery optimization is off for EarCast</string>
-    <string name="background_status_optimized">Android battery optimization is on for EarCast</string>
-    <string name="background_settings_unavailable">Open Android Settings, then Apps → EarCast → Battery to review background restrictions.</string>
+    <string name="background_status_exempt">Android battery optimization is off for Suno</string>
+    <string name="background_status_optimized">Android battery optimization is on for Suno</string>
+    <string name="background_settings_unavailable">Open Android Settings, then Apps → Suno → Battery to review background restrictions.</string>
+
+    <!-- Suno patient layout -->
+    <string name="patient_hello">Hello</string>
+    <string name="patient_off">Off</string>
+    <string name="patient_listening">Listening</string>
+    <string name="patient_connecting">Starting…</string>
+    <string name="patient_tap_start">Tap to listen</string>
+    <string name="patient_tap_stop">Tap to stop</string>
+    <string name="patient_volume">Volume %1$d of %2$d</string>
+    <string name="patient_softer">Softer</string>
+    <string name="patient_louder">Louder</string>
+    <string name="patient_place">Where are you?</string>
+    <string name="place_home">Home</string>
+    <string name="place_park">Park</string>
+    <string name="place_traffic">Traffic</string>
+    <string name="place_night">Night</string>
+    <string name="place_home_detail">Indoors, TV and talking</string>
+    <string name="place_park_detail">Open air, cuts wind</string>
+    <string name="place_traffic_detail">Road noise, cuts rumble</string>
+    <string name="place_night_detail">Softer, no loud steps</string>
+    <string name="patient_earphones_ok">Earphones OK</string>
+    <string name="patient_earphones_missing">No earphones</string>
+    <string name="patient_profile_on">Profile on</string>
+    <string name="patient_helper">Helper</string>
+    <string name="patient_plug_title">Plug in your earphones</string>
+    <string name="patient_plug_body">Suno only plays through earphones, to keep your ears safe.</string>
+    <string name="patient_stopped">Listening stopped. Check the earphones and tap to try again.</string>
+    <string name="patient_mic_needed">Suno needs the microphone. Ask your helper.</string>
+    <string name="patient_close">Close</string>
+    <string name="patient_selected">Selected</string>
+    <string name="pin_title">Helper PIN</string>
+    <string name="pin_hint">Ask your helper to type the PIN</string>
+    <string name="pin_wrong">That PIN is not right. Try again.</string>
+    <string name="pin_set_title">Set a helper PIN</string>
+    <string name="pin_set_hint">4 digits. Only the helper can change settings.</string>
+    <string name="pin_delete">Delete</string>
+    <string name="pin_back">Back</string>
+    <string name="pin_progress">%1$d of 4 digits</string>
+    <string name="patient_welcome_title">Welcome to Suno</string>
+    <string name="patient_welcome_body">A helper sets up Suno once. After that, this screen is all that is needed.</string>
+    <string name="patient_welcome_start">Start setup</string>
+    <string name="helper_mode">Helper mode</string>
+    <string name="helper_lock">Lock</string>
+    <string name="settings_patient">Patient screen</string>
+    <string name="settings_home_level">Home level</string>
+    <string name="home_level_1">Simplest</string>
+    <string name="home_level_2">Standard</string>
+    <string name="home_level_3">Full</string>
+    <string name="settings_home_level_detail">Simplest shows only Listen and volume. Full also shows every place.</string>
+    <string name="settings_home_style">Home style</string>
+    <string name="home_style_pictures">Pictures</string>
+    <string name="home_style_words">Words</string>
+    <string name="settings_colours">Colours</string>
+    <string name="theme_standard">Standard</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_yellow">Yellow on black</string>
+    <string name="settings_max_volume">Highest volume</string>
+    <string name="settings_auto_start">Start when earphones go in</string>
+    <string name="settings_auto_start_detail">While Suno is open, listening starts when earphones connect.</string>
+    <string name="settings_change_pin">Change helper PIN</string>
+    <!-- Family link -->
+    <string name="family_wants_to_talk">%1$s wants to talk to you</string>
+    <string name="family_wants_body">They will be heard in your earphones while you are listening.</string>
+    <string name="family_allow">Allow</string>
+    <string name="family_deny">Don\'t allow</string>
+    <string name="family_now_hearing">Now hearing</string>
+    <string name="family_room">Room</string>
+    <string name="family_auto">Auto</string>
+    <string name="family_is_talking">%1$s is talking</string>
+    <string name="family_tap_listen">Tap Listen to hear them.</string>
+    <string name="family_settings_title">People who can talk to the patient</string>
+    <string name="family_name_label">Name shown to family</string>
+    <string name="family_show_code">Show join code</string>
+    <string name="family_code_title">Scan with Suno Companion</string>
+    <string name="family_code_body">On the family member\'s phone: open Suno Companion, tap Join, and point the camera here.</string>
+    <string name="family_status_ready">Ready: %1$s</string>
+    <string name="family_status_off">Starts when the patient is listening or this code is open.</string>
+    <string name="family_status_unavailable">Needs Android 10 or later and the Nearby devices permission.</string>
+    <string name="family_wifi">Wi-Fi Direct</string>
+    <string name="family_bluetooth">Bluetooth</string>
+    <string name="family_none">Nobody has joined yet.</string>
+    <string name="family_remove">Remove</string>
+    <string name="family_close">Close</string>
+    <string name="family_tv">TV</string>
+    <string name="family_wants_to_share">%1$s wants to share TV sound</string>
+    <string name="family_share_body">TV sound will play in your earphones while you are listening. The TV speakers stay as they are for everyone else.</string>
+    <string name="share_channel">Sharing sound</string>
+    <string name="share_notification">Sharing sound with your family member</string>
+    <string name="share_stop">Stop</string>
+    <string name="sos_button">SOS, get help</string>
+    <string name="sos_ask_title">Do you need help?</string>
+    <string name="sos_ask_body">Your family\'s phones will be told, and your helper will be called.</string>
+    <string name="sos_yes">Yes, get help</string>
+    <string name="sos_no">No, go back</string>
+    <string name="sos_active_title">Getting help</string>
+    <string name="sos_active_body">Stay where you are if you can. Help is coming.</string>
+    <string name="sos_on_the_way">%1$s is on the way</string>
+    <string name="sos_family_waiting">Family phones will be told as soon as they are near</string>
+    <string name="sos_helper">helper</string>
+    <string name="sos_call_helper">Call %1$s again</string>
+    <string name="sos_no_helper">No helper number set. Ask your helper to add one.</string>
+    <string name="sos_call_emergency">Call %1$s</string>
+    <string name="sos_alarm_start">Sound alarm</string>
+    <string name="sos_alarm_stop">Stop alarm</string>
+    <string name="sos_safe">I\'m safe now</string>
+    <string name="sos_location_off">Place not shared</string>
+    <string name="sos_locating">Finding your place…</string>
+    <string name="sos_location_found">Your place was found and shared</string>
+    <string name="sos_location_unknown">Your place could not be found</string>
+    <string name="sos_send_texts">Send text with my place</string>
+    <string name="sos_texts_waiting">Texts will be sent…</string>
+    <string name="sos_channel">SOS</string>
+    <string name="sos_notification_title">SOS is on</string>
+    <string name="sos_notification_text">Open Suno to see who is coming, or to say you are safe.</string>
+    <string name="sos_settings_title">SOS</string>
+    <string name="sos_settings_helper_name">Helper\'s name (called first)</string>
+    <string name="sos_settings_helper_number">Helper\'s phone number</string>
+    <string name="sos_settings_emergency">Emergency number</string>
+    <string name="sos_settings_texts">Numbers to text with the patient\'s place</string>
+    <string name="sos_settings_texts_hint">Up to 5, separated by commas</string>
+    <string name="sos_settings_location">Share the patient\'s place</string>
+    <string name="sos_settings_alarm">Start the speaker alarm on its own</string>
+    <string name="sos_settings_save">Save SOS numbers</string>
+    <string name="sos_settings_allowed">Calls, texts and location are allowed.</string>
+    <string name="sos_settings_not_allowed">Suno is not yet allowed to call, text or find the place. SOS will open the phone and messaging apps instead.</string>
+    <string name="sos_settings_allow">Allow calls, texts and location</string>
+    <plurals name="sos_family_told">
+        <item quantity="one">%1$d family phone told</item>
+        <item quantity="other">%1$d family phones told</item>
+    </plurals>
+    <plurals name="sos_texts_sent">
+        <item quantity="one">Text with your place sent to %1$d person</item>
+        <item quantity="other">Text with your place sent to %1$d people</item>
+    </plurals>
+    <string name="call_channel">Calls</string>
+    <string name="call_incoming_title">%1$s is calling</string>
+    <string name="call_hidden_number">Hidden number</string>
+    <string name="call_is_calling">is calling you</string>
+    <string name="call_calling">Calling…</string>
+    <string name="call_on_hold">On hold</string>
+    <string name="call_ended">Call ended</string>
+    <string name="call_duration">%1$d:%2$02d</string>
+    <string name="call_unknown_warning">Unknown number. Never share bank details, PINs or OTP codes.</string>
+    <string name="call_answer">Answer</string>
+    <string name="call_decline">Decline</string>
+    <string name="call_sound_to">Hear the call on</string>
+    <string name="call_quieter">Quieter</string>
+    <string name="call_louder">Louder</string>
+    <string name="call_volume">Call volume %1$d of %2$d</string>
+    <string name="call_mute">Mute my voice</string>
+    <string name="call_unmute">Muted. Tap to talk again</string>
+    <string name="call_end">End call</string>
+    <string name="call_route_phone">Phone</string>
+    <string name="call_route_speaker">Speaker</string>
+    <string name="call_route_earphones">Earphones</string>
+    <string name="call_route_bluetooth">Bluetooth</string>
+    <string name="people_title">People</string>
+    <string name="people_empty">No one here yet. Your helper can add people in Helper, Settings, People and calls.</string>
+    <string name="people_keypad">Type a number</string>
+    <string name="people_back">Back</string>
+    <string name="people_call">Call %1$s</string>
+    <string name="keypad_hint">Type a number</string>
+    <string name="keypad_delete">Delete</string>
+    <string name="keypad_call">Call</string>
+    <string name="calls_settings_title">People and calls</string>
+    <string name="calls_is_phone_app">Suno is the phone app. Calls use Suno\'s large screens.</string>
+    <string name="calls_not_phone_app">Suno is not the phone app yet. Calls use the phone\'s own app, and SOS cannot call the emergency number on its own.</string>
+    <string name="calls_make_phone_app">Make Suno the phone app</string>
+    <string name="calls_no_people">No people yet.</string>
+    <string name="calls_add_contact">Add from contacts</string>
+    <string name="calls_add_typed">Add by typing</string>
+    <string name="calls_contacts_only">Only people and contacts can ring (others are declined quietly)</string>
+    <string name="calls_auto_answer">Answer people and contacts on their own after 3 rings</string>
+    <string name="calls_sos_emergency">SOS: call the emergency number if the helper does not answer</string>
+    <string name="calls_allow_contacts">Allow contacts and calling</string>
+    <string name="calls_up">Up</string>
+    <string name="calls_down">Down</string>
+    <string name="calls_person_title">Person</string>
+    <string name="calls_person_name">Name</string>
+    <string name="calls_person_relationship">Relationship (for example Son)</string>
+    <string name="calls_person_number">Phone number</string>
+    <string name="calls_person_save">Save</string>
+    <string name="sos_helper_answered">%1$s answered</string>
+    <string name="sos_helper_no_answer">%1$s did not answer</string>
+    <string name="sos_calling_helper">Calling %1$s…</string>
+    <string name="sos_emergency_called">Calling %1$s for you</string>
 </resources>

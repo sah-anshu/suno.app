@@ -32,7 +32,7 @@ def report(apk):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input', type=Path, nargs='?',
-                        default=Path('app/build/outputs/apk/release/output-metadata.json'),
+                        default=Path('app/build/outputs/apk/patient/release/output-metadata.json'),
                         help='APK or Gradle output-metadata.json (defaults to release metadata)')
     args = parser.parse_args()
     if args.input.suffix == '.apk':

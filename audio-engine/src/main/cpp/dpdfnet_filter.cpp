@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace earcast {
+namespace suno {
 DpdfnetFilter::DpdfnetFilter(int rate, int model_rate, int suppression_db, const char* model_path)
     : frame_size_(rate / 100), model_rate_(model_rate), model_frame_(model_rate / 100),
       delay_samples_(5 * frame_size_), dry_mix_(1.0f) {
@@ -86,4 +86,4 @@ void DpdfnetFilter::process(float* samples, int count) {
         if (!std::isfinite(samples[i])) throw std::runtime_error("Detailed speech output is not finite");
     }
 }
-}  // namespace earcast
+}  // namespace suno

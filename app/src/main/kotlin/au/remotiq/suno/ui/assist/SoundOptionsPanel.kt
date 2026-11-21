@@ -1,0 +1,195 @@
+@file:Suppress("ktlint:standard:function-naming")
+
+package au.remotiq.suno.ui.assist
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import au.remotiq.suno.R
+import au.remotiq.suno.core.audio.StreamPhase
+import au.remotiq.suno.core.audio.StreamStatus
+import au.remotiq.suno.core.audio.speech.BassReduction
+import au.remotiq.suno.core.audio.speech.EnhancementEngine
+import au.remotiq.suno.core.audio.speech.EnhancementOptions
+import au.remotiq.suno.core.audio.speech.InputMode
+import au.remotiq.suno.core.audio.speech.NoiseStrength
+import au.remotiq.suno.core.audio.speech.SpeechPresence
+import au.remotiq.suno.core.audio.speech.VoiceBoost
+import au.remotiq.suno.ui.common.ActionButton
+import au.remotiq.suno.ui.common.ActionStyle
+import au.remotiq.suno.ui.common.AdaptiveChoices
+import au.remotiq.suno.ui.common.DetailSection
+
+@Composable
+@Suppress("LongMethod")
+internal fun SoundOptionsPanel(
+    options: EnhancementOptions,
+    enabled: Boolean,
+    onChange: (EnhancementOptions) -> Unit,
+) {
+    Column(Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.assist_quality_description), style = MaterialTheme.typography.bodySmall)
+        val strengths =
+            listOf(
+                stringResource(R.string.assist_quality_off),
+                stringResource(R.string.assist_quality_gentle),
+                stringResource(R.string.assist_quality_strong),
+            )
+        QualityChoice(
+            stringResource(R.string.assist_speech_clarity),
+            strengths,
+            options.speechClarity.ordinal,
+            enabled,
+        ) {
+            onChange(options.copy(speechClarity = SpeechPresence.entries[it]))
+        }
+        QualityChoice(
+            stringResource(R.string.assist_voice_comfort),
+            strengths,
+            options.voiceComfort.ordinal,
+            enabled,
+        ) {
+            onChange(options.copy(voiceComfort = BassReduction.entries[it]))
+        }
+        QualityChoice(
+            stringResource(R.string.assist_noise_reduction),
+            strengths,
+            options.noiseReduction.ordinal,
+            enabled,
+        ) {
+            onChange(options.copy(noiseReduction = NoiseStrength.entries[it]))
+        }
+        Text(stringResource(R.string.assist_noise_description), style = MaterialTheme.typography.bodySmall)
+        QualityChoice(
+            stringResource(R.string.assist_quiet_speech),
+            strengths,
+            options.quietSpeech.ordinal,
+            enabled =
+                enabled &&
+                    options.noiseReduction != NoiseStrength.OFF &&
+                    options.speechEngine == EnhancementEngine.RNNOISE,
+        ) {
+            onChange(options.copy(quietSpeech = VoiceBoost.entries[it]))
+        }
+        Text(
+            stringResource(
+                if (options.speechEngine == EnhancementEngine.RNNOISE) {
+                    R.string.assist_quiet_speech_description
+                } else {
+                    R.string.assist_other_engine_level_description
+                },
+            ),
+            style = MaterialTheme.typography.bodySmall,
+        )
+        DetailSection(stringResource(R.string.ui_advanced_audio)) {
+            EngineChoice(options.speechEngine, enabled) { onChange(options.copy(speechEngine = it)) }
+            Text(
+                stringResource(
+                    when (options.speechEngine) {
+                        EnhancementEngine.RNNOISE -> R.string.assist_rnnoise_description
+                        EnhancementEngine.DPDFNET -> R.string.assist_engine_description
+                        EnhancementEngine.SPEEX -> R.string.assist_speex_description
+                        EnhancementEngine.WIENER -> R.string.assist_wiener_description
+                    },
+                ),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            QualityChoice(
+                stringResource(R.string.assist_capture_mode),
+                listOf(stringResource(R.string.assist_capture_natural), stringResource(R.string.assist_capture_call)),
+                options.captureMode.ordinal,
+                enabled,
+            ) { onChange(options.copy(captureMode = InputMode.entries[it])) }
+        }
+        if (!enabled) {
+            Text(stringResource(R.string.assist_quality_restart), style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+private fun EngineChoice(
+    selected: EnhancementEngine,
+    enabled: Boolean,
+    onChange: (EnhancementEngine) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val labels =
+        mapOf(
+            EnhancementEngine.RNNOISE to "RNNoise",
+            EnhancementEngine.DPDFNET to "DPDFNet8",
+            EnhancementEngine.SPEEX to "SpeexDSP",
+            EnhancementEngine.WIENER to stringResource(R.string.assist_wiener_name),
+        )
+    Text(
+        stringResource(R.string.assist_speech_engine),
+        style = MaterialTheme.typography.labelLarge,
+        modifier = Modifier.padding(top = 12.dp),
+    )
+    Box {
+        ActionButton(
+            label = labels.getValue(selected),
+            onClick = { expanded = true },
+            enabled = enabled,
+            modifier = Modifier.fillMaxWidth(),
+            style = ActionStyle.SECONDARY,
+        )
+        DropdownMenu(expanded = expanded && enabled, onDismissRequest = { expanded = false }) {
+            labels.forEach { (engine, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        expanded = false
+                        onChange(engine)
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QualityChoice(
+    title: String,
+    labels: List<String>,
+    selected: Int,
+    enabled: Boolean,
+    onChange: (Int) -> Unit,
+) {
+    Text(title, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 12.dp))
+    AdaptiveChoices(labels, selected, onChange, enabled, Modifier.padding(top = 6.dp))
+}
+
+@Composable
+internal fun SessionAudioStatus(status: StreamStatus) {
+    when (status.state) {
+        StreamPhase.FAILED ->
+            Text(
+                status.message ?: stringResource(R.string.assist_connection_failed),
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        StreamPhase.RUNNING -> {
+            Text(status.message.orEmpty(), style = MaterialTheme.typography.bodySmall)
+            if (status.bluetoothCallAudio) {
+                Text(stringResource(R.string.assist_bluetooth_call_quality), style = MaterialTheme.typography.bodySmall)
+            } else if (status.monoOutput) {
+                Text(stringResource(R.string.assist_mono_output), style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        else -> Unit
+    }
+}

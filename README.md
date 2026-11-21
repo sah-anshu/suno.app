@@ -1,128 +1,68 @@
-# EarCast
+# Suno
 
-EarCast uses your audiogram to shape the sound you hear through headphones.
-Create a hearing profile, adjust each ear on the chart, and use it for live
-microphone listening or supported media playback on Android.
+Suno ("listen" in Hindi) is a free, open-source Android app that helps elderly people, and children and adults with
+neurological or cognitive disabilities, hear better. It works fully offline.
 
-EarCast was inspired by [OpenHearing](https://github.com/HMAKT99/OpenHearing).
+- Makes sound louder and clearer using the person's own audiogram.
+- Brings voices closer: family members talk from their own phones, and TV sound streams straight to the earphones.
+- Very simple screens for the person being helped, with an SOS button and large call screens.
+- Separate apps for family and carers, and for TVs.
 
-The app runs on Android 8.0 and newer. Audio processing happens on the phone;
-root access and an EarCast account are not required.
+Suno is a sound-amplification tool. **It is not a medical device** and does not replace a hearing professional.
 
-## Screenshots
+## Status
 
-Screenshots from the Android app, using an example audiogram. Select an image to
-view it at full size.
+Early development. Phases 0–5 are built: the EarCast code base imported, renamed and split into three apps with
+safety fixes; the patient's simple Home with a helper PIN; the family link, where a companion joins by QR and talks to
+the patient; TV sound, sent from a phone by cable or from the Suno TV app, set up by a family member's phone; and SOS,
+which alerts family phones and the TV, calls the helper and texts the patient's place, with a relay for phones out of
+range; and Suno as the patient's phone app, with People, a large keypad and simple call screens. The architecture, decisions and build plan are in [arch.md](arch.md). Nothing has been validated
+on real hardware yet.
 
-| Profiles | Audiogram editor |
-| :---: | :---: |
-| [<img src="docs/images/screenshots/profiles.png" alt="EarCast Profiles screen with a saved audiogram" width="260">](docs/images/screenshots/profiles.png) | [<img src="docs/images/screenshots/audiogram-editor.png" alt="EarCast audiogram editor with separate right and left ear curves" width="260">](docs/images/screenshots/audiogram-editor.png) |
+## Build
 
-| Listening | Settings |
-| :---: | :---: |
-| [<img src="docs/images/screenshots/listen.png" alt="EarCast live listening controls for amplification, microphone and listening style" width="260">](docs/images/screenshots/listen.png) | [<img src="docs/images/screenshots/settings.png" alt="EarCast settings for output comfort and accessibility" width="260">](docs/images/screenshots/settings.png) |
-
-## Start with your audiogram
-
-The **Profiles** tab brings together the hearing check and profile editor.
-You can take the guided tone check or enter values from an existing audiogram.
-The editor lets you select an ear, change points on the chart, and adjust a
-selected frequency with the level slider. Tone previews have a separate stop
-control.
-
-Your saved chart appears in Profiles, with separate markers for
-left and right ears. Keep multiple profiles, select the one to use for listening,
-and preview a results image before sharing it through Android.
-
-Screening with ordinary headphones is uncalibrated. Its displayed thresholds
-are estimates, not a clinical measurement. EarCast is not a medical device or a
-replacement for a professional hearing assessment.
-
-## Listen with your profile
-
-In **Settings → Listening features**, choose **Live listening and media sound**
-(the default), **Live listening only**, or **Media sound only**. The unused
-feature is hidden from Listen and stops if it is running. This choice is saved
-on your device; enabling a feature does not start playback.
-
-1. Connect your headphones and accept the first-run safety terms.
-2. Open **Profiles** and save a profile from a tone check or manual entry.
-3. In **Settings**, set a comfortable output ceiling.
-4. Open **Listen**, choose a microphone and listening options, and start assist.
-5. Adjust the listening volume as needed. Stop from the listening controls or
-   the foreground notification; a quick-settings tile also controls the session.
-
-The phone microphone can pick up a nearby speaker or TV while you listen through
-headphones. A supported headset microphone captures sound at the headset instead.
-Wired, USB and Bluetooth routes depend on the connected hardware. Classic
-Bluetooth call audio is mono and can reduce bandwidth; output-only Bluetooth
-devices do not provide a microphone. See the
-[microphone routing guide](docs/HEADSET_MICROPHONE.md).
-
-Each ear has its own fitted equalization and compression. Listening options
-include environment presets, speech emphasis, feedback suppression, and a
-choice of RNNoise, DPDFNet8, SpeexDSP or experimental Adaptive Wiener noise
-reduction. Only one noise-reduction engine runs at a time. RNNoise also supports
-quiet-speech boost. The output limiters remain active regardless of the selected
-engine.
-
-**Media sound**, on Listen, applies the profile to supported music and video
-playback through Android audio effects. It offers Balanced and Speech clarity
-processing plus a quiet-sound boost. Availability varies by device and player.
-
-Keep volume comfortable and stop if listening feels unpleasant. The digital
-output ceiling does not measure sound pressure at your eardrum. Read the
-[safety notes](docs/SAFETY.md) and [calibration guide](docs/CALIBRATION.md).
-
-## Free and private
-
-EarCast keeps audiograms and preferences on the device. Live microphone samples
-are processed in memory for playback; the app does not record or upload them.
-Sharing an audiogram is an explicit action with a preview.
-
-All features are free, including DPDFNet8 and Strong quiet-speech boost.
-There are no purchases or paid tiers. All builds contain no advertisements or ad SDK.
-
-Details: [privacy](docs/PRIVACY.md).
-
-## Build and evaluate
-
-The build uses JDK 27 (the latest stable release) and Android SDK 37. Gradle's
-runtime version is pinned in `gradle/gradle-daemon-jvm.properties`. Gradle uses
-an installed JDK 27 or downloads Eclipse Temurin 27 on Linux (x64/ARM64), macOS
-(ARM64) and Windows (x64). The first download requires network access.
-`just i` installs a system JDK to launch the wrapper; Gradle then selects JDK 27
-for the build, including builds started from Android Studio. Source and bytecode
-compatibility stay at Java 17 for Android. Set `sdk.dir` in `local.properties` or
-provide `ANDROID_HOME` for your SDK installation.
+Requirements: Android SDK with platform 37, NDK 30.0.16248370 and CMake 4.1.2 (set `sdk.dir` in
+`local.properties`). Gradle downloads JDK 27 itself.
 
 ```bash
-./gradlew assembleDebug
-just build-prod
-./gradlew ktlintCheck detekt test testDebugUnitTest
+./gradlew ktlintCheck detekt test testPatientDebugUnitTest
+./gradlew assemblePatientDebug assembleCompanionDebug assembleTvDebug
 ```
 
-`just build-prod` produces a signed release APK per CPU architecture in
-`app/build/outputs/apk/release/`. It uses the configured release key or the local
-debug key for device testing. Configure `keystore.properties` before publication.
+| App | Package | Build output |
+|---|---|---|
+| Suno (patient) | `au.remotiq.suno` | `app/build/outputs/apk/patient/debug/` |
+| Suno Companion | `au.remotiq.suno.companion` | `app/build/outputs/apk/companion/debug/` |
+| Suno TV | `au.remotiq.suno.tv` | `app/build/outputs/apk/tv/debug/` |
 
-The repository includes Kotlin checks for profile fitting, processing and route
-behavior, plus a native/Python [audio quality workbench](audio-quality/README.md).
-The workbench describes how to compare speech engines with prepared recordings.
-Automated checks do not establish clinical accuracy or real-world speech
-intelligibility. Device routing, latency and listening quality still need
-[hardware validation](docs/DEVICE_TESTING.md).
+<p>
+  <img src="docs/images/suno/30-tv-setup.png" width="480" alt="Suno TV showing its set-up code">
+  <img src="docs/images/suno/15-tv-playing.png" width="200" alt="Patient Home hearing the TV">
+</p>
 
-For release packaging and store preparation, use the
-[release instructions](docs/RELEASE.md) and
-[Google Play checklist](docs/GOOGLE_PLAY.md).
+## Privacy
 
-## Find your way through the code
+Suno is designed to work without internet, an account, analytics or recordings. Sound moves only between nearby
+devices that the user has approved, over Wi-Fi Direct or Bluetooth, and every frame is encrypted. The patient,
+companion and TV apps declare the `INTERNET` permission only because Android requires it for any network socket, including the
+local Wi-Fi Direct group; Suno makes no internet connections. A companion can only send its voice; nobody can listen
+through the patient's phone. In an SOS the patient's phone texts its GPS place to the numbers the helper chose, through
+the phone's own SMS.
 
-The [implementation guide](ARCHITECTURE.md) follows an audiogram from editing and
-storage into a listening session, then describes the capture and playback paths.
-The five Gradle modules are `app`, `sound-profile`, `audio-engine`,
-`local-storage` and `foundation`. Offline evaluation tools live in `audio-quality`.
+## Release
 
-EarCast is free and open-source software distributed under [GPL-3.0](LICENSE). Bundled libraries and models
-retain their license notices in their respective directories.
+Version **0.1.0** is the first Suno test release (see [CHANGELOG.md](CHANGELOG.md)). It has not been checked on real
+devices yet: install it only to test. How to build and sign the three apps, and the plan for GitHub Releases, F-Droid
+and Google Play, are in [docs/RELEASE.md](docs/RELEASE.md). Privacy: [docs/PRIVACY.md](docs/PRIVACY.md). Safety:
+[docs/SAFETY.md](docs/SAFETY.md).
+
+## License
+
+Suno is free software, licensed under the [GNU General Public License v3.0 only](LICENSE) (`GPL-3.0-only`).
+Bundled third-party libraries and models keep their own licences; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Credits
+
+Suno is based on [EarCast](https://github.com/octavian-negru/ear-cast) by Octavian Negru (GPLv3), which was
+inspired by [OpenHearing](https://github.com/HMAKT99/OpenHearing).

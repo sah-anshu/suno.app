@@ -6,7 +6,7 @@
 #include <new>
 #include <stdexcept>
 
-namespace earcast {
+namespace suno {
 
 RnnoiseFilter::RnnoiseFilter(int sample_rate, int suppression_db, float maximum_gain_db)
     : frame_size_(sample_rate / 100), dry_mix_(1.0f), delay_samples_(2 * frame_size_),
@@ -86,4 +86,4 @@ void RnnoiseFilter::process(float* samples, int count) {
     }
 }
 
-}  // namespace earcast
+}  // namespace suno

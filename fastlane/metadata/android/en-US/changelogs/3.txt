@@ -1,0 +1,1 @@
+First Suno test release: simple Home, family voices and TV sound in the earphones, SOS, phone app, Hindi. Not yet checked on real devices.

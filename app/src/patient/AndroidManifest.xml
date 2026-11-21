@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!--
+  Patient app: hosts the family link. INTERNET is required by Android for any socket, including the
+  local Wi-Fi Direct group; Suno makes no internet connections.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="33" />
+    <!-- SOS: the phone's GPS place, calling the helper and texting the helper's numbers. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <!-- Phone app: names of callers from the phone's contacts. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+
+    <uses-feature
+        android:name="android.hardware.wifi.direct"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+
+    <application>
+        <!-- Suno as the patient's phone app (RoleManager.ROLE_DIALER needs DIAL and an InCallService). -->
+        <activity
+            android:name="au.remotiq.suno.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.DIAL" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.DIAL" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="tel" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="tel" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="au.remotiq.suno.phone.CallActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:taskAffinity="au.remotiq.suno.call" />
+        <service
+            android:name="au.remotiq.suno.phone.SunoInCallService"
+            android:exported="true"
+            android:permission="android.permission.BIND_INCALL_SERVICE">
+            <meta-data
+                android:name="android.telecom.IN_CALL_SERVICE_UI"
+                android:value="true" />
+            <intent-filter>
+                <action android:name="android.telecom.InCallService" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="au.remotiq.suno.phone.SunoCallScreeningService"
+            android:exported="true"
+            android:permission="android.permission.BIND_SCREENING_SERVICE">
+            <intent-filter>
+                <action android:name="android.telecom.CallScreeningService" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="au.remotiq.suno.sos.SosService"
+            android:exported="false"
+            android:foregroundServiceType="location|connectedDevice" />
+    </application>
+</manifest>

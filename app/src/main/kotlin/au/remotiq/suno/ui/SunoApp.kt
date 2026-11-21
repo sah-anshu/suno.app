@@ -1,0 +1,310 @@
+@file:Suppress("ktlint:standard:function-naming")
+
+package au.remotiq.suno.ui
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import au.remotiq.suno.R
+import au.remotiq.suno.assist.LiveAudioService
+import au.remotiq.suno.core.audio.dsp.MediaProcessingMode
+import au.remotiq.suno.data.ListeningFeatures
+import au.remotiq.suno.ui.assist.ListenScreen
+import au.remotiq.suno.ui.assist.ListenStateModel
+import au.remotiq.suno.ui.background.BackgroundSetupPrompt
+import au.remotiq.suno.ui.common.ActionButton
+import au.remotiq.suno.ui.common.ActionStyle
+import au.remotiq.suno.ui.common.ChoiceChip
+import au.remotiq.suno.ui.common.InlineChoices
+import au.remotiq.suno.ui.common.PageHeading
+import au.remotiq.suno.ui.dintest.SpeechCheckScreen
+import au.remotiq.suno.ui.hearingtest.ToneCheckScreen
+import au.remotiq.suno.ui.manualentry.ProfileEditorScreen
+import au.remotiq.suno.ui.media.MediaScreen
+import au.remotiq.suno.ui.navigation.PrimaryDestination
+import au.remotiq.suno.ui.navigation.navigationBarContent
+import au.remotiq.suno.ui.navigation.primaryNavigationRail
+import au.remotiq.suno.ui.onboarding.OnboardingScreen
+import au.remotiq.suno.ui.profile.ProfileSetupScreen
+import au.remotiq.suno.ui.settings.SettingsScreen
+import au.remotiq.suno.ui.theme.SunoTheme
+
+private enum class AppDestination { FAMILY, MEDIA, PROFILE, HEARING_TEST, MANUAL_ENTRY, ASSIST, DIN_TEST, SETTINGS }
+
+/** The companion app opens on Family; the others on Listen. */
+private val homeDestination =
+    if (au.remotiq.suno.BuildConfig.FLAVOR == "companion") AppDestination.FAMILY else AppDestination.ASSIST
+
+@Composable
+fun SunoApp(rootViewModel: AppStateModel = hiltViewModel()) {
+    val root by rootViewModel.uiState.collectAsStateWithLifecycle()
+    val backgroundReviewed by rootViewModel.backgroundSetupReviewed.collectAsStateWithLifecycle()
+
+    SunoTheme(highContrast = root.highContrast) {
+        val colors = MaterialTheme.colorScheme
+        if (root.consentAccepted == true && root.listeningFeatures.liveListeningEnabled) {
+            BackgroundSetupPrompt(backgroundReviewed, rootViewModel::markBackgroundSetupReviewed)
+        }
+        Surface(modifier = Modifier.fillMaxSize(), color = colors.background) {
+            when (root.consentAccepted) {
+                null -> LoadingState()
+                false -> OnboardingScreen(onAccept = rootViewModel::acceptDisclaimer)
+                true ->
+                    MainNav(
+                        state = root,
+                        onSetMediaEq = rootViewModel::setMediaEq,
+                        onSetMediaBoost = rootViewModel::setMediaBoost,
+                        onSetMediaProcessingMode = rootViewModel::setMediaProcessingMode,
+                    )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MainNav(
+    state: AppState,
+    onSetMediaEq: (Boolean) -> Unit,
+    onSetMediaBoost: (Float) -> Unit,
+    onSetMediaProcessingMode: (MediaProcessingMode) -> Unit,
+) {
+    var screen by rememberSaveable { mutableStateOf(homeDestination) }
+    val visibleScreen = screen.availableFor(state.listeningFeatures)
+    val listenScreen = homeDestination.availableFor(state.listeningFeatures)
+    val listenViewModel: ListenStateModel = hiltViewModel()
+    val listening by listenViewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    BackHandler(enabled = visibleScreen != listenScreen) {
+        screen = if (visibleScreen.isProfileSetupFlow()) AppDestination.PROFILE else listenScreen
+    }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val useRail = maxWidth >= 840.dp && visibleScreen.showsPrimaryNavigation()
+        Scaffold(
+            containerColor = Color.Transparent,
+            bottomBar = {
+                Column {
+                    if (listening.active) {
+                        Surface(color = MaterialTheme.colorScheme.surface) {
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    stringResource(
+                                        if (listening.running) {
+                                            R.string.ui_session_active
+                                        } else {
+                                            R.string.assist_connecting
+                                        },
+                                    ),
+                                    modifier = Modifier.weight(1f),
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                                ActionButton(
+                                    stringResource(R.string.assist_stop_button),
+                                    { LiveAudioService.stop(context) },
+                                    style = ActionStyle.DANGER,
+                                )
+                            }
+                        }
+                    }
+                    if (!useRail && visibleScreen.showsPrimaryNavigation()) {
+                        navigationBarContent(
+                            selected = visibleScreen.primaryDestination(),
+                            onDestinationSelected = { destination -> screen = destination.toAppDestination() },
+                        )
+                    } else {
+                        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                    }
+                }
+            },
+        ) { innerPadding ->
+            Row(Modifier.fillMaxSize().padding(innerPadding)) {
+                if (useRail) {
+                    primaryNavigationRail(
+                        selected = visibleScreen.primaryDestination(),
+                        onDestinationSelected = { destination -> screen = destination.toAppDestination() },
+                    )
+                }
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    Box(Modifier.widthIn(max = if (useRail) 920.dp else 720.dp).fillMaxWidth().fillMaxHeight()) {
+                        DestinationContent(
+                            screen = visibleScreen,
+                            state = state,
+                            listenViewModel = listenViewModel,
+                            onNavigate = { screen = it },
+                            onSetMediaEq = onSetMediaEq,
+                            onSetMediaBoost = onSetMediaBoost,
+                            onSetMediaProcessingMode = onSetMediaProcessingMode,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DestinationContent(
+    screen: AppDestination,
+    state: AppState,
+    listenViewModel: ListenStateModel,
+    onNavigate: (AppDestination) -> Unit,
+    onSetMediaEq: (Boolean) -> Unit,
+    onSetMediaBoost: (Float) -> Unit,
+    onSetMediaProcessingMode: (MediaProcessingMode) -> Unit,
+) {
+    val listening by listenViewModel.uiState.collectAsStateWithLifecycle()
+    when (screen) {
+        AppDestination.MEDIA, AppDestination.ASSIST ->
+            Column(Modifier.fillMaxSize()) {
+                Column(
+                    Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    PageHeading(stringResource(R.string.nav_listen), stringResource(R.string.ui_listen_subtitle))
+                    if (state.listeningFeatures == ListeningFeatures.BOTH) {
+                        InlineChoices {
+                            ChoiceChip(
+                                stringResource(R.string.ui_live),
+                                screen == AppDestination.ASSIST,
+                                { onNavigate(AppDestination.ASSIST) },
+                                Modifier.weight(1f),
+                            )
+                            ChoiceChip(
+                                stringResource(R.string.ui_media),
+                                screen == AppDestination.MEDIA,
+                                { onNavigate(AppDestination.MEDIA) },
+                                Modifier.weight(1f),
+                            )
+                        }
+                    }
+                }
+                Box(Modifier.weight(1f)) {
+                    if (screen == AppDestination.ASSIST) {
+                        ListenScreen(
+                            onOpenProfile = { onNavigate(AppDestination.PROFILE) },
+                            viewModel = listenViewModel,
+                        )
+                    } else {
+                        MediaScreen(
+                            state = state,
+                            onOpenProfile = { onNavigate(AppDestination.PROFILE) },
+                            onSetMediaEq = onSetMediaEq,
+                            onSetMediaBoost = onSetMediaBoost,
+                            onSetMediaProcessingMode = onSetMediaProcessingMode,
+                        )
+                    }
+                }
+            }
+        AppDestination.PROFILE ->
+            ProfileSetupScreen(
+                listening = listening,
+                onSelectProfile = listenViewModel::selectProfile,
+                onDeleteProfile = listenViewModel::deleteProfile,
+                state = state,
+                onRunHearingTest = { onNavigate(AppDestination.HEARING_TEST) },
+                onManualEntry = { onNavigate(AppDestination.MANUAL_ENTRY) },
+                onRunDinTest = { onNavigate(AppDestination.DIN_TEST) },
+            )
+        AppDestination.HEARING_TEST ->
+            ToneCheckScreen(
+                onBack = { onNavigate(AppDestination.PROFILE) },
+                onManualEntry = { onNavigate(AppDestination.MANUAL_ENTRY) },
+            )
+        AppDestination.MANUAL_ENTRY -> ProfileEditorScreen(onBack = { onNavigate(AppDestination.PROFILE) })
+        AppDestination.DIN_TEST -> SpeechCheckScreen(onBack = { onNavigate(AppDestination.PROFILE) })
+        AppDestination.SETTINGS -> SettingsScreen()
+        AppDestination.FAMILY ->
+            au.remotiq.suno.ui.family
+                .FamilyScreen()
+    }
+}
+
+@Composable
+private fun LoadingState() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        CircularProgressIndicator()
+        Text(
+            stringResource(R.string.loading_app),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 16.dp),
+        )
+    }
+}
+
+private fun AppDestination.availableFor(features: ListeningFeatures): AppDestination =
+    when {
+        this == AppDestination.ASSIST && !features.liveListeningEnabled -> AppDestination.MEDIA
+        this == AppDestination.MEDIA && !features.mediaSoundEnabled -> AppDestination.ASSIST
+        else -> this
+    }
+
+private fun AppDestination.isProfileSetupFlow(): Boolean =
+    this == AppDestination.HEARING_TEST || this == AppDestination.MANUAL_ENTRY || this == AppDestination.DIN_TEST
+
+private fun AppDestination.showsPrimaryNavigation(): Boolean =
+    this == AppDestination.FAMILY ||
+        this == AppDestination.MEDIA ||
+        this == AppDestination.PROFILE ||
+        this == AppDestination.ASSIST ||
+        this == AppDestination.SETTINGS
+
+private fun AppDestination.primaryDestination(): PrimaryDestination =
+    when (this) {
+        AppDestination.FAMILY -> PrimaryDestination.FAMILY
+        AppDestination.MEDIA -> PrimaryDestination.ASSIST
+        AppDestination.ASSIST -> PrimaryDestination.ASSIST
+        AppDestination.SETTINGS -> PrimaryDestination.SETTINGS
+        AppDestination.PROFILE,
+        AppDestination.HEARING_TEST,
+        AppDestination.MANUAL_ENTRY,
+        AppDestination.DIN_TEST,
+        -> PrimaryDestination.PROFILE
+    }
+
+private fun PrimaryDestination.toAppDestination(): AppDestination =
+    when (this) {
+        PrimaryDestination.FAMILY -> AppDestination.FAMILY
+        PrimaryDestination.ASSIST -> AppDestination.ASSIST
+        PrimaryDestination.PROFILE -> AppDestination.PROFILE
+        PrimaryDestination.SETTINGS -> AppDestination.SETTINGS
+    }

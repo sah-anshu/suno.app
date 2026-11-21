@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-namespace earcast {
+namespace suno {
 
 // Streaming, single-channel decision-directed Wiener suppression. Each session
 // owns its noise estimate and overlap buffers. No allocations in process().
@@ -25,4 +25,4 @@ private:
     std::vector<float> posterior_, gain_, target_;
 };
 
-} // namespace earcast
+} // namespace suno

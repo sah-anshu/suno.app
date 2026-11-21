@@ -1,6 +1,0 @@
-Personal sound amplification with per-ear profiles and listening presets.
-All audio processing is free, with no purchases or ads.
-Privacy policy available before setup and in Settings.
-Android 16 support and updated data protection.
-Audio recording and recording export removed.
-Not a medical device. Early release; hardware validation is required before production.

@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Checks every push and pull request: formatting, static analysis, unit and screenshot tests,
+# debug builds of all three apps, and Android lint on the release variants.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      # The system JDK only launches Gradle; Gradle provisions JDK 27 itself (gradle-daemon-jvm.properties).
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Android SDK parts
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-37.0" "build-tools;37.0.0" "ndk;30.0.16248370" "cmake;4.1.2"
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Format, static analysis, tests
+        run: ./gradlew ktlintCheck detekt test testPatientDebugUnitTest --continue
+
+      - name: Debug builds of the three apps
+        run: ./gradlew assemblePatientDebug assembleCompanionDebug assembleTvDebug
+
+      - name: Lint on release variants
+        run: ./gradlew :app:lintPatientRelease :app:lintCompanionRelease :app:lintTvRelease -PsunoLocalRelease=true
+
+      - name: Screenshots and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            app/build/screenshots
+            app/build/reports
+            **/build/reports/tests
+          if-no-files-found: ignore

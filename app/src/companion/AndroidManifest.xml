@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!--
+  Companion app: joins the patient's family link and sends the companion's voice. INTERNET is
+  required by Android for any socket, including the local Wi-Fi Direct group; Suno makes no
+  internet connections.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="33" />
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="31" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Relay: advertise the patient's session for family phones out of the patient's range. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <!-- Stay linked in the background so SOS alerts arrive, and show them full screen. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.wifi.direct"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="false" />
+
+    <application>
+        <service
+            android:name="au.remotiq.suno.family.TalkService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+        <service
+            android:name="au.remotiq.suno.family.ShareService"
+            android:exported="false"
+            android:foregroundServiceType="microphone|mediaProjection" />
+        <service
+            android:name="au.remotiq.suno.family.FamilyLinkService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+    </application>
+</manifest>

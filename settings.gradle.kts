@@ -20,10 +20,13 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "EarCast"
+rootProject.name = "Suno"
 
 include(":app")
 include(":foundation")
 include(":sound-profile")
 include(":audio-engine")
 include(":local-storage")
+include(":audio-graph")
+include(":link")
+include(":link-android")

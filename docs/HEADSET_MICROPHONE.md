@@ -13,7 +13,7 @@ Headset microphone -> optional RNNoise/DPDFNet8 + bass shaping
                   -> output limiter -> same headset speakers
 ```
 
-The phone must remain connected and run EarCast. This does not install a
+The phone must remain connected and run Suno. This does not install a
 standalone hearing-aid program on the headset or require an AirPods protocol.
 Only microphones exposed by Android are available; private ANC/transparency
 microphone feeds cannot be selected through these APIs.

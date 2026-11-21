@@ -1,6 +1,6 @@
 # Hearing safety policy
 
-EarCast plays calibrated tones (the screening) and amplifies live sound (the
+Suno plays calibrated tones (the screening) and amplifies live sound (the
 assist mode) **directly into people's ears**. Hearing safety is non-negotiable.
 Any code path that could exceed these limits is treated as a **critical bug**.
 
@@ -32,6 +32,17 @@ constants, never redefine its own limits.
 6. **Fail safe, not loud.** On any error, glitch, or uncertainty (including
    uncalibrated output), attenuate or mute — never pass audio through at full gain.
 
+## SOS and calls
+
+- SOS helps get attention; it is **not** a replacement for emergency services and can fail: no mobile signal, no SIM,
+  airplane mode, an empty battery, a phone maker that stops background apps, or family devices out of range.
+- Suno calls the emergency number by itself only when it is the phone app and the helper turned that on. Otherwise the
+  emergency number is a button that opens the phone app.
+- The SOS alarm plays only on the phone's built-in speaker, never in earphones or hearing aids. If the speaker cannot be
+  chosen, it stays silent.
+- Never test SOS with a real emergency number. Use a family member's number as the emergency number while testing.
+- Call sound is handled by Android, not by Suno's limiter or hearing profile. Check call volume with the patient.
+
 ## Calibration caveat
 
 The mapping from digital level (dBFS) to real-world loudness (dB SPL) depends on
@@ -53,13 +64,13 @@ headroom and keep generous margin.
 
 ## Disclaimers (must appear in-app and in docs)
 
-EarCast is **not a medical device**, not a certified hearing aid, and not a
+Suno is **not a medical device**, not a certified hearing aid, and not a
 substitute for a professional hearing exam. It does not diagnose or treat anything.
 This disclaimer appears in the README, in onboarding, and before any test starts.
 
 ## Terms and consent
 
-Before using EarCast, users explicitly acknowledge its non-medical purpose and
+Before using Suno, users explicitly acknowledge its non-medical purpose and
 accept the [terms and safe-use guidance](TERMS.md) using two unchecked boxes.
 The accepted terms version and time are stored locally. Legacy disclaimer
 acknowledgment does not satisfy the current terms. Increment the stored terms

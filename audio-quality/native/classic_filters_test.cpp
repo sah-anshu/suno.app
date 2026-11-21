@@ -17,7 +17,7 @@ void require(bool condition, const char* message) {
 }
 
 void reconstruction(int rate) {
-    earcast::WienerFilter processor(rate, 0);
+    suno::WienerFilter processor(rate, 0);
     const int hop = processor.frame_size();
     std::vector<float> frame(hop), previous(hop);
     for (int block = 0; block < 120; ++block) {
@@ -38,7 +38,7 @@ void reconstruction(int rate) {
 }
 
 double noise_attenuation(int rate, int strength) {
-    earcast::WienerFilter processor(rate, strength);
+    suno::WienerFilter processor(rate, strength);
     std::vector<float> frame(processor.frame_size());
     std::mt19937 random(42);
     std::uniform_real_distribution<float> noise(-0.03f, 0.03f);
@@ -73,7 +73,7 @@ double noise_attenuation(int rate, int strength) {
 }
 
 void invalid_and_silent_input(int rate) {
-    earcast::WienerFilter processor(rate, 12);
+    suno::WienerFilter processor(rate, 12);
     std::vector<float> frame(processor.frame_size());
     for (int block = 0; block < 100; ++block) {
         processor.process(frame.data(), static_cast<int>(frame.size()));
@@ -132,7 +132,7 @@ int main() {
             std::cout << rate << " Hz: gentle " << gentle << " dB, strong " << strong << " dB\n";
         }
         bool rejected = false;
-        try { earcast::WienerFilter invalid(0, 12); }
+        try { suno::WienerFilter invalid(0, 12); }
         catch (const std::invalid_argument&) { rejected = true; }
         require(rejected, "Invalid sample rate accepted");
         return 0;

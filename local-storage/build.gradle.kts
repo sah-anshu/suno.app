@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "app.earcast.data"
+    namespace = "au.remotiq.suno.data"
     compileSdk =
         libs.versions.compileSdk
             .get()
