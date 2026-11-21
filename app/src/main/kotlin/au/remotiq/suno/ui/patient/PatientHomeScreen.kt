@@ -44,7 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -160,34 +160,35 @@ private fun ListenButton(
     val hint = stringResource(if (on || state.connecting) R.string.patient_tap_stop else R.string.patient_tap_start)
     Box(
         Modifier
-            .sizeIn(maxWidth = 260.dp)
-            .fillMaxWidth(0.62f)
+            .sizeIn(maxWidth = 280.dp)
+            .fillMaxWidth(0.7f)
             .aspectRatio(1f)
             .drawBehind {
-                val r = size.minDimension / 2
+                // Halo rings only while listening: the shape changes, not just the colour.
                 if (on) {
-                    drawCircle(c.onSofter, radius = r * 1.32f)
-                    drawCircle(c.onSoft, radius = r * 1.16f)
-                } else {
-                    drawCircle(
-                        c.hairline,
-                        radius = r - 3.dp.toPx(),
-                        style =
-                            Stroke(
-                                width = 4.dp.toPx(),
-                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(18f, 12f)),
-                            ),
-                        center = Offset(size.width / 2, size.height / 2),
-                    )
+                    val r = size.minDimension / 2
+                    drawCircle(c.onSofter, radius = r * HALO_OUTER)
+                    drawCircle(c.onSoft, radius = r * HALO_INNER)
                 }
             }.background(if (on) c.on else c.surface, CircleShape)
-            .selectable(selected = on, role = Role.Switch) {
+            .drawWithContent {
+                drawContent()
+                // Off: a dashed edge drawn on top of the fill, so the button stays visible.
+                if (!on) {
+                    val stroke = 4.dp.toPx()
+                    drawCircle(
+                        c.hairline,
+                        radius = size.minDimension / 2 - stroke / 2,
+                        style = Stroke(width = stroke, pathEffect = PathEffect.dashPathEffect(floatArrayOf(18f, 12f))),
+                    )
+                }
+            }.selectable(selected = on, role = Role.Switch) {
                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 onListen()
             }.semantics {
                 contentDescription = "$title. $hint"
                 stateDescription = title
-            },
+            }.padding(24.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -195,18 +196,28 @@ private fun ListenButton(
                 if (on) Icons.Filled.GraphicEq else Icons.Filled.HearingDisabled,
                 contentDescription = null,
                 tint = if (on) c.onInk else c.muted,
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(56.dp),
             )
-            Text(title, style = MaterialTheme.typography.displaySmall, color = if (on) c.onInk else c.ink)
+            Text(
+                title,
+                style = MaterialTheme.typography.headlineMedium,
+                color = if (on) c.onInk else c.ink,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+            )
             Text(
                 hint,
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (on) c.onInk else c.muted,
                 textAlign = TextAlign.Center,
+                maxLines = 2,
             )
         }
     }
 }
+
+private const val HALO_OUTER = 1.26f
+private const val HALO_INNER = 1.13f
 
 @Composable
 private fun VolumeRow(

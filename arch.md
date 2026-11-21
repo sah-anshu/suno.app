@@ -3,7 +3,7 @@
 Reference document for the Suno project. Update it when a decision changes, and add a line to the
 [decision log](#16-decision-log).
 
-- **Status (2026-11-21):** Phase 0 complete. The repository is the EarCast fork, renamed to `au.remotiq.suno`, with three flavours and the Phase 0 safety fixes. No Suno-specific screens yet.
+- **Status (2026-11-21):** Phases 0 and 1 complete in code (not yet on a device). The patient app opens Suno's own Home; Helper mode uses EarCast's screens behind a PIN. Screenshots: `docs/images/suno/`.
 - **Licence:** GPL-3.0-only ([section 13](#13-licensing)).
 - **Baseline:** [EarCast](https://github.com/octavian-negru/ear-cast) at commit `0a2213b` (GPLv3), which Suno forks.
 - **UI mockup (v10):** https://claude.ai/artifact/PSLPf47Vd5DeC63ac5v3xH (private to its owner until shared).
@@ -438,3 +438,4 @@ Anything involving real sound, radios or calls needs physical devices and a writ
 | 2026-11-21 | Suno is free and open source under GPL-3.0-only (matching EarCast). |
 | 2026-11-21 | The device-to-device link works without Google services by default (Wi-Fi Direct / Bluetooth); Nearby is an optional `gms` build. |
 | 2026-11-21 | Phase 0 done: EarCast merged with history, renamed, three flavours, safety fixes. |
+| 2026-11-21 | Phase 1 done: patient Home (Listen, volume, places, home levels, pictures/words, three themes, Hindi), helper PIN, Helper mode with Lock, Patient screen settings, screenshot tests. Auto place and the Now-hearing card wait for Phase 2 sources. |

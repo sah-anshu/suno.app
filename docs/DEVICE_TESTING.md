@@ -9,6 +9,21 @@ checks and emulator runs do not validate acoustic loudness, latency or clarity.
 adb install -r app/build/outputs/apk/patient/debug/app-patient-debug.apk
 ```
 
+## Suno patient app (Phase 1, not yet checked on a device)
+
+Screenshots rendered by `PatientScreenshotTest` (Robolectric) are in `docs/images/suno/`. On a phone, check:
+
+- First run: welcome, set a 4-digit helper PIN, EarCast onboarding, then Lock returns to the patient Home.
+- The Listen button starts and stops listening; the halo appears only while listening. TalkBack reads the state.
+- Volume − / + changes loudness live and stops at the helper's highest volume; Night stops at step 3.
+- Changing the place while listening restarts listening within a second or two with the new noise settings.
+- Wrong PIN shows a message and clears the dots; the right PIN opens Helper mode.
+- Helper → Settings → Patient screen: home level, pictures/words, colours and highest volume change Home at once.
+- "Start when earphones go in": with Suno open, plugging in earphones starts listening. It does not start from the
+  background (Android does not allow it).
+- Hindi: set the app language to हिन्दी in Android settings; the patient screens switch, other screens stay English.
+- 200% font size: Home still works by scrolling, nothing is cut off.
+
 ## Suno Phase 0 changes (not yet checked on a device)
 
 - **Feedback guard at the live block size.** With earphones close to the phone microphone and gain raised slowly,
