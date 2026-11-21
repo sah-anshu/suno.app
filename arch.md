@@ -50,9 +50,9 @@ Suno is a sound-amplification tool, **not a medical device**. User-facing copy n
 
 | Flavour | Application ID | Who uses it | Layout | Main features |
 |---|---|---|---|---|
-| `patient` | `app.suno` | The person being helped, plus their helper behind a PIN | Suno simple layout; Helper mode uses EarCast tabs | Listen, hub for incoming streams, phone app and contacts, SOS, mesh owner, QR join approval |
-| `companion` | `app.suno.companion` | Family, carers, guests; also tablets | EarCast tabs plus a Family tab | Talk to the patient, Share my sound (playback or mic), remote help, SOS alerts, own hearing (optional) |
-| `tv` | `app.suno.tv` | Android TV / Google TV / Fire TV | 10-foot TV screen | Show join QR and code, capture TV playback sound, stream to paired Suno phones, show SOS banner |
+| `patient` | `au.remotiq.suno` | The person being helped, plus their helper behind a PIN | Suno simple layout; Helper mode uses EarCast tabs | Listen, hub for incoming streams, phone app and contacts, SOS, mesh owner, QR join approval |
+| `companion` | `au.remotiq.suno.companion` | Family, carers, guests; also tablets | EarCast tabs plus a Family tab | Talk to the patient, Share my sound (playback or mic), remote help, SOS alerts, own hearing (optional) |
+| `tv` | `au.remotiq.suno.tv` | Android TV / Google TV / Fire TV | 10-foot TV screen | Show join QR and code, capture TV playback sound, stream to paired Suno phones, show SOS banner |
 
 ```kotlin
 // app/build.gradle.kts (sketch)
@@ -143,7 +143,7 @@ min SDK 26, NDK 30, CMake 4.1.2, ktlint and detekt.
 | `captions` | New (Proposed) | Android | Offline speech-to-text for people talking through Suno |
 | `app` | EarCast, restructured | Android app | Flavours `patient`, `companion`, `tv`; shared EarCast screens in `main` |
 
-Package names move from `app.earcast.*` to `app.suno.*`.
+Package names move from `app.earcast.*` to `au.remotiq.suno.*`. The Gradle `namespace` and the `patient` application ID are `au.remotiq.suno`.
 
 ## 6. Audio pipeline
 
@@ -367,7 +367,7 @@ Each slice is usable on its own.
 
 | Slice | Contents |
 |---|---|
-| 0 | Fork EarCast with history, rename to `app.suno`, add flavours, fix the safety issues in [section 4.2](#42-changed-or-fixed), build and tests green |
+| 0 | Fork EarCast with history, rename to `au.remotiq.suno`, add flavours, fix the safety issues in [section 4.2](#42-changed-or-fixed), build and tests green |
 | 1 | Patient layout: Listen, volume, places, Home levels, zero-tap, Pictures mode, Hindi, themes, Helper PIN |
 | 2 | `audio-graph` + `link`: companion joins by QR and talks; captions if verified |
 | 3 | TV sound: cable sender in `companion`, then the `tv` flavour |
@@ -394,3 +394,4 @@ Anything involving real sound, radios or calls needs physical devices and a writ
 | 2026-11-21 | Suno layout is for the patient only; Helper mode and Companion use the EarCast layout. |
 | 2026-11-21 | The patient's applicable audiogram is applied to everything the patient hears. |
 | 2026-11-21 | Companion apps are built as product flavours (`patient`, `companion`, `tv`); this replaces the setup-time mode question. |
+| 2026-11-21 | Primary package name is `au.remotiq.suno`; flavours use the suffixes `.companion` and `.tv`. |
