@@ -2,6 +2,7 @@ package au.remotiq.suno.assist
 
 import au.remotiq.suno.audiogram.FrequencyGainCurve
 import au.remotiq.suno.audiogram.ProfileFitting
+import au.remotiq.suno.audiogram.ReadyMadeProfile
 import au.remotiq.suno.common.AudioEar
 import au.remotiq.suno.core.audio.InputSource
 import au.remotiq.suno.core.audio.dsp.ListeningPreset
@@ -41,7 +42,7 @@ class LiveSessionBuilder
                 settingsRepository.observeListeningFeatures().first().liveListeningEnabled &&
                     settingsRepository.observeConsentAccepted().first()
             if (!allowed) return false
-            val profile = profileRepository.observeActiveProfile().first() ?: return false
+            val profile = activeOrReadyMade()
             val (left, right) = earCurves(profile) ?: return false
             val ceiling = settingsRepository.observeComfortCeiling().first()
             val preset = ListeningPreset.fromName(settingsRepository.observeAssistPreset().first())
@@ -60,16 +61,22 @@ class LiveSessionBuilder
                     highPassHz = preset.highPassHz,
                     microphoneSource = microphoneSource,
                     listeningOptions = listening,
+                    // Amplified sound never plays through the phone speaker (arch.md section 12).
+                    requireHeadphones = true,
                 ),
             )
             return true
         }
 
         /** Per-ear curves (left, right) for the active profile, or null if none fit. */
-        suspend fun activeEarCurves(): Pair<FrequencyGainCurve, FrequencyGainCurve>? {
-            val profile = profileRepository.observeActiveProfile().first() ?: return null
-            return earCurves(profile)
-        }
+        suspend fun activeEarCurves(): Pair<FrequencyGainCurve, FrequencyGainCurve>? = earCurves(activeOrReadyMade())
+
+        /**
+         * The selected profile, or the default ready-made one when none has been saved yet, so a
+         * person can listen before anyone has run a hearing check.
+         */
+        private suspend fun activeOrReadyMade(): SoundProfile =
+            profileRepository.observeActiveProfile().first() ?: ReadyMadeProfile.DEFAULT.toSoundProfile()
 
         /** Fit the supplied snapshot without reading storage again. */
         fun earCurves(profile: SoundProfile): Pair<FrequencyGainCurve, FrequencyGainCurve>? {
@@ -85,3 +92,12 @@ class LiveSessionBuilder
             ear: AudioEar,
         ): FrequencyGainCurve? = runCatching { fittingStrategy.fit(profile.audiogram, ear) }.getOrNull()
     }
+
+/** A ready-made profile in the stored-profile shape. */
+fun ReadyMadeProfile.toSoundProfile(): SoundProfile =
+    SoundProfile(
+        id = id,
+        name = displayName,
+        audiogram = audiogram,
+        masterGainCapDb = masterGainCapDb,
+    )

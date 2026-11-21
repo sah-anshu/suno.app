@@ -35,8 +35,14 @@ object AudioLimits {
     /** Allow the volume control to attenuate even when fitted gain is too strong. */
     const val MIN_MASTER_GAIN_DB: Double = -12.0
 
-    /** Largest master gain cap the UI may ever offer, in decibels. */
-    const val MAX_MASTER_GAIN_CAP_DB: Double = 40.0
+    /**
+     * Largest master gain cap the UI may ever offer, in decibels.
+     *
+     * Suno lowered this from EarCast's 40 dB: the fitted profile already adds up to 40 dB per
+     * band, so a further 40 dB of master gain mostly drove the limiter. 20 dB still leaves room
+     * for quiet sources such as a phone across the room, and the limiter remains the backstop.
+     */
+    const val MAX_MASTER_GAIN_CAP_DB: Double = 20.0
 
     /**
      * Largest relative band adjustment for media EQ, in decibels. Applied as

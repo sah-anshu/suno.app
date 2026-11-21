@@ -40,4 +40,10 @@ class AudioLimitsTest {
         assertEquals(250.0, FrequencyHz.AUDIOMETRIC.first().value)
         assertEquals(8000.0, FrequencyHz.AUDIOMETRIC.last().value)
     }
+
+    @Test
+    fun `master gain stays well below the fitted band gain`() {
+        assertTrue(AudioLimits.MAX_MASTER_GAIN_CAP_DB <= 20.0)
+        assertTrue(AudioLimits.MIN_MASTER_GAIN_DB < 0.0)
+    }
 }
