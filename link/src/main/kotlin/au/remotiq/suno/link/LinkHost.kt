@@ -48,6 +48,13 @@ class LinkHost(
     /** Phones that are allowed and connected. */
     val connected: StateFlow<List<CompanionDevice>> = _connected.asStateFlow()
 
+    @Volatile private var sos: SosAlert? = null
+
+    private val _sosState = MutableStateFlow<SosAlert?>(null)
+
+    /** The SOS sent to everyone, with the names of those on their way. Null when there is none. */
+    val sosState: StateFlow<SosAlert?> = _sosState.asStateFlow()
+
     private val connections = ConcurrentHashMap.newKeySet<Connection>()
     private val byTag = ConcurrentHashMap<Int, Connection>()
 
@@ -105,6 +112,40 @@ class LinkHost(
         }
     }
 
+    /** Starts a new SOS (or updates its location) and sends it to every connected device. */
+    fun sendSos(
+        id: Long,
+        location: GeoPoint?,
+    ) {
+        val current = sos
+        val responders = if (current?.id == id) current.responders else emptyList()
+        publish(SosAlert(id, active = true, location = location, responders = responders))
+    }
+
+    /** The patient is safe: tells every connected device, then forgets the SOS. */
+    fun endSos() {
+        val current = sos ?: return
+        publish(current.copy(active = false))
+        sos = null
+        _sosState.value = null
+    }
+
+    private fun publish(alert: SosAlert) {
+        sos = alert
+        _sosState.value = alert
+        connections.filter { it.welcomed }.forEach { it.send(LinkMessage.Sos(alert)) }
+    }
+
+    private fun onSosReply(
+        connection: Connection,
+        reply: LinkMessage.SosReply,
+    ) {
+        val current = sos ?: return
+        val name = connection.device?.deviceName ?: return
+        if (!connection.welcomed || reply.id != current.id || reply.reply != SosReplies.ON_MY_WAY) return
+        if (name !in current.responders) publish(current.copy(responders = current.responders + name))
+    }
+
     fun closeAll() {
         connections.toList().forEach { it.channel.close() }
     }
@@ -112,9 +153,9 @@ class LinkHost(
     private fun welcome(connection: Connection) {
         val hello = connection.hello ?: return
         val device = connection.device ?: return
+        // The companion lists codecs in the order that suits its radio (it may be behind a relay).
         val codec =
-            listOf(connection.channel.preferredCodec, CodecIds.PCM16)
-                .firstOrNull { it in hello.codecs && it in codecs } ?: run {
+            hello.codecs.firstOrNull { it in codecs } ?: run {
                 connection.send(LinkMessage.Denied)
                 connection.channel.close()
                 return
@@ -129,6 +170,7 @@ class LinkHost(
         _pending.update { list -> list.filterNot { it.clientId == device.clientId } }
         _connected.update { list -> list.filterNot { it.clientId == device.clientId } + device }
         connection.send(LinkMessage.Welcome(codec, tag))
+        sos?.let { connection.send(LinkMessage.Sos(it)) }
     }
 
     private inner class Connection(
@@ -160,6 +202,7 @@ class LinkHost(
             }
             when (val message = c.open(Lane.CLIENT_CONTROL, frame)?.let(LinkMessage::decode)) {
                 is LinkMessage.Hello -> onHello(message)
+                is LinkMessage.SosReply -> onSosReply(this, message)
                 LinkMessage.Bye -> channel.close()
                 else -> Unit
             }

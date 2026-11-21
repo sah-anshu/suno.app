@@ -32,6 +32,11 @@ class LinkClient(
 
     @Volatile private var codec: FrameCodec? = null
 
+    private val _sos = MutableStateFlow<SosAlert?>(null)
+
+    /** The patient's latest SOS. Kept after it ends (inactive) and if the link drops. */
+    val sos: StateFlow<SosAlert?> = _sos.asStateFlow()
+
     /** Each stream kind has its own sequence (the patient's phone buffers them separately). */
     private val sequences = LongArray(2)
 
@@ -45,7 +50,9 @@ class LinkClient(
         _state.value = ClientState.CONNECTING
         channel.start(this)
         channel.sendControl(salt)
-        send(LinkMessage.Hello(JoinCode.VERSION, clientId, deviceName, codecs.keys.toList(), deviceKind))
+        // The codec that suits this radio first: Opus on Bluetooth, PCM on Wi-Fi Direct.
+        val offered = codecs.keys.sortedByDescending { it == channel.preferredCodec }
+        send(LinkMessage.Hello(JoinCode.VERSION, clientId, deviceName, offered, deviceKind))
     }
 
     /** Sends one 20 ms, 16 kHz frame of [kind] ([StreamKinds]). Ignored unless connected. */
@@ -74,6 +81,12 @@ class LinkClient(
         }
     }
 
+    /** Tells the patient's phone (and through it, everyone else) "I'm on my way". */
+    fun replyOnMyWay() {
+        val alert = _sos.value?.takeIf { it.active } ?: return
+        send(LinkMessage.SosReply(alert.id, SosReplies.ON_MY_WAY))
+    }
+
     fun leave() {
         send(LinkMessage.Bye)
         channel?.close()
@@ -92,6 +105,7 @@ class LinkClient(
                 _state.value = ClientState.DENIED
                 channel?.close()
             }
+            is LinkMessage.Sos -> _sos.value = message.alert
             LinkMessage.Bye -> channel?.close()
             else -> Unit
         }

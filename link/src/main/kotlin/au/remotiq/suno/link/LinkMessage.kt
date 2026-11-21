@@ -38,6 +38,17 @@ sealed interface LinkMessage {
     /** TV → companion: setup received. */
     data object Provisioned : LinkMessage
 
+    /** Patient → everyone connected: an SOS started, changed (someone answered) or ended. */
+    data class Sos(
+        val alert: SosAlert,
+    ) : LinkMessage
+
+    /** Companion → patient: an answer to SOS [id], such as [SosReplies.ON_MY_WAY]. */
+    data class SosReply(
+        val id: Long,
+        val reply: Int,
+    ) : LinkMessage
+
     /** Companion → patient: one encoded 20 ms frame of a voice or of shared sound. */
     class Audio(
         val sequence: Long,
@@ -56,7 +67,14 @@ sealed interface LinkMessage {
         private const val AUDIO: Byte = 6
         private const val PROVISION: Byte = 7
         private const val PROVISIONED: Byte = 8
+        private const val SOS: Byte = 9
+        private const val SOS_REPLY: Byte = 10
         private const val MAX_TEXT = 200
+        private const val MAX_RESPONDERS = 16
+
+        /** Messages with no content. */
+        private val SIMPLE: Map<Byte, LinkMessage> =
+            mapOf(PENDING to Pending, DENIED to Denied, BYE to Bye, PROVISIONED to Provisioned)
 
         fun encode(message: LinkMessage): ByteArray =
             when (message) {
@@ -89,6 +107,14 @@ sealed interface LinkMessage {
                 Bye -> byteArrayOf(BYE)
                 is Provision -> byteArrayOf(PROVISION) + message.joinUri.toByteArray()
                 Provisioned -> byteArrayOf(PROVISIONED)
+                is Sos -> encodeSos(message.alert)
+                is SosReply ->
+                    ByteBuffer
+                        .allocate(1 + 8 + 1)
+                        .put(SOS_REPLY)
+                        .putLong(message.id)
+                        .put(message.reply.toByte())
+                        .array()
                 is Audio ->
                     ByteBuffer
                         .allocate(1 + 8 + 1 + 1 + message.payload.size)
@@ -104,7 +130,8 @@ sealed interface LinkMessage {
         fun decode(bytes: ByteArray): LinkMessage? =
             runCatching {
                 val b = ByteBuffer.wrap(bytes)
-                when (b.get()) {
+                val type = b.get()
+                SIMPLE[type] ?: when (type) {
                     HELLO -> {
                         val version = b.get().toInt()
                         val id = String(ByteArray(b.short.toInt()).also { b.get(it) })
@@ -112,12 +139,10 @@ sealed interface LinkMessage {
                         val codecs = List(b.get().toInt()) { b.get().toInt() }
                         Hello(version, id, name, codecs, b.get().toInt())
                     }
-                    PENDING -> Pending
                     WELCOME -> Welcome(b.get().toInt(), b.int)
-                    DENIED -> Denied
-                    BYE -> Bye
                     PROVISION -> Provision(String(ByteArray(b.remaining()).also { b.get(it) }))
-                    PROVISIONED -> Provisioned
+                    SOS -> decodeSos(b)
+                    SOS_REPLY -> SosReply(b.long, b.get().toInt())
                     AUDIO -> {
                         val sequence = b.long
                         val codec = b.get().toInt()
@@ -127,6 +152,36 @@ sealed interface LinkMessage {
                     else -> null
                 }
             }.getOrNull()
+
+        private fun encodeSos(alert: SosAlert): ByteArray {
+            val names = alert.responders.take(MAX_RESPONDERS).map { it.take(MAX_TEXT).toByteArray() }
+            val location = alert.location
+            return ByteBuffer
+                .allocate(1 + 8 + 1 + 1 + 8 + 8 + 4 + 1 + names.sumOf { 2 + it.size })
+                .put(SOS)
+                .putLong(alert.id)
+                .put(if (alert.active) 1 else 0)
+                .put(if (location != null) 1 else 0)
+                .putDouble(location?.latitude ?: 0.0)
+                .putDouble(location?.longitude ?: 0.0)
+                .putFloat(location?.accuracyMeters ?: 0f)
+                .put(names.size.toByte())
+                .apply {
+                    names.forEach {
+                        putShort(it.size.toShort())
+                        put(it)
+                    }
+                }.array()
+        }
+
+        private fun decodeSos(b: ByteBuffer): Sos {
+            val id = b.long
+            val active = b.get().toInt() == 1
+            val hasLocation = b.get().toInt() == 1
+            val location = GeoPoint(b.double, b.double, b.float).takeIf { hasLocation }
+            val responders = List(b.get().toInt()) { String(ByteArray(b.short.toInt()).also { b.get(it) }) }
+            return Sos(SosAlert(id, active, location, responders))
+        }
     }
 }
 
