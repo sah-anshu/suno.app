@@ -58,6 +58,12 @@ private object PreferenceKeys {
     val LINK_IDENTITY = stringPreferencesKey("link_identity")
     val LINK_CLIENT_ID = stringPreferencesKey("link_client_id")
     val APPROVED_COMPANIONS = stringPreferencesKey("approved_companions")
+    val SOS_HELPER_NAME = stringPreferencesKey("sos_helper_name")
+    val SOS_HELPER_NUMBER = stringPreferencesKey("sos_helper_number")
+    val SOS_EMERGENCY_NUMBER = stringPreferencesKey("sos_emergency_number")
+    val SOS_TEXT_NUMBERS = stringPreferencesKey("sos_text_numbers")
+    val SOS_SEND_LOCATION = booleanPreferencesKey("sos_send_location")
+    val SOS_ALARM_ON_START = booleanPreferencesKey("sos_alarm_on_start")
 
     // Legacy single-profile keys (pre-multi-profile builds).
     val PROFILE_NAME = stringPreferencesKey("profile_name")
@@ -142,6 +148,31 @@ class PreferencesStore(
 
     override suspend fun setApprovedCompanions(companions: List<StoredCompanion>) {
         dataStore.edit { it[PreferenceKeys.APPROVED_COMPANIONS] = StoredCompanion.encode(companions) }
+    }
+
+    override fun observeSosSettings(): Flow<SosSettings> =
+        dataStore.observe {
+            val defaults = SosSettings()
+            SosSettings(
+                helperName = it[PreferenceKeys.SOS_HELPER_NAME] ?: defaults.helperName,
+                helperNumber = it[PreferenceKeys.SOS_HELPER_NUMBER] ?: defaults.helperNumber,
+                emergencyNumber = it[PreferenceKeys.SOS_EMERGENCY_NUMBER] ?: defaults.emergencyNumber,
+                textNumbers = SosSettings.parseNumbers(it[PreferenceKeys.SOS_TEXT_NUMBERS].orEmpty()),
+                sendLocation = it[PreferenceKeys.SOS_SEND_LOCATION] ?: defaults.sendLocation,
+                alarmOnStart = it[PreferenceKeys.SOS_ALARM_ON_START] ?: defaults.alarmOnStart,
+            ).normalized()
+        }
+
+    override suspend fun setSosSettings(settings: SosSettings) {
+        val s = settings.normalized()
+        dataStore.edit {
+            it[PreferenceKeys.SOS_HELPER_NAME] = s.helperName
+            it[PreferenceKeys.SOS_HELPER_NUMBER] = s.helperNumber
+            it[PreferenceKeys.SOS_EMERGENCY_NUMBER] = s.emergencyNumber
+            it[PreferenceKeys.SOS_TEXT_NUMBERS] = s.textNumbers.joinToString(",")
+            it[PreferenceKeys.SOS_SEND_LOCATION] = s.sendLocation
+            it[PreferenceKeys.SOS_ALARM_ON_START] = s.alarmOnStart
+        }
     }
 
     override fun observeLinkClientId(): Flow<String?> = dataStore.observe { it[PreferenceKeys.LINK_CLIENT_ID] }

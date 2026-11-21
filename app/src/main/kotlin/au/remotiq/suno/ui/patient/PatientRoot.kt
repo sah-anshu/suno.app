@@ -52,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import au.remotiq.suno.R
 import au.remotiq.suno.assist.LiveAudioService
 import au.remotiq.suno.patient.Place
+import au.remotiq.suno.sos.SosPhase
 import au.remotiq.suno.ui.SunoApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -63,8 +64,12 @@ private enum class PatientRoute { HOME, CHECK_PIN, SET_PIN, HELPER }
  * EarCast's full screens (Listen / Profiles / Settings) through the PIN, and Lock returns to Home.
  */
 @Composable
-fun PatientRoot(viewModel: PatientStateModel = hiltViewModel()) {
+fun PatientRoot(
+    viewModel: PatientStateModel = hiltViewModel(),
+    sosModel: SosModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val sos by sosModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var route by rememberSaveable { mutableStateOf(PatientRoute.HOME) }
@@ -83,6 +88,8 @@ fun PatientRoot(viewModel: PatientStateModel = hiltViewModel()) {
 
     PatientTheme(state.theme) {
         when {
+            // SOS comes before everything else and stays until the patient says they are safe.
+            sos.phase != SosPhase.IDLE -> SosScreen(sos, sosModel.callbacks)
             route == PatientRoute.HELPER -> HelperMode(onLock = { route = PatientRoute.HOME })
             route == PatientRoute.SET_PIN || route == PatientRoute.CHECK_PIN ->
                 PinRoute(route == PatientRoute.SET_PIN, state.hasPin, viewModel) { route = it }
@@ -100,6 +107,7 @@ fun PatientRoot(viewModel: PatientStateModel = hiltViewModel()) {
                     onToggle = { session.toggle(state) },
                     onPlaceApplied = session::restartIf,
                     onHelper = { route = PatientRoute.CHECK_PIN },
+                    onSos = sosModel::ask,
                     viewModel = viewModel,
                 )
         }
@@ -159,6 +167,7 @@ private fun PatientHome(
     onToggle: () -> Unit,
     onPlaceApplied: (Boolean) -> Unit,
     onHelper: () -> Unit,
+    onSos: () -> Unit,
     viewModel: PatientStateModel,
 ) {
     val context = LocalContext.current
@@ -178,6 +187,7 @@ private fun PatientHome(
         },
         onHelper = onHelper,
         onChooseSource = viewModel::chooseSource,
+        onSos = onSos,
         message =
             message?.let { stringResource(it) }
                 ?: if (state.failed) stringResource(R.string.patient_stopped) else null,

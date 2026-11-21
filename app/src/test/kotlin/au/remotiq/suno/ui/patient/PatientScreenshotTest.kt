@@ -178,6 +178,57 @@ class PatientScreenshotTest {
                 ),
             )
         }
+
+    private val sosSettings =
+        au.remotiq.suno.data.SosSettings(
+            helperName = "Rahul",
+            helperNumber = "+919876543210",
+            textNumbers = listOf("111", "222"),
+        )
+
+    private val activeSos =
+        au.remotiq.suno.sos.SosState(
+            phase = au.remotiq.suno.sos.SosPhase.ACTIVE,
+            settings = sosSettings,
+            location =
+                au.remotiq.suno.link
+                    .GeoPoint(28.6, 77.2, 15f),
+            alerted = 2,
+            responders = listOf("Rahul"),
+            helperCalled = true,
+            textsSent = 2,
+        )
+
+    @Test
+    fun sosAsk() =
+        shot("16-sos-ask") {
+            PatientTheme(PatientThemeName.STANDARD) {
+                SosScreen(
+                    au.remotiq.suno.sos
+                        .SosState(phase = au.remotiq.suno.sos.SosPhase.ASKING),
+                    SosCallbacks(),
+                )
+            }
+        }
+
+    @Test
+    @Config(qualifiers = "w400dp-h1100dp-xxhdpi")
+    fun sosActive() =
+        shot("17-sos-active") {
+            PatientTheme(PatientThemeName.STANDARD) { SosScreen(activeSos, SosCallbacks()) }
+        }
+
+    @Test
+    @Config(qualifiers = "hi-w400dp-h1100dp-xxhdpi")
+    fun sosActiveHindiDark() =
+        shot("18-sos-active-hindi") {
+            PatientTheme(PatientThemeName.DARK) {
+                SosScreen(
+                    activeSos.copy(responders = listOf("राहुल"), textsSent = 0, textsNeedTap = true, alarmOn = true),
+                    SosCallbacks(),
+                )
+            }
+        }
 }
 
 private const val PHONE = "w400dp-h860dp-xxhdpi"

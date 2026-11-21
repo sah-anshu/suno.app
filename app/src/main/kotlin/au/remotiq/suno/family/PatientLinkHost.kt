@@ -9,6 +9,7 @@ import au.remotiq.suno.link.ApprovedCompanions
 import au.remotiq.suno.link.CodecIds
 import au.remotiq.suno.link.CompanionDevice
 import au.remotiq.suno.link.FrameCodec
+import au.remotiq.suno.link.GeoPoint
 import au.remotiq.suno.link.JoinCode
 import au.remotiq.suno.link.LinkHost
 import au.remotiq.suno.link.PcmCodec
@@ -16,10 +17,12 @@ import au.remotiq.suno.link.android.LinkHosting
 import au.remotiq.suno.link.android.LinkPermissions
 import au.remotiq.suno.link.android.LinkTransport
 import au.remotiq.suno.link.android.OpusCodec
+import au.remotiq.suno.sos.SosLink
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,13 +55,19 @@ class PatientLinkHost
         @ApplicationContext private val context: Context,
         private val preferences: PreferenceStorage,
         private val hub: RemoteAudioHub,
-    ) {
+    ) : SosLink {
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         private val mutex = Mutex()
         private val holders = mutableSetOf<String>()
         private val approvedCache = ConcurrentHashMap<String, String>()
         private var host: LinkHost? = null
         private var hosting: LinkHosting? = null
+
+        /** The SOS to send once the host is up (it starts asynchronously). */
+        @Volatile private var pendingSos: Pair<Long, GeoPoint?>? = null
+
+        private val _sosResponders = MutableStateFlow<List<String>>(emptyList())
+        override val sosResponders: StateFlow<List<String>> = _sosResponders.asStateFlow()
 
         private val _status = MutableStateFlow(HostStatus())
         val status: StateFlow<HostStatus> = _status.asStateFlow()
@@ -67,7 +76,7 @@ class PatientLinkHost
         val pending: StateFlow<List<CompanionDevice>> = _pending.asStateFlow()
 
         private val _connected = MutableStateFlow<List<CompanionDevice>>(emptyList())
-        val connected: StateFlow<List<CompanionDevice>> = _connected.asStateFlow()
+        override val connected: StateFlow<List<CompanionDevice>> = _connected.asStateFlow()
 
         /** Remote sources sounding right now: voices and shared sound such as TV. */
         val remote get() = hub.active
@@ -92,6 +101,27 @@ class PatientLinkHost
         fun release(reason: String) {
             val last = synchronized(holders) { holders.remove(reason) && holders.isEmpty() }
             if (last) scope.launch { stop() }
+        }
+
+        /** Starts hosting (if needed) and alerts every connected device; phones that reconnect are told too. */
+        override fun sendSos(
+            id: Long,
+            location: GeoPoint?,
+        ) {
+            pendingSos = id to location
+            acquire(SOS)
+            host?.sendSos(id, location)
+        }
+
+        override fun endSos() {
+            pendingSos = null
+            host?.endSos()
+            _sosResponders.value = emptyList()
+            // Give the "safe now" message time to leave before the radios stop (if nothing else holds them).
+            scope.launch {
+                delay(END_FLUSH_MS)
+                release(SOS)
+            }
         }
 
         fun allow(clientId: String) {
@@ -124,7 +154,9 @@ class PatientLinkHost
                         host = created
                         scope.launch { created.pending.collect { _pending.value = it } }
                         scope.launch { created.connected.collect { _connected.value = it } }
+                        scope.launch { created.sosState.collect { _sosResponders.value = it?.responders.orEmpty() } }
                     }
+                pendingSos?.let { (id, location) -> linkHost.sendSos(id, location) }
                 val radios = LinkHosting(context, code).also { hosting = it }.start(linkHost)
                 _status.value =
                     HostStatus(
@@ -174,5 +206,7 @@ class PatientLinkHost
 
         private companion object {
             const val DEFAULT_NAME = "Suno"
+            const val SOS = "sos"
+            const val END_FLUSH_MS = 2_000L
         }
     }

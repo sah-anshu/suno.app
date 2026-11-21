@@ -47,9 +47,14 @@ data class PatientColors(
     val helpInk: Color,
     val warn: Color,
     val warnInk: Color,
+    /** SOS: dark vermillion with white text (8:1), the same in every theme and app. */
+    val sos: Color = SosVermillion,
+    val sosInk: Color = Color.White,
     /** True for the yellow-on-black theme, which relies on borders instead of shadows. */
     val outlined: Boolean,
 )
+
+private val SosVermillion = Color(0xFFA84A00)
 
 private val Standard =
     PatientColors(

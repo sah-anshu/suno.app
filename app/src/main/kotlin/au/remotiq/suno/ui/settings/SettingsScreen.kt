@@ -47,6 +47,7 @@ import au.remotiq.suno.ui.onboarding.SafetySourceLink
 import au.remotiq.suno.ui.onboarding.TermsDialog
 import au.remotiq.suno.ui.patient.FamilyHelperSettings
 import au.remotiq.suno.ui.patient.PatientHelperSettings
+import au.remotiq.suno.ui.patient.SosHelperSettings
 
 @Composable
 fun SettingsScreen(rootViewModel: AppStateModel = hiltViewModel()) {
@@ -61,6 +62,7 @@ fun SettingsScreen(rootViewModel: AppStateModel = hiltViewModel()) {
         if (BuildConfig.FLAVOR == "patient") {
             PatientHelperSettings()
             FamilyHelperSettings()
+            SosHelperSettings()
         }
         SectionGroup(stringResource(R.string.identity_settings_accessibility)) {
             SurfaceCard(Modifier.fillMaxWidth()) {

@@ -23,6 +23,11 @@ interface PreferenceStorage {
 
     suspend fun setPatientSettings(settings: PatientSettings)
 
+    /** What the patient's SOS does (helper setting). */
+    fun observeSosSettings(): Flow<SosSettings>
+
+    suspend fun setSosSettings(settings: SosSettings)
+
     /** True only when the user has explicitly accepted the current terms and safety guidance. */
     fun observeConsentAccepted(): Flow<Boolean>
 

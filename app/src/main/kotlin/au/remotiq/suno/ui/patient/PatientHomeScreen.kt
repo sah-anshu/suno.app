@@ -81,6 +81,7 @@ fun PatientHomeScreen(
     onHelper: () -> Unit,
     message: String?,
     onChooseSource: (SourceMode) -> Unit = {},
+    onSos: () -> Unit = {},
 ) {
     val c = LocalPatientColors.current
     Surface(Modifier.fillMaxSize(), color = c.background) {
@@ -92,7 +93,12 @@ fun PatientHomeScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                SosButton(onSos)
                 RoundIconButton(Icons.Filled.Settings, stringResource(R.string.patient_helper), onHelper)
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
