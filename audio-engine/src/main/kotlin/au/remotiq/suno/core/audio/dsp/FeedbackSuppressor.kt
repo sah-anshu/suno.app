@@ -60,24 +60,46 @@ class FeedbackSuppressor(
         return sqrt(energy / buffer.size) >= activationRms && tonality(buffer, energy) >= tonalityThreshold
     }
 
-    /** Scan only until a lag establishes feedback; the exact peak is not needed. */
+    /**
+     * Strength of the periodic component whose period falls in the feedback lag range, in [0, 1].
+     *
+     * Each lag is normalized by the energy of the two overlapping segments only. Dividing by
+     * the whole block's energy instead caps a pure tone at about 1 - lag / blockSize, which at
+     * the live 192-frame block hid howls below roughly 2.5 kHz.
+     *
+     * Like a pitch detector, a lag only counts after the autocorrelation has first dipped below
+     * zero. Bass-heavy sound (a voice's fundamental, rumble) correlates strongly at short lags
+     * without being periodic there, and never produces that dip and rise within the range.
+     *
+     * Scans only until a lag establishes feedback; the exact peak is not needed.
+     */
     private fun tonality(
         buffer: FloatArray,
         energy: Double,
     ): Double {
         if (energy <= 1e-12) return 0.0
-
+        val n = buffer.size
+        // Energy of the first `lag` and last `lag` samples, which fall outside the overlap.
+        var head = buffer[0].toDouble() * buffer[0]
+        var tail = buffer[n - 1].toDouble() * buffer[n - 1]
+        var dipped = false
         var best = 0.0
-        var lag = minLag
-        while (lag <= maxLag) {
+        for (lag in 1..maxLag) {
             var corr = 0.0
-            for (i in lag until buffer.size) {
+            for (i in lag until n) {
                 corr += buffer[i].toDouble() * buffer[i - lag]
             }
-            val normalized = corr / energy
-            if (normalized > best) best = normalized
-            if (best >= tonalityThreshold) return best
-            lag++
+            val overlap = (energy - head) * (energy - tail)
+            if (overlap > 1e-12) {
+                val normalized = corr / sqrt(overlap)
+                if (normalized < 0.0) dipped = true
+                if (dipped && lag >= minLag && normalized > best) {
+                    best = normalized
+                    if (best >= tonalityThreshold) return best
+                }
+            }
+            head += buffer[lag].toDouble() * buffer[lag]
+            tail += buffer[n - 1 - lag].toDouble() * buffer[n - 1 - lag]
         }
         return best
     }
