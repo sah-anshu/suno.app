@@ -2,6 +2,8 @@
 package au.remotiq.suno.ui.family
 
 import android.Manifest
+import android.app.Activity
+import android.media.projection.MediaProjectionManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,6 +19,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -29,9 +34,11 @@ import au.remotiq.suno.R
 import au.remotiq.suno.data.PreferenceStorage
 import au.remotiq.suno.family.CompanionLink
 import au.remotiq.suno.family.CompanionStatus
+import au.remotiq.suno.family.ShareService
 import au.remotiq.suno.family.TalkService
 import au.remotiq.suno.link.ClientState
 import au.remotiq.suno.link.android.LinkPermissions
+import au.remotiq.suno.link.android.ShareSource
 import au.remotiq.suno.ui.common.ActionButton
 import au.remotiq.suno.ui.common.ActionStyle
 import au.remotiq.suno.ui.common.EarPage
@@ -88,6 +95,21 @@ fun FamilyScreen(viewModel: FamilyModel = hiltViewModel()) {
         rememberLauncherForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions(),
         ) { scan.launch(scanOptions()) }
+    var pendingShare by remember { mutableStateOf<ShareSource?>(null) }
+    val sharePermissions =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+            val source = pendingShare
+            if (granted[Manifest.permission.RECORD_AUDIO] == true && source != null) ShareService.start(context, source)
+        }
+    val consent =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val data = result.data
+            if (result.resultCode == Activity.RESULT_OK &&
+                data != null
+            ) {
+                ShareService.startPlayback(context, result.resultCode, data)
+            }
+        }
     val talkPermissions =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
             if (granted[Manifest.permission.RECORD_AUDIO] == true) TalkService.start(context)
@@ -109,6 +131,16 @@ fun FamilyScreen(viewModel: FamilyModel = hiltViewModel()) {
             viewModel.leave()
         },
         onReconnect = viewModel::reconnect,
+        onShare = { source ->
+            pendingShare = source
+            if (source == ShareSource.PLAYBACK) {
+                val manager = context.getSystemService(MediaProjectionManager::class.java)
+                consent.launch(manager.createScreenCaptureIntent())
+            } else {
+                sharePermissions.launch(talkPermissionList())
+            }
+        },
+        onStopShare = { ShareService.stop(context) },
     )
 }
 
@@ -122,6 +154,8 @@ fun FamilyContent(
     onTalk: () -> Unit,
     onLeave: () -> Unit,
     onReconnect: () -> Unit,
+    onShare: (ShareSource) -> Unit = {},
+    onStopShare: () -> Unit = {},
 ) {
     EarPage {
         PageHeading(stringResource(R.string.nav_family), stringResource(R.string.family_subtitle))
@@ -143,7 +177,10 @@ fun FamilyContent(
                     action = stringResource(R.string.family_cancel),
                     onAction = onLeave,
                 )
-            ClientState.CONNECTED -> ConnectedCard(status, onTalk, onLeave)
+            ClientState.CONNECTED -> {
+                ConnectedCard(status, onTalk, onLeave)
+                ShareCard(status.sharing, onShare, onStopShare)
+            }
             ClientState.DENIED ->
                 StatusCard(
                     stringResource(R.string.family_denied),
@@ -241,6 +278,49 @@ private fun ConnectedCard(
         }
     }
 }
+
+@Composable
+private fun ShareCard(
+    sharing: ShareSource?,
+    onShare: (ShareSource) -> Unit,
+    onStop: () -> Unit,
+) {
+    SurfaceCard(Modifier.fillMaxWidth()) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(stringResource(R.string.share_title), style = MaterialTheme.typography.titleLarge)
+            if (sharing != null) {
+                Text(
+                    stringResource(R.string.share_now, stringResource(sharing.label())),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                ActionButton(
+                    stringResource(R.string.share_stop_sharing),
+                    onStop,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = ActionStyle.DANGER,
+                )
+            } else {
+                Text(stringResource(R.string.share_body), style = MaterialTheme.typography.bodyMedium)
+                ShareSource.entries.forEach { source ->
+                    ActionButton(
+                        stringResource(source.label()),
+                        { onShare(source) },
+                        modifier = Modifier.fillMaxWidth(),
+                        style = ActionStyle.SECONDARY,
+                        enabled = source != ShareSource.PLAYBACK || LinkPermissions.supported(),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun ShareSource.label(): Int =
+    when (this) {
+        ShareSource.CABLE -> R.string.share_cable
+        ShareSource.MICROPHONE -> R.string.share_microphone
+        ShareSource.PLAYBACK -> R.string.share_playback
+    }
 
 @Composable
 private fun StatusCard(

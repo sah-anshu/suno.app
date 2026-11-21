@@ -12,9 +12,11 @@ import au.remotiq.suno.link.JoinCode
 import au.remotiq.suno.link.LinkChannel
 import au.remotiq.suno.link.LinkClient
 import au.remotiq.suno.link.PcmCodec
+import au.remotiq.suno.link.StreamKinds
 import au.remotiq.suno.link.android.BluetoothJoiner
 import au.remotiq.suno.link.android.LinkPermissions
 import au.remotiq.suno.link.android.OpusCodec
+import au.remotiq.suno.link.android.ShareSource
 import au.remotiq.suno.link.android.WifiDirectJoiner
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -22,9 +24,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -37,6 +42,8 @@ data class CompanionStatus(
     val state: ClientState = ClientState.IDLE,
     val transport: Transport? = null,
     val talking: Boolean = false,
+    /** What this phone is sharing with the patient, if anything. */
+    val sharing: ShareSource? = null,
 ) {
     enum class Transport { WIFI_DIRECT, BLUETOOTH }
 }
@@ -52,7 +59,7 @@ class CompanionLink
     constructor(
         @ApplicationContext private val context: Context,
         private val preferences: PreferenceStorage,
-    ) {
+    ) : ShareSink {
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         private var client: LinkClient? = null
         private var wifi: WifiDirectJoiner? = null
@@ -94,6 +101,17 @@ class CompanionLink
 
         fun setTalking(on: Boolean) {
             _status.update { it.copy(talking = on) }
+        }
+
+        override val connected: StateFlow<Boolean> =
+            _status.map { it.state == ClientState.CONNECTED }.stateIn(scope, SharingStarted.Eagerly, false)
+
+        override fun sendMedia(frame: ShortArray) {
+            client?.sendFrame(frame, StreamKinds.MEDIA)
+        }
+
+        override fun onSharing(source: ShareSource?) {
+            _status.update { it.copy(sharing = source) }
         }
 
         private fun disconnect() {

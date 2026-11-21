@@ -24,8 +24,15 @@
     <string name="family_reconnect">फिर कोशिश करें</string>
     <string name="family_forget">भूल जाएँ</string>
     <string name="family_how_title">यह कैसे काम करता है</string>
-    <string name="family_how_body">सुनो बिना इंटरनेट के चलता है: फ़ोन सीधे Wi-Fi Direct या ब्लूटूथ से जुड़ते हैं। कुछ भी इंटरनेट पर नहीं जाता और कुछ रिकॉर्ड नहीं होता। आप सिर्फ़ अपनी आवाज़ भेज सकते हैं; उनके फ़ोन से सुन नहीं सकते।</string>
+    <string name="family_how_body">सुनो बिना इंटरनेट के चलता है: फ़ोन सीधे Wi-Fi Direct या ब्लूटूथ से जुड़ते हैं। कुछ भी इंटरनेट पर नहीं जाता और कुछ रिकॉर्ड नहीं होता। आप सिर्फ़ उन्हें आवाज़ भेज सकते हैं; उनके फ़ोन से सुन नहीं सकते।</string>
     <string name="talk_channel">बात</string>
     <string name="talk_notification">अपने परिवार के सदस्य से बात हो रही है</string>
     <string name="talk_stop">रोकें</string>
+    <string name="share_title">आवाज़ साझा करें</string>
+    <string name="share_body">टीवी या दूसरी आवाज़ उन्हें भेजें। उनका फ़ोन उनकी अपनी प्रोफ़ाइल लगाता है।</string>
+    <string name="share_cable">केबल से टीवी (USB-C ऑडियो अडैप्टर)</string>
+    <string name="share_microphone">टीवी के पास माइक्रोफ़ोन</string>
+    <string name="share_playback">इस फ़ोन पर चल रही आवाज़</string>
+    <string name="share_now">साझा हो रहा है: %1$s</string>
+    <string name="share_stop_sharing">साझा करना बंद करें</string>
 </resources>

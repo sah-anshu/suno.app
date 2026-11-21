@@ -59,4 +59,16 @@ class FamilyScreenshotTest {
             "23-companion-talking",
             CompanionStatus("Dadi", ClientState.CONNECTED, CompanionStatus.Transport.BLUETOOTH, talking = true),
         )
+
+    @Test
+    fun sharing() =
+        shot(
+            "24-companion-sharing",
+            CompanionStatus(
+                "Dadi",
+                ClientState.CONNECTED,
+                CompanionStatus.Transport.WIFI_DIRECT,
+                sharing = au.remotiq.suno.link.android.ShareSource.CABLE,
+            ),
+        )
 }

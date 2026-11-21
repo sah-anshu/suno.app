@@ -10,6 +10,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission
@@ -46,5 +47,9 @@
             android:name="au.remotiq.suno.family.TalkService"
             android:exported="false"
             android:foregroundServiceType="microphone" />
+        <service
+            android:name="au.remotiq.suno.family.ShareService"
+            android:exported="false"
+            android:foregroundServiceType="microphone|mediaProjection" />
     </application>
 </manifest>

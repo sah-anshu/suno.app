@@ -87,4 +87,7 @@
     <string name="family_tv">टीवी</string>
     <string name="family_wants_to_share">%1$s टीवी की आवाज़ भेजना चाहता है</string>
     <string name="family_share_body">जब आप सुन रहे होंगे, टीवी की आवाज़ आपके ईयरफ़ोन में आएगी। बाकी सबके लिए टीवी स्पीकर वैसे ही रहेंगे।</string>
+    <string name="share_channel">आवाज़ साझा करना</string>
+    <string name="share_notification">परिवार के सदस्य के साथ आवाज़ साझा हो रही है</string>
+    <string name="share_stop">रोकें</string>
 </resources>

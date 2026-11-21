@@ -24,8 +24,15 @@
     <string name="family_reconnect">Try again</string>
     <string name="family_forget">Forget</string>
     <string name="family_how_title">How it works</string>
-    <string name="family_how_body">Suno works offline: phones talk directly over Wi-Fi Direct or Bluetooth. Nothing goes over the internet and nothing is recorded. You can only send your voice; you cannot listen through their phone.</string>
+    <string name="family_how_body">Suno works offline: phones talk directly over Wi-Fi Direct or Bluetooth. Nothing goes over the internet and nothing is recorded. You can only send sound to them; you cannot listen through their phone.</string>
     <string name="talk_channel">Talking</string>
     <string name="talk_notification">Speaking to your family member</string>
     <string name="talk_stop">Stop</string>
+    <string name="share_title">Share sound</string>
+    <string name="share_body">Send TV or other sound to them. Their phone applies their own hearing profile.</string>
+    <string name="share_cable">TV by cable (USB-C audio adapter)</string>
+    <string name="share_microphone">Microphone near the TV</string>
+    <string name="share_playback">Sound playing on this phone</string>
+    <string name="share_now">Sharing: %1$s</string>
+    <string name="share_stop_sharing">Stop sharing</string>
 </resources>

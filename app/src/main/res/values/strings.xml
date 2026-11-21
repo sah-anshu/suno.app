@@ -457,4 +457,7 @@
     <string name="family_tv">TV</string>
     <string name="family_wants_to_share">%1$s wants to share TV sound</string>
     <string name="family_share_body">TV sound will play in your earphones while you are listening. The TV speakers stay as they are for everyone else.</string>
+    <string name="share_channel">Sharing sound</string>
+    <string name="share_notification">Sharing sound with your family member</string>
+    <string name="share_stop">Stop</string>
 </resources>
