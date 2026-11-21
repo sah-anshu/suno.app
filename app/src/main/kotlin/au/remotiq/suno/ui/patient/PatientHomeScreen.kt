@@ -27,7 +27,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Headphones
@@ -45,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -61,6 +64,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import au.remotiq.suno.R
 import au.remotiq.suno.audiograph.SourceMode
+import au.remotiq.suno.data.Favourite
 import au.remotiq.suno.data.PatientSettings
 import au.remotiq.suno.patient.Place
 
@@ -82,6 +86,9 @@ fun PatientHomeScreen(
     message: String?,
     onChooseSource: (SourceMode) -> Unit = {},
     onSos: () -> Unit = {},
+    quickCall: Favourite? = null,
+    onQuickCall: () -> Unit = {},
+    onPeople: () -> Unit = {},
 ) {
     val c = LocalPatientColors.current
     Surface(Modifier.fillMaxSize(), color = c.background) {
@@ -123,10 +130,66 @@ fun PatientHomeScreen(
                 PatientSettings.HOME_LEVELS -> PlaceGrid(state.place, state.settings.picturesMode, onPlace)
                 else -> Unit
             }
+            CallDock(quickCall, onQuickCall, onPeople)
             Spacer(Modifier.heightIn(min = 8.dp))
         }
     }
     if (placeSheetOpen) PlaceDialog(state.place, onPlace, onClosePlaces)
+}
+
+/** Bottom dock: call the first person in People (or the helper) in one tap, or open People. */
+@Composable
+private fun CallDock(
+    quickCall: Favourite?,
+    onQuickCall: () -> Unit,
+    onPeople: () -> Unit,
+) {
+    val c = LocalPatientColors.current
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (quickCall != null) {
+            DockButton(
+                Icons.Filled.Call,
+                stringResource(R.string.people_call, quickCall.name),
+                c.help,
+                c.helpInk,
+                Modifier.weight(1f),
+                onQuickCall,
+            )
+        }
+        DockButton(
+            Icons.Filled.Contacts,
+            stringResource(R.string.people_title),
+            c.surface,
+            c.ink,
+            Modifier.weight(1f),
+            onPeople,
+        )
+    }
+}
+
+@Composable
+private fun DockButton(
+    icon: ImageVector,
+    label: String,
+    color: Color,
+    ink: Color,
+    modifier: Modifier,
+    onClick: () -> Unit,
+) {
+    val c = LocalPatientColors.current
+    Row(
+        modifier
+            .heightIn(min = 80.dp)
+            .background(color, RoundedCornerShape(22.dp))
+            .border(2.dp, if (color == c.surface) c.hairline else color, RoundedCornerShape(22.dp))
+            .selectable(selected = false, role = Role.Button, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+    ) {
+        Icon(icon, null, tint = ink, modifier = Modifier.size(30.dp))
+        Text(label, style = MaterialTheme.typography.titleMedium, color = ink, maxLines = 2)
+    }
 }
 
 @Composable

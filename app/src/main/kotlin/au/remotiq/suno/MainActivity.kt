@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import au.remotiq.suno.phone.DialRequests
 import au.remotiq.suno.ui.SunoApp
 import au.remotiq.suno.ui.patient.PatientRoot
 import dagger.hilt.android.AndroidEntryPoint
@@ -12,6 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (BuildConfig.FLAVOR == "patient" && savedInstanceState == null) DialRequests.handle(intent)
         enableEdgeToEdge()
         setContent {
             // Patient: simple layout. TV: Suno TV screen. Companion: EarCast layout with the Family tab.
@@ -23,5 +25,10 @@ class MainActivity : ComponentActivity() {
                 else -> SunoApp()
             }
         }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        if (BuildConfig.FLAVOR == "patient") DialRequests.handle(intent)
     }
 }

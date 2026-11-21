@@ -45,6 +45,7 @@ import au.remotiq.suno.ui.common.SurfaceCard
 import au.remotiq.suno.ui.onboarding.PrivacyDialog
 import au.remotiq.suno.ui.onboarding.SafetySourceLink
 import au.remotiq.suno.ui.onboarding.TermsDialog
+import au.remotiq.suno.ui.patient.CallHelperSettings
 import au.remotiq.suno.ui.patient.FamilyHelperSettings
 import au.remotiq.suno.ui.patient.PatientHelperSettings
 import au.remotiq.suno.ui.patient.SosHelperSettings
@@ -63,6 +64,7 @@ fun SettingsScreen(rootViewModel: AppStateModel = hiltViewModel()) {
             PatientHelperSettings()
             FamilyHelperSettings()
             SosHelperSettings()
+            CallHelperSettings()
         }
         SectionGroup(stringResource(R.string.identity_settings_accessibility)) {
             SurfaceCard(Modifier.fillMaxWidth()) {

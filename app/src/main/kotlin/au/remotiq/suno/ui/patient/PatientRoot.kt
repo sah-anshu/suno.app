@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,12 +53,36 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import au.remotiq.suno.R
 import au.remotiq.suno.assist.LiveAudioService
 import au.remotiq.suno.patient.Place
+import au.remotiq.suno.phone.DialRequests
 import au.remotiq.suno.sos.SosPhase
 import au.remotiq.suno.ui.SunoApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-private enum class PatientRoute { HOME, CHECK_PIN, SET_PIN, HELPER }
+private enum class PatientRoute {
+    HOME,
+    CHECK_PIN,
+    SET_PIN,
+    HELPER,
+    PEOPLE,
+    KEYPAD,
+    ;
+
+    val isPhone: Boolean get() = this == PEOPLE || this == KEYPAD
+    val isPin: Boolean get() = this == SET_PIN || this == CHECK_PIN
+}
+
+/** Opens the keypad when another app asks to dial a number. */
+@Composable
+private fun DialRequestEffect(onDial: (String) -> Unit) {
+    val request by DialRequests.pending.collectAsStateWithLifecycle()
+    LaunchedEffect(request) {
+        request?.let {
+            onDial(it.filter { ch -> ch.isDigit() || ch in "+*#" })
+            DialRequests.consume()
+        }
+    }
+}
 
 /**
  * Entry point of the patient app. The patient sees only the simple Home. The helper reaches
@@ -67,6 +92,7 @@ private enum class PatientRoute { HOME, CHECK_PIN, SET_PIN, HELPER }
 fun PatientRoot(
     viewModel: PatientStateModel = hiltViewModel(),
     sosModel: SosModel = hiltViewModel(),
+    peopleModel: PeopleModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val sos by sosModel.state.collectAsStateWithLifecycle()
@@ -74,6 +100,11 @@ fun PatientRoot(
     val scope = rememberCoroutineScope()
     var route by rememberSaveable { mutableStateOf(PatientRoute.HOME) }
     var message by rememberSaveable { mutableStateOf<Int?>(null) }
+    var dialed by rememberSaveable { mutableStateOf("") }
+    DialRequestEffect {
+        dialed = it
+        route = PatientRoute.KEYPAD
+    }
     val session = remember { PatientSession(context, scope, viewModel) { message = it } }
     val permissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -91,7 +122,9 @@ fun PatientRoot(
             // SOS comes before everything else and stays until the patient says they are safe.
             sos.phase != SosPhase.IDLE -> SosScreen(sos, sosModel.callbacks)
             route == PatientRoute.HELPER -> HelperMode(onLock = { route = PatientRoute.HOME })
-            route == PatientRoute.SET_PIN || route == PatientRoute.CHECK_PIN ->
+            route.isPhone ->
+                PhoneRoute(route == PatientRoute.KEYPAD, dialed, { dialed = it }, peopleModel) { route = it }
+            route.isPin ->
                 PinRoute(route == PatientRoute.SET_PIN, state.hasPin, viewModel) { route = it }
             !state.hasPin || !state.consentAccepted ->
                 WelcomeScreen(onStart = { route = if (state.hasPin) PatientRoute.CHECK_PIN else PatientRoute.SET_PIN })
@@ -108,6 +141,8 @@ fun PatientRoot(
                     onPlaceApplied = session::restartIf,
                     onHelper = { route = PatientRoute.CHECK_PIN },
                     onSos = sosModel::ask,
+                    onPeople = { route = PatientRoute.PEOPLE },
+                    peopleModel = peopleModel,
                     viewModel = viewModel,
                 )
         }
@@ -168,8 +203,11 @@ private fun PatientHome(
     onPlaceApplied: (Boolean) -> Unit,
     onHelper: () -> Unit,
     onSos: () -> Unit,
+    onPeople: () -> Unit,
+    peopleModel: PeopleModel,
     viewModel: PatientStateModel,
 ) {
+    val quickCall by peopleModel.quickCall.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var placeSheet by rememberSaveable { mutableStateOf(false) }
@@ -188,11 +226,46 @@ private fun PatientHome(
         onHelper = onHelper,
         onChooseSource = viewModel::chooseSource,
         onSos = onSos,
+        quickCall = quickCall,
+        onQuickCall = { quickCall?.let { peopleModel.call(it.number) } },
+        onPeople = onPeople,
         message =
             message?.let { stringResource(it) }
                 ?: if (state.failed) stringResource(R.string.patient_stopped) else null,
     )
 }
+
+/** People and the keypad. Back returns to Home. */
+@Composable
+private fun PhoneRoute(
+    keypad: Boolean,
+    number: String,
+    onNumber: (String) -> Unit,
+    peopleModel: PeopleModel,
+    navigate: (PatientRoute) -> Unit,
+) {
+    val people by peopleModel.people.collectAsStateWithLifecycle()
+    if (keypad) {
+        BackHandler { navigate(PatientRoute.PEOPLE) }
+        KeypadScreen(
+            number = number,
+            onDigit = { if (number.length < MAX_DIAL) onNumber(number + it) },
+            onDelete = { onNumber(number.dropLast(1)) },
+            onCall = { peopleModel.call(number) },
+            onBack = { navigate(PatientRoute.PEOPLE) },
+        )
+    } else {
+        BackHandler { navigate(PatientRoute.HOME) }
+        PeopleScreen(
+            people = people,
+            onCall = { peopleModel.call(it.number) },
+            onKeypad = { navigate(PatientRoute.KEYPAD) },
+            onBack = { navigate(PatientRoute.HOME) },
+        )
+    }
+}
+
+private const val MAX_DIAL = 20
 
 @Composable
 private fun PinRoute(

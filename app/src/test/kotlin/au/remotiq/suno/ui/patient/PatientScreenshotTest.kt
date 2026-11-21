@@ -282,6 +282,47 @@ class PatientScreenshotTest {
                 CallScreen(call(au.remotiq.suno.phone.CallPhase.ACTIVE, son), CallCallbacks(), now = { 96_000L })
             }
         }
+
+    private val people =
+        listOf(
+            au.remotiq.suno.data
+                .Favourite("Rahul", "Son", "+919876543210"),
+            au.remotiq.suno.data
+                .Favourite("Priya", "Daughter", "+919812345678"),
+            au.remotiq.suno.data
+                .Favourite("Dr. Sharma", "Doctor", "01123456789"),
+        )
+
+    @Test
+    fun homeWithCallDock() =
+        shot("43-home-call-dock") {
+            PatientTheme(PatientThemeName.STANDARD) {
+                PatientHomeScreen(
+                    state = state(),
+                    device = DeviceStatus(earphones = true, batteryPercent = 80),
+                    placeSheetOpen = false,
+                    onListen = {},
+                    onVolume = {},
+                    onOpenPlaces = {},
+                    onClosePlaces = {},
+                    onPlace = {},
+                    onHelper = {},
+                    message = null,
+                    quickCall = people.first(),
+                )
+            }
+        }
+
+    @Test
+    fun peopleScreen() =
+        shot("44-people") { PatientTheme(PatientThemeName.STANDARD) { PeopleScreen(people, {}, {}, {}) } }
+
+    @Test
+    @Config(qualifiers = "hi-w400dp-h960dp-xxhdpi")
+    fun keypadHindiYellow() =
+        shot("45-keypad-hindi") {
+            PatientTheme(PatientThemeName.YELLOW) { KeypadScreen("98765 43", {}, {}, {}, {}) }
+        }
 }
 
 private const val PHONE = "w400dp-h860dp-xxhdpi"
