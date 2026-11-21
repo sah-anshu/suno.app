@@ -46,6 +46,14 @@ private object PreferenceKeys {
     val ACTIVE_PROFILE_ID = stringPreferencesKey("active_profile_id")
     val EXPOSURE_EPOCH_DAY = longPreferencesKey("exposure_epoch_day")
     val EXPOSURE_UNITS = doublePreferencesKey("exposure_units")
+    val PATIENT_PLACE = stringPreferencesKey("patient_place")
+    val PATIENT_VOLUME_STEP = intPreferencesKey("patient_volume_step")
+    val PATIENT_MAX_VOLUME_STEP = intPreferencesKey("patient_max_volume_step")
+    val PATIENT_PICTURES = booleanPreferencesKey("patient_pictures")
+    val PATIENT_THEME = stringPreferencesKey("patient_theme")
+    val PATIENT_HOME_LEVEL = intPreferencesKey("patient_home_level")
+    val PATIENT_AUTO_START = booleanPreferencesKey("patient_auto_start")
+    val PATIENT_PIN_HASH = stringPreferencesKey("patient_pin_hash")
 
     // Legacy single-profile keys (pre-multi-profile builds).
     val PROFILE_NAME = stringPreferencesKey("profile_name")
@@ -85,6 +93,36 @@ class PreferencesStore(
 
     override suspend fun markBackgroundSetupReviewed() {
         dataStore.edit { it[PreferenceKeys.BACKGROUND_SETUP_REVIEWED] = true }
+    }
+
+    override fun observePatientSettings(): Flow<PatientSettings> =
+        dataStore.observe {
+            val defaults = PatientSettings()
+            PatientSettings(
+                place = it[PreferenceKeys.PATIENT_PLACE] ?: defaults.place,
+                volumeStep = it[PreferenceKeys.PATIENT_VOLUME_STEP] ?: defaults.volumeStep,
+                maxVolumeStep = it[PreferenceKeys.PATIENT_MAX_VOLUME_STEP] ?: defaults.maxVolumeStep,
+                picturesMode = it[PreferenceKeys.PATIENT_PICTURES] ?: defaults.picturesMode,
+                theme = it[PreferenceKeys.PATIENT_THEME] ?: defaults.theme,
+                homeLevel = it[PreferenceKeys.PATIENT_HOME_LEVEL] ?: defaults.homeLevel,
+                autoStart = it[PreferenceKeys.PATIENT_AUTO_START] ?: defaults.autoStart,
+                pinHash = it[PreferenceKeys.PATIENT_PIN_HASH],
+            ).normalized()
+        }
+
+    override suspend fun setPatientSettings(settings: PatientSettings) {
+        val s = settings.normalized()
+        dataStore.edit {
+            it[PreferenceKeys.PATIENT_PLACE] = s.place
+            it[PreferenceKeys.PATIENT_VOLUME_STEP] = s.volumeStep
+            it[PreferenceKeys.PATIENT_MAX_VOLUME_STEP] = s.maxVolumeStep
+            it[PreferenceKeys.PATIENT_PICTURES] = s.picturesMode
+            it[PreferenceKeys.PATIENT_THEME] = s.theme
+            it[PreferenceKeys.PATIENT_HOME_LEVEL] = s.homeLevel
+            it[PreferenceKeys.PATIENT_AUTO_START] = s.autoStart
+            val pin = s.pinHash
+            if (pin == null) it.remove(PreferenceKeys.PATIENT_PIN_HASH) else it[PreferenceKeys.PATIENT_PIN_HASH] = pin
+        }
     }
 
     override fun observeHighContrast(): Flow<Boolean> = dataStore.observe { it[PreferenceKeys.HIGH_CONTRAST] ?: false }

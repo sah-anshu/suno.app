@@ -3,6 +3,11 @@ package au.remotiq.suno.data
 import kotlinx.coroutines.flow.Flow
 
 interface PreferenceStorage {
+    /** Settings for the patient's simple layout and the helper PIN. */
+    fun observePatientSettings(): Flow<PatientSettings>
+
+    suspend fun setPatientSettings(settings: PatientSettings)
+
     /** True only when the user has explicitly accepted the current terms and safety guidance. */
     fun observeConsentAccepted(): Flow<Boolean>
 
