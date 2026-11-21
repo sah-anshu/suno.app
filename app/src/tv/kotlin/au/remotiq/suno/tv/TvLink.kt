@@ -75,8 +75,16 @@ class TvLink
         override val connected: StateFlow<Boolean> =
             _status.map { it.state == ClientState.CONNECTED }.stateIn(scope, SharingStarted.Eagerly, false)
 
-        /** Call once permissions are granted. */
+        /** Call once permissions are granted. Does nothing while already set up, connecting or connected. */
         fun start() {
+            if (hosting != null || job?.isActive == true || client != null) return
+            restart()
+        }
+
+        /** Connects again (or shows the setup code) even if a connection is open. */
+        fun retry() = restart()
+
+        private fun restart() {
             if (!LinkPermissions.supported()) {
                 _status.update { it.copy(unsupported = true) }
                 return
@@ -86,8 +94,6 @@ class TvLink
                 if (patient == null) beginSetup() else connect(patient)
             }
         }
-
-        fun retry() = start()
 
         /** Forget the patient's Suno and show a new setup code. */
         fun reset() {

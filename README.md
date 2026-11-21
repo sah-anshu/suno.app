@@ -12,9 +12,9 @@ Suno is a sound-amplification tool. **It is not a medical device** and does not 
 
 ## Status
 
-Early development. Phases 0–2 are built: the EarCast code base imported, renamed and split into three apps with
-safety fixes; the patient's simple Home with a helper PIN; and the family link, where a companion joins by QR and
-talks to the patient. The architecture, decisions and build plan are in [arch.md](arch.md). Nothing has been validated
+Early development. Phases 0–3 are built: the EarCast code base imported, renamed and split into three apps with
+safety fixes; the patient's simple Home with a helper PIN; the family link, where a companion joins by QR and talks to
+the patient; and TV sound, sent from a phone by cable or from the Suno TV app, set up by a family member's phone. The architecture, decisions and build plan are in [arch.md](arch.md). Nothing has been validated
 on real hardware yet.
 
 ## Build
@@ -33,11 +33,16 @@ Requirements: Android SDK with platform 37, NDK 30.0.16248370 and CMake 4.1.2 (s
 | Suno Companion | `au.remotiq.suno.companion` | `app/build/outputs/apk/companion/debug/` |
 | Suno TV | `au.remotiq.suno.tv` | `app/build/outputs/apk/tv/debug/` |
 
+<p>
+  <img src="docs/images/suno/30-tv-setup.png" width="480" alt="Suno TV showing its set-up code">
+  <img src="docs/images/suno/15-tv-playing.png" width="200" alt="Patient Home hearing the TV">
+</p>
+
 ## Privacy
 
 Suno is designed to work without internet, an account, analytics or recordings. Sound moves only between nearby
-devices that the user has approved, over Wi-Fi Direct or Bluetooth, and every frame is encrypted. The patient and
-companion apps declare the `INTERNET` permission only because Android requires it for any network socket, including the
+devices that the user has approved, over Wi-Fi Direct or Bluetooth, and every frame is encrypted. The patient,
+companion and TV apps declare the `INTERNET` permission only because Android requires it for any network socket, including the
 local Wi-Fi Direct group; Suno makes no internet connections. A companion can only send its voice; nobody can listen
 through the patient's phone.
 

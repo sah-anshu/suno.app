@@ -9,6 +9,34 @@ checks and emulator runs do not validate acoustic loudness, latency or clarity.
 adb install -r app/build/outputs/apk/patient/debug/app-patient-debug.apk
 ```
 
+## Suno TV sound (Phase 3, not yet checked on a device)
+
+Needs the two phones above plus, where available, an Android TV / Google TV (Android 10+) and a Fire TV.
+
+```sh
+./gradlew assembleTvDebug
+adb -s <tv> install -r app/build/outputs/apk/tv/debug/app-tv-debug.apk
+```
+
+- **Cable route (any TV).** TV headphone or optical output → USB-C audio adapter → companion phone. Companion: Family →
+  Share sound → TV by cable. Check TV sound in the patient's earphones, the TV chip in Now hearing, the room turned down,
+  and that a family member talking turns the TV down. Unplug the adapter: sharing should stop quietly.
+- **Microphone near the TV** and **Sound playing on this phone** (accept the capture prompt; check a music app and a
+  video app, and note apps that stay silent).
+- **TV set-up.** Open Suno TV; it shows a set-up code. Companion (joined to the patient): Family → Set up a TV → scan.
+  The companion says the TV is set up and reconnects to the patient; the patient's phone asks to allow the TV. Check
+  Allow and Don't allow (TV shows refused and Show setup code again). Note how long the handover takes.
+- **Remote.** Every TV screen works with arrows and OK only; the main button has focus on arrival and shows a thick
+  ring. Text readable from 3 m.
+- **Playback capture on the TV.** Start sharing TV sound → consent screen → sound reaches the patient. Check live TV,
+  YouTube, Netflix/Prime (expected silent if protected) and the TV's own menus. Note TVs with no consent screen (Suno TV
+  should show the cable-route message).
+- **Fire TV.** Install the same APK by adb; repeat set-up and capture. Note the Fire OS version.
+- Turn the TV off and on, then open Suno TV: it should reconnect to the patient without a new set-up. Patient stops listening: the
+  TV shows Not connected with Try again.
+- Delay between the TV picture and the sound in the earphones (lip sync), by cable and by playback capture.
+- TV speakers keep their normal volume throughout.
+
 ## Suno family link (Phase 2, not yet checked on a device)
 
 Needs two Android 10+ phones: the patient app on one, Suno Companion on the other.

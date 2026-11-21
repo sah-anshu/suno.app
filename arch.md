@@ -53,7 +53,7 @@ Suno is a sound-amplification tool, **not a medical device**. User-facing copy n
 |---|---|---|---|---|
 | `patient` | `au.remotiq.suno` | The person being helped, plus their helper behind a PIN | Suno simple layout; Helper mode uses EarCast tabs | Listen, hub for incoming streams, phone app and contacts, SOS, mesh owner, QR join approval |
 | `companion` | `au.remotiq.suno.companion` | Family, carers, guests; also tablets | EarCast tabs plus a Family tab | Talk to the patient, Share my sound (playback or mic), remote help, SOS alerts, own hearing (optional) |
-| `tv` | `au.remotiq.suno.tv` | Android TV / Google TV / Fire TV | 10-foot TV screen | Show join QR and code, capture TV playback sound, stream to paired Suno phones, show SOS banner |
+| `tv` | `au.remotiq.suno.tv` | Android TV / Google TV / Fire TV | 10-foot TV screen | Show a set-up QR that a companion scans, capture TV playback sound, stream to the patient's Suno, show SOS banner |
 
 ```kotlin
 // app/build.gradle.kts (sketch)
@@ -225,6 +225,21 @@ Java `AudioRecord` / `AudioTrack`; moving to Oboe / AAudio is an option if measu
 Built: ask on the patient's phone. *Proposed:* typed 4-digit code, "ask the helper (PIN)", "contacts join without
 asking".
 
+### 8.1a Setting up a TV (built in Phase 3)
+
+TVs have no camera, so the direction is reversed for the first step:
+
+1. Suno TV shows its own **set-up QR** (`suno://join?...&t=1`) and hosts the link with it (Wi-Fi Direct and Bluetooth).
+2. A family member, already joined to the patient, opens Suno Companion → Family → **Set up a TV** and scans it. The
+   companion leaves the patient for a moment, connects to the TV, sends the patient's join code in an encrypted
+   **Provision** message, waits for **Provisioned** (10 s limit), then reconnects to the patient.
+3. The TV stores the patient's code and joins the patient's phone as device kind **TV**. The patient's phone shows
+   **"*TV name* wants to share TV sound · Allow / Don't allow"**.
+4. On the TV, **Start sharing TV sound** asks Android for capture consent (MediaProjection) and sends playback audio as
+   a **media** stream. If the TV has no consent screen, Suno TV says so and points to the cable route.
+
+A set-up code is never accepted as a patient code, and a TV only takes a patient code, not another set-up code.
+
 ### 8.2 Topology
 
 - Audio uses short direct links, centred on the patient's phone (star).
@@ -239,7 +254,7 @@ asking".
 |---|---|---|
 | Patient hub | Status, SOS, approvals, relayed audio | All audio sources, remote-help commands |
 | Companion | Talk audio, shared playback or mic audio, remote-help commands, SOS replies | Patient status, SOS alerts |
-| TV | TV playback audio | Pairing, SOS banner |
+| TV | TV playback audio (media stream) | The patient's join code from a companion (set-up), SOS banner |
 
 Remote help from a companion is limited to listening on/off, volume up to the helper's cap, and place. The patient's
 phone shows who changed what.
@@ -261,13 +276,17 @@ join by name, L2CAP, Opus encoder); on older phones the link options are hidden.
 
 | TV | Suno TV app | How TV sound reaches Suno | State |
 |---|---|---|---|
-| Android TV / Google TV | Yes (`tv` flavour) | `AudioPlaybackCapture` (Android 10+). Apps that opt out of capture stay silent | To verify |
-| Amazon Fire TV | Yes, via Amazon Appstore | Same capture on Fire OS 8 (Android 11). No Play Services, so it needs `link-direct` | To verify |
-| Samsung (Tizen), LG (webOS) | No. Android apps do not run | Cable from the TV's headphone or optical output → USB-C audio adapter → a phone running the `companion` flavour as sender | To verify |
+| Android TV / Google TV | Yes (`tv` flavour, built) | `AudioPlaybackCapture` (Android 10+) after the MediaProjection consent. Apps that opt out of capture, and most protected streaming apps, stay silent | To verify |
+| Amazon Fire TV | Yes, via Amazon Appstore (same `tv` APK) | Same capture on Fire OS 8 (Android 11), if Fire OS shows the consent screen. The link needs no Play Services | To verify |
+| Samsung (Tizen), LG (webOS) | No. Android apps do not run | Cable from the TV's headphone or optical output → USB-C audio adapter → a phone running Suno Companion → Share sound → **TV by cable** (built) | To verify |
 | Any TV, including broadcast and set-top boxes | Not needed | The same cable route | To verify |
 
 A phone cannot receive a TV's ordinary Bluetooth audio, because phones do not expose the A2DP sink role *(To verify)*.
 Recommended order: cable sender first (works everywhere), then Android / Google TV, then Fire TV.
+
+On the patient's phone, TV sound is a **media** stream: it is mixed with priority Person > TV > Room (TV ducks the room,
+a talking person ducks the TV, about −12 dB with short ramps), before the patient's audiogram and the limiter. The Now
+hearing card shows a TV chip when a TV is connected. TV speakers are not changed, so others watch at normal volume.
 
 ## 10. Phone app, contacts and SOS (`patient` flavour)
 
@@ -425,7 +444,7 @@ Each slice is usable on its own.
 | 0 | Fork EarCast with history, rename to `au.remotiq.suno`, add flavours, fix the safety issues in [section 4.2](#42-changed-or-fixed), build and tests green |
 | 1 | Patient layout: Listen, volume, places, Home levels, zero-tap, Pictures mode, Hindi, themes, Helper PIN |
 | 2 | `audio-graph` + `link`: companion joins by QR and talks; captions if verified |
-| 3 | TV sound: cable sender in `companion`, then the `tv` flavour |
+| 3 | TV sound: cable sender in `companion`, then the `tv` flavour **(built, not on a device)** |
 | 4 | SOS and companion alerts; mesh relay |
 | 5 | Phone app, contacts, home-screen role (store policy review needed) |
 
@@ -458,3 +477,7 @@ Anything involving real sound, radios or calls needs physical devices and a writ
 | 2026-11-21 | Every link frame is encrypted (HKDF + AES-GCM per connection); the link needs Android 10+. |
 | 2026-11-21 | Patient and companion apps declare INTERNET only for local sockets; no internet connections are made. |
 | 2026-11-21 | Phase 2 done: join by QR with Allow / Don't allow, companion Talk, voices mixed before the patient's chain, Now-hearing card and talking banner, companion Family tab, screenshot tests. Not on a device yet. |
+| 2026-11-21 | TV sound is a separate media stream with priority Person > TV > Room, mixed before the patient's chain. |
+| 2026-11-21 | Companion "Share sound": TV by cable (USB-C audio adapter), microphone near the TV, or this phone's playback (MediaProjection). |
+| 2026-11-21 | TVs are set up by a companion phone scanning the TV's set-up QR and handing over the patient's code over the encrypted link (TVs have no camera). |
+| 2026-11-21 | Phase 3 done: media streams, companion Share sound and Set up a TV, Suno TV app (10-foot screen, remote focus, playback capture), screenshot tests. Not on a device yet. |
