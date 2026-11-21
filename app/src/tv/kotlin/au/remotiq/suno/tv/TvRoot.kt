@@ -212,14 +212,8 @@ private fun TvContent(
         status.state == ClientState.WAITING_FOR_APPROVAL -> Title(stringResource(R.string.tv_waiting, patient))
         status.state == ClientState.CONNECTED -> {
             Title(stringResource(R.string.tv_connected, patient))
-            val via =
-                if (status.transport ==
-                    LinkTransport.BLUETOOTH
-                ) {
-                    R.string.tv_via_bluetooth
-                } else {
-                    R.string.tv_via_wifi
-                }
+            val wifi = status.transport == LinkTransport.WIFI_DIRECT
+            val via = if (wifi) R.string.tv_via_wifi else R.string.tv_via_bluetooth
             Text(stringResource(via), style = MaterialTheme.typography.bodyLarge, color = c.muted)
             if (captureNotAllowed) {
                 Text(

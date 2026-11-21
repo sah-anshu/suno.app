@@ -254,12 +254,10 @@ private fun ConnectedCard(
 ) {
     val via =
         stringResource(
-            if (status.transport ==
-                LinkTransport.BLUETOOTH
-            ) {
-                R.string.family_via_bluetooth
-            } else {
-                R.string.family_via_wifi
+            when (status.transport) {
+                LinkTransport.BLUETOOTH -> R.string.family_via_bluetooth
+                LinkTransport.RELAY -> R.string.family_via_relay
+                else -> R.string.family_via_wifi
             },
         )
     SurfaceCard(Modifier.fillMaxWidth()) {

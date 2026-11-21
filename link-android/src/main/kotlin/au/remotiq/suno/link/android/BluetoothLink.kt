@@ -2,6 +2,7 @@
 package au.remotiq.suno.link.android
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.le.AdvertiseCallback
@@ -22,41 +23,53 @@ import au.remotiq.suno.link.StreamChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import java.nio.ByteBuffer
 import java.util.UUID
 import kotlin.concurrent.thread
 import kotlin.coroutines.resume
 
-/** Advert format shared by host and companion: Suno service UUID with `[session id: 8][PSM: 2]`. */
+/** Advert format shared by host and companion: Suno service UUID with `[session id: 8][PSM: 2][flags: 1]`. */
 internal object BluetoothAdvert {
     val SERVICE: ParcelUuid = ParcelUuid(UUID.fromString("7d3b3e2a-5a1f-4c8e-9b1e-53756e6f0001"))
     const val ID_BYTES = 8
 
-    /** Match the session id, ignore the channel number. */
-    val ID_MASK: ByteArray = ByteArray(ID_BYTES) { -1 } + byteArrayOf(0, 0)
+    /** Set in flags when the advert is a companion relaying for the patient, not the patient's phone. */
+    const val FLAG_RELAY = 1
+
+    /** Match the session id, ignore the channel number and flags. */
+    val ID_MASK: ByteArray = ByteArray(ID_BYTES) { -1 } + byteArrayOf(0, 0, 0)
 
     fun sessionBytes(sessionId: String): ByteArray = sessionId.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     fun encode(
         sessionId: String,
         psm: Int,
+        relay: Boolean = false,
     ): ByteArray =
         ByteBuffer
-            .allocate(ID_BYTES + 2)
+            .allocate(ID_BYTES + 3)
             .put(sessionBytes(sessionId))
             .putShort(psm.toShort())
+            .put(if (relay) FLAG_RELAY.toByte() else 0)
             .array()
 
-    /** PSM from an advert for [sessionId], or null if it belongs to someone else. */
-    fun psmFor(
+    /** Channel number and relay flag from an advert for [sessionId], or null if it belongs to someone else. */
+    fun targetFor(
         sessionId: String,
         data: ByteArray?,
-    ): Int? {
+    ): Target? {
         if (data == null || data.size < ID_BYTES + 2) return null
         if (!data.copyOfRange(0, ID_BYTES).contentEquals(sessionBytes(sessionId))) return null
-        return ByteBuffer.wrap(data, ID_BYTES, 2).short.toInt() and PSM_MASK
+        val psm = ByteBuffer.wrap(data, ID_BYTES, 2).short.toInt() and PSM_MASK
+        val relay = data.size > ID_BYTES + 2 && data[ID_BYTES + 2].toInt() and FLAG_RELAY != 0
+        return Target(psm, relay)
     }
+
+    data class Target(
+        val psm: Int,
+        val relay: Boolean,
+    )
 
     private const val PSM_MASK = 0xFFFF
 }
@@ -69,6 +82,8 @@ internal object BluetoothAdvert {
 class BluetoothHost(
     context: Context,
     private val sessionId: String,
+    /** True on a companion relaying for the patient. */
+    private val relay: Boolean = false,
 ) {
     private val adapter = (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
     private var server: BluetoothServerSocket? = null
@@ -102,7 +117,7 @@ class BluetoothHost(
             AdvertiseData
                 .Builder()
                 .setIncludeDeviceName(false)
-                .addServiceData(BluetoothAdvert.SERVICE, BluetoothAdvert.encode(sessionId, socket.psm))
+                .addServiceData(BluetoothAdvert.SERVICE, BluetoothAdvert.encode(sessionId, socket.psm, relay))
                 .build(),
             callback,
         )
@@ -117,18 +132,25 @@ class BluetoothHost(
     }
 }
 
-/** Finds the patient's advert for a session id and opens an L2CAP channel to it. */
+/** Finds the patient's advert for a session id (or a relay's) and opens an L2CAP channel to it. */
 @RequiresApi(Build.VERSION_CODES.Q)
 class BluetoothJoiner(
     context: Context,
 ) {
     private val adapter = (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
+    private var target: Pair<BluetoothDevice, Int>? = null
 
+    /** True when the channel goes through a companion relaying for the patient. */
+    var viaRelay = false
+        private set
+
+    /** Prefers the patient's own advert; takes a relay only if the patient is not heard soon. */
     @SuppressLint("MissingPermission")
     suspend fun join(sessionId: String): LinkChannel {
         val scanner = checkNotNull(adapter.bluetoothLeScanner) { "Bluetooth is off" }
-        val (device, psm) =
-            withTimeout(SCAN_TIMEOUT_MS) {
+        var relayFound: Pair<BluetoothDevice, BluetoothAdvert.Target>? = null
+        val found =
+            withTimeoutOrNull(SCAN_TIMEOUT_MS) {
                 suspendCancellableCoroutine { cont ->
                     val callback =
                         object : ScanCallback() {
@@ -136,14 +158,16 @@ class BluetoothJoiner(
                                 type: Int,
                                 result: ScanResult,
                             ) {
-                                val psm =
-                                    BluetoothAdvert.psmFor(
+                                val advert =
+                                    BluetoothAdvert.targetFor(
                                         sessionId,
                                         result.scanRecord?.getServiceData(BluetoothAdvert.SERVICE),
-                                    )
-                                if (psm != null && cont.isActive) {
+                                    ) ?: return
+                                if (advert.relay) {
+                                    if (relayFound == null) relayFound = result.device to advert
+                                } else if (cont.isActive) {
                                     runCatching { scanner.stopScan(this) }
-                                    cont.resume(result.device to psm)
+                                    cont.resume(result.device to advert)
                                 }
                             }
                         }
@@ -163,12 +187,23 @@ class BluetoothJoiner(
                     cont.invokeOnCancellation { runCatching { scanner.stopScan(callback) } }
                 }
             }
+        val (device, advert) = checkNotNull(found ?: relayFound) { "Suno not found nearby" }
+        viaRelay = advert.relay
+        target = device to advert.psm
+        return connectAgain()
+    }
+
+    /** Opens one more channel to the same phone (used to relay for others). */
+    @SuppressLint("MissingPermission")
+    suspend fun connectAgain(): LinkChannel {
+        val (device, psm) = checkNotNull(target) { "not joined" }
         val socket = device.createInsecureL2capChannel(psm)
         withContext(Dispatchers.IO) { socket.connect() }
         return StreamChannel(socket.inputStream, socket.outputStream, socket::close, preferredCodec = CodecIds.OPUS)
     }
 
     private companion object {
-        const val SCAN_TIMEOUT_MS = 20_000L
+        /** Long enough to hear the patient's phone over a nearer relay. */
+        const val SCAN_TIMEOUT_MS = 12_000L
     }
 }

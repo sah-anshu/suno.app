@@ -106,6 +106,7 @@ class WifiDirectJoiner(
 ) {
     private val manager = context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
     private var channel: WifiP2pManager.Channel? = null
+    private var owner: InetAddress? = null
 
     @SuppressLint("MissingPermission")
     suspend fun join(credentials: WifiDirectCredentials): LinkChannel {
@@ -158,12 +159,20 @@ class WifiDirectJoiner(
                     )
                 }
             }
-        return withContext(Dispatchers.IO) { SocketLinkConnector.connect(owner, LINK_PORT) }
+        this.owner = owner
+        return connectAgain()
+    }
+
+    /** Opens one more connection to the patient's phone in the same group (used to relay for others). */
+    suspend fun connectAgain(): LinkChannel {
+        val address = checkNotNull(owner) { "not joined" }
+        return withContext(Dispatchers.IO) { SocketLinkConnector.connect(address, LINK_PORT) }
     }
 
     fun leave() {
         channel?.let { ch -> manager.removeGroup(ch, null) }
         channel = null
+        owner = null
     }
 
     private companion object {

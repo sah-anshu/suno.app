@@ -41,4 +41,5 @@
     <string name="tv_setup_done">टीवी सेट हो गया। उनका फ़ोन अनुमति माँगेगा।</string>
     <string name="tv_setup_failed">टीवी तक नहीं पहुँच पाए। फ़ोन टीवी के पास रखें और फिर कोशिश करें।</string>
     <string name="tv_setup_scan">टीवी का कोड स्कैन करें</string>
+    <string name="family_via_relay">परिवार के दूसरे फ़ोन के ज़रिए</string>
 </resources>

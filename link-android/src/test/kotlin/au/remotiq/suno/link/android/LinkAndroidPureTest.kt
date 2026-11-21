@@ -15,11 +15,19 @@ class LinkAndroidPureTest {
     fun `advert carries the session id and channel, and ignores other sessions`() {
         val id = "0123456789abcdef"
         val data = BluetoothAdvert.encode(id, 0x00C5)
-        assertEquals(10, data.size)
-        assertEquals(0x00C5, BluetoothAdvert.psmFor(id, data))
-        assertNull(BluetoothAdvert.psmFor("fedcba9876543210", data))
-        assertNull(BluetoothAdvert.psmFor(id, byteArrayOf(1, 2)))
-        assertEquals(10, BluetoothAdvert.ID_MASK.size)
+        assertEquals(11, data.size)
+        assertEquals(BluetoothAdvert.Target(0x00C5, relay = false), BluetoothAdvert.targetFor(id, data))
+        assertNull(BluetoothAdvert.targetFor("fedcba9876543210", data))
+        assertNull(BluetoothAdvert.targetFor(id, byteArrayOf(1, 2)))
+        assertEquals(data.size, BluetoothAdvert.ID_MASK.size)
+    }
+
+    @Test
+    fun `a relay's advert is marked, and an advert without flags is the patient's own`() {
+        val id = "0123456789abcdef"
+        assertTrue(BluetoothAdvert.targetFor(id, BluetoothAdvert.encode(id, 0x0081, relay = true))!!.relay)
+        val old = BluetoothAdvert.encode(id, 0x0081).copyOf(10)
+        assertEquals(BluetoothAdvert.Target(0x0081, relay = false), BluetoothAdvert.targetFor(id, old))
     }
 
     @Test
