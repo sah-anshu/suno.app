@@ -12,11 +12,11 @@ Suno is a sound-amplification tool. **It is not a medical device** and does not 
 
 ## Status
 
-Early development. Phases 0–4 are built: the EarCast code base imported, renamed and split into three apps with
+Early development. Phases 0–5 are built: the EarCast code base imported, renamed and split into three apps with
 safety fixes; the patient's simple Home with a helper PIN; the family link, where a companion joins by QR and talks to
 the patient; TV sound, sent from a phone by cable or from the Suno TV app, set up by a family member's phone; and SOS,
 which alerts family phones and the TV, calls the helper and texts the patient's place, with a relay for phones out of
-range. The architecture, decisions and build plan are in [arch.md](arch.md). Nothing has been validated
+range; and Suno as the patient's phone app, with People, a large keypad and simple call screens. The architecture, decisions and build plan are in [arch.md](arch.md). Nothing has been validated
 on real hardware yet.
 
 ## Build

@@ -142,7 +142,7 @@ min SDK 26, NDK 30, CMake 4.1.2, ktlint and detekt.
 | `link-android` | New (Phase 2) | Android | Default transports without Google services: `WifiDirectHost/Joiner`, `BluetoothHost/Joiner` (L2CAP, relay flag in the advert), `OpusCodec`, `LinkPermissions`, `LinkConnector` / `LinkHosting` / `RelayHosting` |
 | `link-nearby` | New, optional | Android | Google Nearby Connections, only in the optional `gms` build |
 | `sender-core` | New | Android | Playback capture and mic capture → Opus → `link`. Used by `companion` and `tv` |
-| `telephony` | New | Android | Phone-app role, call screens, call routing, call screening. `patient` only |
+| `phone` (package in `app`, built in Phase 5) | New | Android | Phone-app role, call screens, call routing, call screening, People. `patient` only |
 | `sos` (package in `app`, built in Phase 4) | New | Android | `SosController`, `SosActions` (calls, texts, GPS, speaker alarm), `SosService`. Trigger in `patient`; alerts shown in `companion` (`FamilyLinkService`, SOS card) and `tv` (banner). A package, not a module |
 | `captions` | New (Proposed) | Android | Offline speech-to-text for people talking through Suno |
 | `app` | EarCast, restructured | Android app | Flavours `patient`, `companion`, `tv`; shared EarCast screens in `main` |
@@ -297,17 +297,27 @@ hearing card shows a TV chip when a TV is connected. TV speakers are not changed
 
 ## 10. Phone app, contacts and SOS (`patient` flavour)
 
-### 10.1 Phone app and contacts — Decided
+### 10.1 Phone app and contacts — Decided, built in Phase 5
 
-Suno requests the default phone-app role (`RoleManager.ROLE_DIALER`).
+The helper makes Suno the default phone app (`RoleManager.ROLE_DIALER`) in Helper mode → Settings → People and calls.
+Code: `phone` package in `app` (`PhoneCalls`, `SunoInCallService`, `SunoCallScreeningService`, `CallActivity`,
+`CallRules`, `DialRequests`); declared only in the patient manifest.
 
-- **People:** large tiles with name and relationship; one tap calls. A large keypad for unsaved numbers.
-- **Incoming call:** Answer and Decline are tap buttons, no swiping. Unknown numbers show a scam warning.
-- **In a call:** route to earphones, speaker or hearing aid; call volume; mute; end.
-- **Helper settings:** favourites and their order, calls allowed from everyone or contacts only, auto-answer on
-  speaker after 3 rings for contacts.
-- The role gives control of call routing and volume and lets SOS place calls directly. It does **not** give access to
-  call audio ([section 6.1](#61-the-audiogram-rule)).
+- **People:** large tiles with name and relationship; one tap calls. **Type a number** opens a large keypad. The Home
+  dock has **Call <first person>** (or the SOS helper) and **People**. Other apps' `tel:` links and the dial action open
+  Suno's keypad.
+- **Incoming call:** full screen over the lock screen. Answer and Decline are tap buttons, with no swiping. Unknown numbers
+  show "Never share bank details, PINs or OTP codes". Android plays the ringtone.
+- **In a call:** hear it on Phone, Speaker, Earphones or Bluetooth (hearing aids connect as Bluetooth); call volume;
+  mute; a large End call. One call at a time: a second incoming call is declined.
+- **Helper settings:** People (from contacts or typed, reorder, remove); calls from People and contacts only (others
+  are declined before ringing, but every call rings during an SOS); auto-answer People and contacts after about three
+  rings (on earphones or Bluetooth if connected, else the speaker); and the SOS emergency call (section 10.2).
+- The role gives control of call routing and volume and lets SOS place calls, including to the emergency number,
+  directly. It does **not** give access to call audio ([section 6.1](#61-the-audiogram-rule)).
+- Without the role, calls go through the phone's own app; People and the keypad still work (`ACTION_CALL` /
+  `ACTION_DIAL`).
+- Not built: call history screen, voicemail, a keypad during calls (menus), and Suno as the launcher (Proposed).
 
 ### 10.2 SOS — Decided, built in Phase 4
 
@@ -331,8 +341,10 @@ Suno requests the default phone-app role (`RoleManager.ROLE_DIALER`).
    The TV shows a banner.
 5. **I'm safe now** ends it: everyone is told and the alarm stops. `SosService` keeps Suno running during the call.
 
-Not yet: automatic "112 if the helper does not answer". It needs call state from the phone-app role, so it comes in
-Phase 5. SEND_SMS is restricted on Google Play; a Play build would drop it and use the prefilled messaging app
+Built in Phase 5: when Suno is the phone app it watches the helper call. If the call is not answered within 45 s or
+ends unanswered, Suno calls the emergency number itself; with no helper number it calls straight away. Both need the
+helper setting "call the emergency number if the helper does not answer" (on by default). A voicemail that picks up
+counts as answered *(To verify)*. Without the role the emergency number stays a button. SEND_SMS is restricted on Google Play; a Play build would drop it and use the prefilled messaging app
 *(To verify)*. GPS works without internet. The companion stays linked in the background with a notification, and
 reconnects after 15 s, 30 s, then every 60 s. It does not start after a reboot until Suno Companion is opened.
 
@@ -449,7 +461,9 @@ Either way, `link` hides the transport behind one interface, so the choice can w
 4. `AudioPlaybackCapture` on target TVs and tablets, and which apps block capture.
 5. Fire OS version and capture support on current Fire TV devices.
 6. Phones not exposing A2DP sink; Auracast source being system-only.
-7. Default phone-app role behaviour across OEMs (Samsung, Xiaomi, Pixel); `CallScreeningService`; auto-answer.
+7. Default phone-app role behaviour across OEMs (Samsung, Xiaomi, Pixel); `CallScreeningService` bound for the
+   default phone app; auto-answer; full-screen incoming calls on the lock screen; dual SIM; voicemail counted as
+   answered in the SOS escalation.
 8. `SEND_SMS` policy route on Google Play for SOS; full-screen alerts on Android 14+ (`USE_FULL_SCREEN_INTENT` is
    limited to calling and alarm apps); alarm routing to the speaker only; background link battery; relay range.
 9. Hearing-aid detection and hearing-aid mode with ASHA and LE Audio aids.
@@ -471,7 +485,7 @@ Each slice is usable on its own.
 | 2 | `audio-graph` + `link`: companion joins by QR and talks; captions if verified |
 | 3 | TV sound: cable sender in `companion`, then the `tv` flavour **(built, not on a device)** |
 | 4 | SOS and companion alerts; mesh relay **(built, not on a device)** |
-| 5 | Phone app, contacts, home-screen role (store policy review needed) |
+| 5 | Phone app, contacts, home-screen role (store policy review needed) **(phone app and People built, not on a device; launcher not built)** |
 
 Checks for every slice: `./gradlew ktlintCheck detekt test testDebugUnitTest` plus assembling all three flavours.
 Anything involving real sound, radios or calls needs physical devices and a written device-test checklist.
@@ -512,3 +526,7 @@ Anything involving real sound, radios or calls needs physical devices and a writ
 | 2026-11-21 | The companion stays linked in the background (foreground notification, reconnect backoff) so SOS alerts arrive. |
 | 2026-11-21 | Mesh relay: one level over Bluetooth LE, transparent and end-to-end encrypted, at most 2 hops. |
 | 2026-11-21 | Phase 4 done: SOS (patient), SOS alerts and I'm on my way (companion), TV banner, background link, relay, screenshot tests. Not on a device yet. |
+| 2026-11-21 | People is Suno's own list chosen by the helper (from contacts or typed); phone contacts are used only for caller names and "contacts only". |
+| 2026-11-21 | With "contacts only", unknown callers are declined before ringing, except during an SOS. One call at a time. |
+| 2026-11-21 | SOS escalation: with Suno as the phone app, an unanswered helper call leads to an automatic emergency call (helper setting, on by default). |
+| 2026-11-21 | Phase 5 done: Suno as the phone app (incoming and in-call screens, routes, volume, mute, screening, auto-answer), People and keypad, Home call dock, helper People and calls settings, SOS escalation, screenshot tests. Launcher role not built. Not on a device yet. |

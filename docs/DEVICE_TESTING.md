@@ -9,6 +9,28 @@ checks and emulator runs do not validate acoustic loudness, latency or clarity.
 adb install -r app/build/outputs/apk/patient/debug/app-patient-debug.apk
 ```
 
+## Suno phone app (Phase 5, not yet checked on a device)
+
+Needs the patient phone with a SIM and a second phone to call from. Try a Pixel, a Samsung and a Xiaomi if possible.
+
+- Helper mode → Settings → People and calls: Make Suno the phone app (system prompt), add people from contacts and by
+  typing, reorder, remove. Allow contacts and calling.
+- Home: Call <first person> calls at once; People tiles call with one tap; Type a number dials. A `tel:` link in a
+  browser or message opens Suno's keypad.
+- Incoming call with the phone locked and unlocked: the Suno screen appears, the phone rings, and Answer and Decline work.
+  An unknown number shows the warning. Note OEMs where only a notification appears.
+- In a call: switch between Phone, Speaker, wired earphones, Bluetooth earphones and a hearing aid (ASHA / LE Audio);
+  volume buttons; mute (the other side hears silence); End call. A second call while in a call is declined.
+- Contacts only: a call from an unknown number does not ring and is in the call log. During an SOS the same number
+  rings.
+- Auto-answer: a call from a person in People is answered after about three rings, on earphones if connected, else
+  the speaker.
+- SOS escalation (use a test number as the emergency number, **never real 112**): helper does not answer → after
+  about 45 s the test emergency number is called; helper declines → called at once; helper answers → not called;
+  helper's voicemail → note what happens. Turn the setting off and check that no call is made.
+- Without the role: calls go through the phone's own app and SOS shows the emergency button only.
+- Listening stops when a call starts and does not play through the speaker.
+
 ## Suno SOS and mesh (Phase 4, not yet checked on a device)
 
 Needs the patient phone with a SIM, two companion phones and, if possible, a Suno TV. Use a family member's number as
