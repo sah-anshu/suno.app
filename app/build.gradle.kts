@@ -37,7 +37,11 @@ val splitApks =
         .toBooleanStrict()
 val supportedAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
 val localApkNames =
-    if (splitApks) supportedAbis.associateWith { "app-$it-release.apk" } else mapOf("universal" to "app-release.apk")
+    if (splitApks) {
+        supportedAbis.associateWith { "app-patient-$it-release.apk" }
+    } else {
+        mapOf("universal" to "app-patient-release.apk")
+    }
 val unsignedAudit = providers.gradleProperty("sunoUnsignedAudit").orElse("false")
 
 // Only validated characters are interpolated into generated Java source.
@@ -74,6 +78,22 @@ android {
         buildConfigField("String", "PRIVACY_POLICY_URL", "\"${privacyPolicyUrl.get()}\"")
         buildConfigField("String", "SUPPORT_EMAIL", "\"${supportEmail.get()}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // One codebase, three apps. See arch.md section 3.
+    flavorDimensions += "role"
+    productFlavors {
+        create("patient") {
+            dimension = "role"
+        }
+        create("companion") {
+            dimension = "role"
+            applicationIdSuffix = ".companion"
+        }
+        create("tv") {
+            dimension = "role"
+            applicationIdSuffix = ".tv"
+        }
     }
 
     splits {
@@ -194,7 +214,7 @@ val verifyPlayRelease =
             }
         }
     }
-tasks.matching { it.name == "bundleRelease" || it.name == "buildReleasePreBundle" }.configureEach {
+tasks.matching { it.name.matches(Regex("bundle\\w*Release|build\\w*ReleasePreBundle")) }.configureEach {
     dependsOn(verifyPlayRelease)
 }
 
@@ -204,7 +224,7 @@ val signatureChecks =
         tasks.register<Exec>("verifyLocalRelease${suffix}Signature") {
             group = "verification"
             description = "Verifies the $abi APK signature."
-            dependsOn("assembleRelease")
+            dependsOn("assemblePatientRelease")
             val sdk =
                 androidComponents.sdkComponents.sdkDirectory
                     .get()
@@ -215,7 +235,7 @@ val signatureChecks =
                 "verify",
                 "--verbose",
                 layout.buildDirectory
-                    .file("outputs/apk/release/$fileName")
+                    .file("outputs/apk/patient/release/$fileName")
                     .get()
                     .asFile,
             )
@@ -235,7 +255,7 @@ val assembleLocalRelease =
         description = "Builds signed, optimized APKs for installation on a local device."
         val localSigningAllowed = localRelease
         val configuredReleaseSigning = keystoreProps.isNotEmpty()
-        val apks = localApkNames.mapValues { (_, name) -> layout.buildDirectory.file("outputs/apk/release/$name") }
+        val apks = localApkNames.mapValues { (_, name) -> layout.buildDirectory.file("outputs/apk/patient/release/$name") }
         dependsOn(verifyLocalReleaseApk)
         doLast {
             check(configuredReleaseSigning || localSigningAllowed) {
