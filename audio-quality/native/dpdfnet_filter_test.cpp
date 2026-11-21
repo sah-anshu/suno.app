@@ -18,9 +18,9 @@ int main(int argc, char** argv) {
             const std::string filename = rate == 8000 ? "dpdfnet8_8khz.onnx" :
                 rate == 16000 ? "dpdfnet8.onnx" : "dpdfnet8_48khz_hr.onnx";
             const std::string path = std::string(argv[1]) + "/" + filename;
-            earcast::DpdfnetFilter dry(rate, model_rate, 0, path.c_str());
-            earcast::DpdfnetFilter gentle(rate, model_rate, 6, path.c_str());
-            earcast::DpdfnetFilter strong(rate, model_rate, 12, path.c_str());
+            suno::DpdfnetFilter dry(rate, model_rate, 0, path.c_str());
+            suno::DpdfnetFilter gentle(rate, model_rate, 6, path.c_str());
+            suno::DpdfnetFilter strong(rate, model_rate, 12, path.c_str());
             const int size = dry.frame_size();
             std::vector<float> a(size), b(size), c(size);
             const float d6 = std::pow(10.0f, -6.0f / 20);

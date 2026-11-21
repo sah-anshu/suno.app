@@ -29,7 +29,7 @@ void fail(JNIEnv* env, const char* message) {
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_app_earcast_core_audio_speech_SpeexBridge_create(
+Java_au_remotiq_suno_core_audio_speech_SpeexBridge_create(
     JNIEnv* env, jobject, jint rate, jint frames, jint suppression) {
     if ((rate != 8000 && rate != 16000 && rate != 24000 && rate != 32000 && rate != 44100 && rate != 48000) || frames != rate / 100 ||
         suppression < 0 || suppression > 18) {
@@ -45,7 +45,7 @@ Java_app_earcast_core_audio_speech_SpeexBridge_create(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_app_earcast_core_audio_speech_SpeexBridge_processFrame(
+Java_au_remotiq_suno_core_audio_speech_SpeexBridge_processFrame(
     JNIEnv* env, jobject, jlong handle, jfloatArray frame) {
     auto* session = reinterpret_cast<Session*>(handle);
     if (!session || !frame || env->GetArrayLength(frame) != static_cast<jsize>(session->floats.size())) {
@@ -65,6 +65,6 @@ Java_app_earcast_core_audio_speech_SpeexBridge_processFrame(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_app_earcast_core_audio_speech_SpeexBridge_destroy(JNIEnv*, jobject, jlong handle) {
+Java_au_remotiq_suno_core_audio_speech_SpeexBridge_destroy(JNIEnv*, jobject, jlong handle) {
     delete reinterpret_cast<Session*>(handle);
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace earcast {
+namespace suno {
 
 // Bounded upward leveling after enhancement. Never gates audio or attenuates
 // below unity. Confidence controls gain growth, not whether audio is audible.
@@ -14,4 +14,4 @@ private:
     float gain_ = 1.0f;
 };
 
-}  // namespace earcast
+}  // namespace suno

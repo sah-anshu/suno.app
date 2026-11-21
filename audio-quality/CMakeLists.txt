@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
-project(earcast_audio_quality LANGUAGES C CXX)
+project(suno_audio_quality LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(EARCAST_BUILD_JNI OFF CACHE BOOL "No JNI needed by the offline suite" FORCE)
+set(SUNO_BUILD_JNI OFF CACHE BOOL "No JNI needed by the offline suite" FORCE)
 add_subdirectory(../audio-engine/src/main/cpp production)
 enable_testing()
 add_executable(rnnoise_filter_test native/rnnoise_filter_test.cpp)
@@ -21,7 +21,7 @@ target_link_libraries(render_audio PRIVATE neural_speech speex_preprocess wiener
 # Nothing is downloaded or built by the evaluation scripts.
 if(TARGET detailed_speech)
     target_link_libraries(render_audio PRIVATE detailed_speech)
-    target_compile_definitions(render_audio PRIVATE EARCAST_HAS_DPDFNET=1)
+    target_compile_definitions(render_audio PRIVATE SUNO_HAS_DPDFNET=1)
     add_executable(dpdfnet_filter_test native/dpdfnet_filter_test.cpp)
     target_link_libraries(dpdfnet_filter_test PRIVATE detailed_speech)
     add_test(NAME dpdfnet_speech COMMAND dpdfnet_filter_test

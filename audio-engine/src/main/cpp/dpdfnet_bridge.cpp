@@ -5,7 +5,7 @@
 
 namespace {
 struct Session {
-    earcast::DpdfnetFilter denoiser;
+    suno::DpdfnetFilter denoiser;
     std::vector<float> frame;
     Session(int rate, int model_rate, int suppression, const char* path)
         : denoiser(rate, model_rate, suppression, path), frame(denoiser.frame_size()) {}
@@ -18,7 +18,7 @@ void fail(JNIEnv* env, const char* message) {
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_app_earcast_core_audio_speech_DpdfnetBridge_create(
+Java_au_remotiq_suno_core_audio_speech_DpdfnetBridge_create(
     JNIEnv* env, jobject, jint rate, jint model_rate, jint suppression, jstring path) {
     if (!path) { fail(env, "Detailed speech model path is missing"); return 0; }
     const char* model_path = env->GetStringUTFChars(path, nullptr);
@@ -34,7 +34,7 @@ Java_app_earcast_core_audio_speech_DpdfnetBridge_create(
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_app_earcast_core_audio_speech_DpdfnetBridge_delaySamples(
+Java_au_remotiq_suno_core_audio_speech_DpdfnetBridge_delaySamples(
     JNIEnv* env, jobject, jlong handle) {
     auto* session = reinterpret_cast<Session*>(handle);
     if (!session) {
@@ -45,7 +45,7 @@ Java_app_earcast_core_audio_speech_DpdfnetBridge_delaySamples(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_app_earcast_core_audio_speech_DpdfnetBridge_processFrame(
+Java_au_remotiq_suno_core_audio_speech_DpdfnetBridge_processFrame(
     JNIEnv* env, jobject, jlong handle, jfloatArray frame) {
     auto* session = reinterpret_cast<Session*>(handle);
     if (!session || !frame || env->GetArrayLength(frame) != static_cast<jsize>(session->frame.size())) {
@@ -65,6 +65,6 @@ Java_app_earcast_core_audio_speech_DpdfnetBridge_processFrame(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_app_earcast_core_audio_speech_DpdfnetBridge_destroy(JNIEnv*, jobject, jlong handle) {
+Java_au_remotiq_suno_core_audio_speech_DpdfnetBridge_destroy(JNIEnv*, jobject, jlong handle) {
     delete reinterpret_cast<Session*>(handle);
 }

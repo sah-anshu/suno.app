@@ -1,6 +1,6 @@
 #include "rnnoise_filter.h"
 #include "wiener_filter.h"
-#ifdef EARCAST_HAS_DPDFNET
+#ifdef SUNO_HAS_DPDFNET
 #include "dpdfnet_filter.h"
 #endif
 #include "speex/speex_preprocess.h"
@@ -49,26 +49,26 @@ int main(int argc, char** argv) {
         if (!output) throw std::runtime_error("Cannot create output");
         const int frames = rate / 100;
         int delay = 0;
-        std::unique_ptr<earcast::RnnoiseFilter> neural;
-        std::unique_ptr<earcast::WienerFilter> wiener;
-#ifdef EARCAST_HAS_DPDFNET
-        std::unique_ptr<earcast::DpdfnetFilter> detailed;
+        std::unique_ptr<suno::RnnoiseFilter> neural;
+        std::unique_ptr<suno::WienerFilter> wiener;
+#ifdef SUNO_HAS_DPDFNET
+        std::unique_ptr<suno::DpdfnetFilter> detailed;
 #endif
         using SpeexPtr = std::unique_ptr<SpeexPreprocessState, decltype(&speex_preprocess_state_destroy)>;
         SpeexPtr speex(nullptr, speex_preprocess_state_destroy);
         if (mode == "dpdfnet") {
-#ifdef EARCAST_HAS_DPDFNET
+#ifdef SUNO_HAS_DPDFNET
             const int model_rate = rate <= 16000 ? rate : 48000;
-            detailed = std::make_unique<earcast::DpdfnetFilter>(rate, model_rate, suppression, argv[7]);
+            detailed = std::make_unique<suno::DpdfnetFilter>(rate, model_rate, suppression, argv[7]);
             delay = detailed->delay_samples();
 #else
-            throw std::runtime_error("Build the renderer with EARCAST_SHERPA_RUNTIME_DIR to enable DPDFNet");
+            throw std::runtime_error("Build the renderer with SUNO_SHERPA_RUNTIME_DIR to enable DPDFNet");
 #endif
         } else if (mode == "rnnoise") {
-            neural = std::make_unique<earcast::RnnoiseFilter>(rate, suppression, boost);
+            neural = std::make_unique<suno::RnnoiseFilter>(rate, suppression, boost);
             delay = neural->delay_samples();
         } else if (mode == "wiener") {
-            wiener = std::make_unique<earcast::WienerFilter>(rate, suppression);
+            wiener = std::make_unique<suno::WienerFilter>(rate, suppression);
             delay = wiener->delay_samples();
         } else if (mode == "speex") {
             speex.reset(speex_preprocess_state_init(frames, rate));
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
             const auto started = std::chrono::steady_clock::now();
             if (neural) neural->process(frame.data(), frames);
             if (wiener) wiener->process(frame.data(), frames);
-#ifdef EARCAST_HAS_DPDFNET
+#ifdef SUNO_HAS_DPDFNET
             if (detailed) detailed->process(frame.data(), frames);
 #endif
             if (speex) {

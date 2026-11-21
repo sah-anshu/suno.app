@@ -20,7 +20,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "EarCast"
+rootProject.name = "Suno"
 
 include(":app")
 include(":foundation")

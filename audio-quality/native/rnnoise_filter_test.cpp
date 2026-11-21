@@ -50,7 +50,7 @@ void aligned_mix() {
 void rates_and_weak_input() {
     for (int rate : {8000, 16000, 24000, 32000, 44100, 48000}) {
         // Internal 0 dB setting is a delayed dry reference for adapter tests.
-        earcast::RnnoiseFilter reference(rate, 0);
+        suno::RnnoiseFilter reference(rate, 0);
         std::vector<float> frame(reference.frame_size());
         double energy = 0;
         int measured = 0;
@@ -69,7 +69,7 @@ void rates_and_weak_input() {
         require(rms > 6e-6 && rms < 8e-6, "Resampling lost or amplified weak input");
 
         for (int strength : {6, 12}) {
-            earcast::RnnoiseFilter processor(rate, strength);
+            suno::RnnoiseFilter processor(rate, strength);
             for (int block = 0; block < 30; ++block) {
                 std::fill(frame.begin(), frame.end(), 0.0f);
                 processor.process(frame.data(), static_cast<int>(frame.size()));
@@ -97,7 +97,7 @@ void rates_and_weak_input() {
 
 void declared_delay_matches_impulse() {
     for (int rate : {8000, 16000, 24000, 32000, 44100, 48000}) {
-        earcast::RnnoiseFilter processor(rate, 0);
+        suno::RnnoiseFilter processor(rate, 0);
         const int size = processor.frame_size();
         const int impulse = 2 * size;
         std::vector<float> frame(size);

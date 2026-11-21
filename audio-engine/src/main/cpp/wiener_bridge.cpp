@@ -5,7 +5,7 @@
 
 namespace {
 struct Session {
-    earcast::WienerFilter denoiser;
+    suno::WienerFilter denoiser;
     std::vector<float> frame;
     Session(int rate, int suppression)
         : denoiser(rate, suppression), frame(denoiser.frame_size()) {}
@@ -18,7 +18,7 @@ void fail(JNIEnv* env, const char* message) {
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_app_earcast_core_audio_speech_WienerBridge_create(
+Java_au_remotiq_suno_core_audio_speech_WienerBridge_create(
     JNIEnv* env, jobject, jint rate, jint frames, jint suppression) {
     if (frames != rate / 100) {
         fail(env, "Invalid Wiener frame size");
@@ -33,7 +33,7 @@ Java_app_earcast_core_audio_speech_WienerBridge_create(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_app_earcast_core_audio_speech_WienerBridge_processFrame(
+Java_au_remotiq_suno_core_audio_speech_WienerBridge_processFrame(
     JNIEnv* env, jobject, jlong handle, jfloatArray frame) {
     auto* session = reinterpret_cast<Session*>(handle);
     if (!session || !frame || env->GetArrayLength(frame) != static_cast<jsize>(session->frame.size())) {
@@ -53,6 +53,6 @@ Java_app_earcast_core_audio_speech_WienerBridge_processFrame(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_app_earcast_core_audio_speech_WienerBridge_destroy(JNIEnv*, jobject, jlong handle) {
+Java_au_remotiq_suno_core_audio_speech_WienerBridge_destroy(JNIEnv*, jobject, jlong handle) {
     delete reinterpret_cast<Session*>(handle);
 }

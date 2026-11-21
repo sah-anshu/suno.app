@@ -6,7 +6,7 @@
 #include "speex/speex_resampler.h"
 #include "vendor/sherpa-onnx/c-api.h"
 
-namespace earcast {
+namespace suno {
 
 // Complete upstream streaming STFT + recurrent model + deep filtering + synthesis.
 // One instance per audio worker. Never cascade with RNNoise.
@@ -39,4 +39,4 @@ private:
     // Mask delay (2) + deep-filter centre (2) + analysis/synthesis (1), at model rate.
     std::vector<float> dry_delay_;
 };
-}  // namespace earcast
+}  // namespace suno

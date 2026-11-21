@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "app.earcast.core.audio"
+    namespace = "au.remotiq.suno.core.audio"
     compileSdk =
         libs
             .versions

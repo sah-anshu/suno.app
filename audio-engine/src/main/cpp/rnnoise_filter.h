@@ -6,7 +6,7 @@
 #include "speex/speex_resampler.h"
 #include "voice_leveler.h"
 
-namespace earcast {
+namespace suno {
 
 // One audio-worker-owned stream. All allocation happens during construction.
 // The caller must retain the existing hearing-assist output limiter downstream.
@@ -37,4 +37,4 @@ private:
     std::array<float, kModelFrame> model_output_{};
 };
 
-}  // namespace earcast
+}  // namespace suno

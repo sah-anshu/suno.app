@@ -9,7 +9,7 @@ extern "C" {
 #include "fftwrap.h"
 }
 
-namespace earcast {
+namespace suno {
 namespace {
 int checked_hop(int rate, int suppression) {
     if ((rate != 8000 && rate != 16000 && rate != 24000 && rate != 32000 && rate != 44100 && rate != 48000) ||
@@ -92,4 +92,4 @@ void WienerFilter::process(float* samples, int count) {
         overlap_[i] = time_[i + hop_] * window_[i + hop_];
     }
 }
-} // namespace earcast
+} // namespace suno

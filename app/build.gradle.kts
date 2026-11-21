@@ -20,32 +20,32 @@ val keystoreProps =
         }
     }
 
-val privacyPolicyUrl = providers.gradleProperty("earcastPrivacyPolicyUrl").orElse("")
-val supportEmail = providers.gradleProperty("earcastSupportEmail").orElse("")
+val privacyPolicyUrl = providers.gradleProperty("sunoPrivacyPolicyUrl").orElse("")
+val supportEmail = providers.gradleProperty("sunoSupportEmail").orElse("")
 val localRelease =
     providers
-        .gradleProperty("earcastLocalRelease")
+        .gradleProperty("sunoLocalRelease")
         .orElse("false")
         .get()
         .toBooleanStrict()
 // APK splits do not filter bundle ABIs; build bundles with this flag off.
 val splitApks =
     providers
-        .gradleProperty("earcastSplitApks")
+        .gradleProperty("sunoSplitApks")
         .orElse("false")
         .get()
         .toBooleanStrict()
 val supportedAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
 val localApkNames =
     if (splitApks) supportedAbis.associateWith { "app-$it-release.apk" } else mapOf("universal" to "app-release.apk")
-val unsignedAudit = providers.gradleProperty("earcastUnsignedAudit").orElse("false")
+val unsignedAudit = providers.gradleProperty("sunoUnsignedAudit").orElse("false")
 
 // Only validated characters are interpolated into generated Java source.
 require(privacyPolicyUrl.get().matches(Regex("[A-Za-z0-9:/?&=._%+#~-]*"))) { "Invalid privacy URL characters" }
 require(supportEmail.get().matches(Regex("[A-Za-z0-9@._+%-]*"))) { "Invalid support email characters" }
 
 android {
-    namespace = "app.earcast"
+    namespace = "au.remotiq.suno"
     // The APK packager needs the same installed strip tool as the native build.
     ndkVersion = libs.versions.ndk.get()
     compileSdk =
@@ -56,7 +56,7 @@ android {
             .toInt()
 
     defaultConfig {
-        applicationId = "app.earcast"
+        applicationId = "au.remotiq.suno"
         minSdk =
             libs
                 .versions
@@ -175,7 +175,7 @@ val verifyPlayRelease =
         val contactEmail = supportEmail.get()
         doLast {
             check(!apkSplitsEnabled) {
-                "Build App Bundles with -PearcastSplitApks=false; AGP 8.10 resource shrinking requires one APK output."
+                "Build App Bundles with -PsunoSplitApks=false; AGP 8.10 resource shrinking requires one APK output."
             }
             if (auditOnly) {
                 logger.warn("UNSIGNED AUDIT ONLY: this bundle has not passed Play release configuration checks.")
@@ -186,10 +186,10 @@ val verifyPlayRelease =
                 check(uploadStore?.isFile == true) { "Upload keystore does not exist." }
                 val uri = runCatching { URI(policyUrl) }.getOrNull()
                 check(uri?.scheme == "https" && !uri.host.isNullOrBlank() && uri.userInfo == null) {
-                    "Set earcastPrivacyPolicyUrl to your published HTTPS privacy policy."
+                    "Set sunoPrivacyPolicyUrl to your published HTTPS privacy policy."
                 }
                 check(contactEmail.matches(Regex("[^@\\s]+@[^@\\s]+\\.[^@\\s]+"))) {
-                    "Set earcastSupportEmail to a monitored public contact address."
+                    "Set sunoSupportEmail to a monitored public contact address."
                 }
             }
         }
@@ -239,7 +239,7 @@ val assembleLocalRelease =
         dependsOn(verifyLocalReleaseApk)
         doLast {
             check(configuredReleaseSigning || localSigningAllowed) {
-                "Use just build-prod or pass -PearcastLocalRelease=true for local signing."
+                "Use just build-prod or pass -PsunoLocalRelease=true for local signing."
             }
             if (!configuredReleaseSigning) {
                 logger.lifecycle("LOCAL TEST APK: signed with the debug key; configure keystore.properties before publishing.")

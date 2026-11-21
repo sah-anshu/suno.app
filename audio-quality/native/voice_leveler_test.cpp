@@ -12,7 +12,7 @@ static void require(bool value, const char* message) {
 int main() {
     try {
         std::vector<float> audio(480);
-        earcast::VoiceLeveler disabled(0), active(12), noise_only(12);
+        suno::VoiceLeveler disabled(0), active(12), noise_only(12);
         for (int block = 0; block < 200; ++block) {
             std::fill(audio.begin(), audio.end(), 0.001f);
             disabled.process(audio.data(), 480, 1.0f);
