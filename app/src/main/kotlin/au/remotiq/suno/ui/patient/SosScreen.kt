@@ -168,6 +168,7 @@ private fun ActiveContent(
                 stringResource(R.string.sos_family_waiting)
             }
         StepRow(Icons.Filled.Groups, family)
+        CallStep(state)
         StepRow(Icons.Filled.LocationOn, locationText(state))
         TextsStep(state, callbacks.onSendTexts)
     }
@@ -186,6 +187,23 @@ private fun ActiveContent(
         stringResource(if (state.alarmOn) R.string.sos_alarm_stop else R.string.sos_alarm_start),
     ) { callbacks.onAlarm(!state.alarmOn) }
     WideButton(stringResource(R.string.sos_safe), callbacks.onSafe, primary = true)
+}
+
+@Composable
+private fun CallStep(state: SosState) {
+    val helper = state.settings.helperName.ifBlank { stringResource(R.string.sos_helper) }
+    when (state.helperAnswered) {
+        true -> StepRow(Icons.Filled.CheckCircle, stringResource(R.string.sos_helper_answered, helper))
+        false -> StepRow(Icons.Filled.Call, stringResource(R.string.sos_helper_no_answer, helper))
+        null -> if (state.helperCalled) StepRow(Icons.Filled.Call, stringResource(R.string.sos_calling_helper, helper))
+    }
+    if (state.emergencyCalled) {
+        StepRow(
+            Icons.Filled.Call,
+            stringResource(R.string.sos_emergency_called, state.settings.emergencyNumber),
+            strong = true,
+        )
+    }
 }
 
 @Composable

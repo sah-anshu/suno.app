@@ -553,4 +553,8 @@
     <string name="calls_person_relationship">Relationship (for example Son)</string>
     <string name="calls_person_number">Phone number</string>
     <string name="calls_person_save">Save</string>
+    <string name="sos_helper_answered">%1$s answered</string>
+    <string name="sos_helper_no_answer">%1$s did not answer</string>
+    <string name="sos_calling_helper">Calling %1$s…</string>
+    <string name="sos_emergency_called">Calling %1$s for you</string>
 </resources>

@@ -183,4 +183,8 @@
     <string name="calls_person_relationship">रिश्ता (जैसे बेटा)</string>
     <string name="calls_person_number">फ़ोन नंबर</string>
     <string name="calls_person_save">सहेजें</string>
+    <string name="sos_helper_answered">%1$s ने फ़ोन उठाया</string>
+    <string name="sos_helper_no_answer">%1$s ने फ़ोन नहीं उठाया</string>
+    <string name="sos_calling_helper">%1$s को फ़ोन लग रहा है…</string>
+    <string name="sos_emergency_called">आपके लिए %1$s पर फ़ोन लग रहा है</string>
 </resources>

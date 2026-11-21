@@ -17,6 +17,8 @@ class SosControllerTest {
         val smsAllowed: Boolean,
         val place: GeoPoint?,
         val speaker: Boolean = true,
+        val helperAnswers: Boolean? = true,
+        override val canCallEmergencyDirectly: Boolean = true,
     ) : SosActions {
         val log = mutableListOf<String>()
 
@@ -39,8 +41,13 @@ class SosControllerTest {
             log += "call:$number"
         }
 
-        override fun dial(number: String) {
-            log += "dial:$number"
+        override suspend fun callAndWait(number: String): Boolean? {
+            log += "call:$number"
+            return helperAnswers
+        }
+
+        override fun callEmergency(number: String) {
+            log += "emergency:$number"
         }
 
         override suspend fun locate() = place
@@ -85,7 +92,10 @@ class SosControllerTest {
         actions: SosActions,
         link: SosLink,
         s: SosSettings = settings,
-    ) = SosController(CoroutineScope(Dispatchers.Unconfined), { s to "Dadi" }, actions, link, clock = { 42L })
+        escalate: Boolean = true,
+    ) = SosController(CoroutineScope(Dispatchers.Unconfined), {
+        SosStart(s, "Dadi", escalate)
+    }, actions, link, clock = { 42L })
 
     @Test
     fun `nothing happens until the patient says yes, and no goes straight back`() {
@@ -120,8 +130,10 @@ class SosControllerTest {
         link.sosResponders.value = listOf("Rahul")
         assertEquals(listOf("Rahul"), sos.state.value.responders)
 
+        assertEquals(true, s.helperAnswered)
+        assertFalse("emergency:112" in actions.log, "the helper answered, so no emergency call")
         sos.callEmergency()
-        assertTrue("dial:112" in actions.log, "emergency numbers open the phone app")
+        assertTrue("emergency:112" in actions.log)
         sos.end()
         assertTrue(link.ended)
         assertEquals(SosPhase.IDLE, sos.state.value.phase)
@@ -165,5 +177,43 @@ class SosControllerTest {
         assertTrue(text.startsWith("SOS from Dadi."))
         assertTrue("28.60000,77.20000" in text)
         assertTrue("Location not available" in SosText.build("", null))
+    }
+
+    @Test
+    fun `if the helper does not answer, Suno calls the emergency number when allowed`() {
+        val noAnswer = FakeActions(smsAllowed = true, place = null, helperAnswers = false)
+        val sos = controller(noAnswer, FakeLink())
+        sos.ask()
+        sos.confirm()
+        assertEquals(false, sos.state.value.helperAnswered)
+        assertTrue(sos.state.value.emergencyCalled)
+        assertTrue("emergency:112" in noAnswer.log)
+    }
+
+    @Test
+    fun `no automatic emergency call when the helper turned it off or Suno cannot tell`() {
+        val off = FakeActions(smsAllowed = true, place = null, helperAnswers = false)
+        controller(off, FakeLink(), escalate = false).apply {
+            ask()
+            confirm()
+        }
+        assertFalse("emergency:112" in off.log)
+
+        val unknown =
+            FakeActions(smsAllowed = true, place = null, helperAnswers = null, canCallEmergencyDirectly = false)
+        val sos = controller(unknown, FakeLink())
+        sos.ask()
+        sos.confirm()
+        assertFalse(sos.state.value.emergencyCalled)
+        assertFalse("emergency:112" in unknown.log)
+    }
+
+    @Test
+    fun `with no helper number, Suno calls the emergency number itself when it is the phone app`() {
+        val actions = FakeActions(smsAllowed = true, place = null)
+        val sos = controller(actions, FakeLink(), SosSettings())
+        sos.ask()
+        sos.confirm()
+        assertTrue("emergency:112" in actions.log)
     }
 }

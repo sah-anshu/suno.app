@@ -5,6 +5,7 @@ import au.remotiq.suno.data.PreferenceStorage
 import au.remotiq.suno.family.PatientLinkHost
 import au.remotiq.suno.sos.AndroidSosActions
 import au.remotiq.suno.sos.SosController
+import au.remotiq.suno.sos.SosStart
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,7 +29,11 @@ object SosBindings {
         SosController(
             CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
             {
-                preferences.observeSosSettings().first() to preferences.observePatientSettings().first().displayName
+                SosStart(
+                    settings = preferences.observeSosSettings().first(),
+                    patientName = preferences.observePatientSettings().first().displayName,
+                    emergencyIfNoAnswer = preferences.observeCallSettings().first().emergencyIfNoAnswer,
+                )
             },
             actions,
             link,

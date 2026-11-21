@@ -14,6 +14,7 @@ import android.telephony.SmsManager
 import androidx.core.content.ContextCompat
 import au.remotiq.suno.assist.LiveAudioService
 import au.remotiq.suno.link.GeoPoint
+import au.remotiq.suno.phone.PhoneCalls
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
@@ -27,6 +28,7 @@ class AndroidSosActions
     @Inject
     constructor(
         @ApplicationContext private val context: Context,
+        private val calls: PhoneCalls,
     ) : SosActions {
         private val alarm = SosAlarm(context)
 
@@ -62,18 +64,22 @@ class AndroidSosActions
             runCatching { context.startActivity(intent) }
         }
 
-        override fun call(number: String) {
-            val action = if (granted(Manifest.permission.CALL_PHONE)) Intent.ACTION_CALL else Intent.ACTION_DIAL
-            runCatching {
-                context.startActivity(Intent(action, Uri.parse("tel:$number")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            }
-        }
+        override fun call(number: String) = calls.placeCall(number)
 
-        override fun dial(number: String) {
-            runCatching {
-                context.startActivity(
-                    Intent(Intent.ACTION_DIAL, Uri.parse("tel:$number")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                )
+        override suspend fun callAndWait(number: String): Boolean? = calls.callAndWait(number)
+
+        override val canCallEmergencyDirectly: Boolean get() = calls.isDefaultPhoneApp()
+
+        /** As the phone app Suno may call the emergency number; otherwise the phone app opens with it. */
+        override fun callEmergency(number: String) {
+            if (calls.isDefaultPhoneApp()) {
+                calls.placeCall(number)
+            } else {
+                runCatching {
+                    context.startActivity(
+                        Intent(Intent.ACTION_DIAL, Uri.parse("tel:$number")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                }
             }
         }
 
@@ -119,7 +125,11 @@ class AndroidSosActions
 
         override fun stopListening() = LiveAudioService.stop(context)
 
-        override fun keepRunning(on: Boolean) = if (on) SosService.start(context) else SosService.stop(context)
+        override fun keepRunning(on: Boolean) {
+            // While SOS is on, every call rings, even with "contacts only".
+            calls.sosActive = on
+            if (on) SosService.start(context) else SosService.stop(context)
+        }
 
         private companion object {
             const val LOCATE_MS = 20_000L

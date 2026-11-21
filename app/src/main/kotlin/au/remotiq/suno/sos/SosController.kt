@@ -25,6 +25,10 @@ data class SosState(
     /** People who answered "I'm on my way". */
     val responders: List<String> = emptyList(),
     val helperCalled: Boolean = false,
+    /** True or false once known; null while ringing or when Suno is not the phone app and cannot tell. */
+    val helperAnswered: Boolean? = null,
+    /** The emergency number was called because the helper did not answer. */
+    val emergencyCalled: Boolean = false,
     val textsSent: Int = 0,
     /** Texts could not be sent automatically; the patient taps to open the messaging app. */
     val textsNeedTap: Boolean = false,
@@ -48,8 +52,14 @@ interface SosActions {
     /** Calls the number straight away. */
     fun call(number: String)
 
-    /** Opens the phone app with the number filled in (emergency numbers cannot be called directly). */
-    fun dial(number: String)
+    /** Calls and waits: true if answered, false if not. Null when Suno is not the phone app and cannot tell. */
+    suspend fun callAndWait(number: String): Boolean?
+
+    /** True when Suno is the phone app, so it may call the emergency number itself. */
+    val canCallEmergencyDirectly: Boolean
+
+    /** Calls the emergency number when allowed, otherwise opens the phone app with it filled in. */
+    fun callEmergency(number: String)
 
     /** The phone's GPS place, or null within about 20 s. Works without internet. */
     suspend fun locate(): GeoPoint?
@@ -63,6 +73,14 @@ interface SosActions {
     /** Keeps Suno running in the background while SOS is on (foreground notification). */
     fun keepRunning(on: Boolean)
 }
+
+/** What SOS reads when it starts. */
+data class SosStart(
+    val settings: SosSettings,
+    val patientName: String,
+    /** Helper setting: call the emergency number if the helper does not answer. */
+    val emergencyIfNoAnswer: Boolean,
+)
 
 /** The family link as SOS needs it. */
 interface SosLink {
@@ -85,7 +103,7 @@ interface SosLink {
 class SosController(
     private val scope: CoroutineScope,
     /** The helper's SOS settings and the patient's display name, read when SOS starts. */
-    private val loadSettings: suspend () -> Pair<SosSettings, String>,
+    private val loadSettings: suspend () -> SosStart,
     private val actions: SosActions,
     private val link: SosLink,
     private val clock: () -> Long = System::currentTimeMillis,
@@ -122,19 +140,16 @@ class SosController(
                         _state.update { it.copy(alerted = maxOf(it.alerted, c.size)) }
                     }
                 }
-                val (settings, name) = loadSettings()
-                patientName = name
-                run(settings)
+                val start = loadSettings()
+                patientName = start.patientName
+                launch { callForHelp(start) }
+                run(start.settings)
             }
     }
 
     private suspend fun run(settings: SosSettings) {
         _state.update { it.copy(settings = settings) }
         if (settings.alarmOnStart) setAlarm(true)
-        if (settings.hasHelper) {
-            actions.call(settings.helperNumber)
-            _state.update { it.copy(helperCalled = true) }
-        }
         val location =
             if (settings.sendLocation) {
                 _state.update { it.copy(locating = true) }
@@ -151,13 +166,30 @@ class SosController(
         }
     }
 
+    /** Calls the helper; if they do not answer (and the helper allowed it), calls the emergency number. */
+    private suspend fun callForHelp(start: SosStart) {
+        val s = start.settings
+        val answered =
+            if (s.hasHelper) {
+                _state.update { it.copy(helperCalled = true) }
+                actions.callAndWait(s.helperNumber).also { a -> _state.update { it.copy(helperAnswered = a) } }
+            } else {
+                false
+            }
+        val escalate = answered == false && start.emergencyIfNoAnswer && actions.canCallEmergencyDirectly
+        if (escalate && _state.value.phase == SosPhase.ACTIVE) {
+            actions.callEmergency(s.emergencyNumber)
+            _state.update { it.copy(emergencyCalled = true) }
+        }
+    }
+
     fun callHelper() {
         val s = _state.value.settings
         if (s.hasHelper) actions.call(s.helperNumber)
         _state.update { it.copy(helperCalled = true) }
     }
 
-    fun callEmergency() = actions.dial(_state.value.settings.emergencyNumber)
+    fun callEmergency() = actions.callEmergency(_state.value.settings.emergencyNumber)
 
     /** Opens the messaging app when texts could not be sent automatically. */
     fun openTexts() {
