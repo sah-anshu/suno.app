@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import au.remotiq.suno.R
+import au.remotiq.suno.audiograph.SourceMode
 import au.remotiq.suno.data.PatientSettings
 import au.remotiq.suno.patient.Place
 
@@ -79,6 +80,7 @@ fun PatientHomeScreen(
     onPlace: (Place) -> Unit,
     onHelper: () -> Unit,
     message: String?,
+    onChooseSource: (SourceMode) -> Unit = {},
 ) {
     val c = LocalPatientColors.current
     Surface(Modifier.fillMaxSize(), color = c.background) {
@@ -106,6 +108,10 @@ fun PatientHomeScreen(
             }
             VolumeRow(state.volumeStep, state.volumeCap, onVolume)
             if (message != null) MessageCard(message)
+            state.talkers.firstOrNull()?.let { TalkingBanner(it, listening = state.running) }
+            if (state.settings.homeLevel >= 2 && state.companions.isNotEmpty()) {
+                NowHearingCard(state.companions, state.talkers, state.sourceMode, onChooseSource)
+            }
             when (state.settings.homeLevel) {
                 2 -> PlaceRow(state.place, state.settings.picturesMode, onOpenPlaces)
                 PatientSettings.HOME_LEVELS -> PlaceGrid(state.place, state.settings.picturesMode, onPlace)

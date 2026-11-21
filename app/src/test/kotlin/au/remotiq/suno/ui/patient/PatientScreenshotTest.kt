@@ -8,7 +8,11 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
+import au.remotiq.suno.audiograph.SourceMode
+import au.remotiq.suno.audiograph.Talker
 import au.remotiq.suno.data.PatientSettings
+import au.remotiq.suno.link.CompanionDevice
+import au.remotiq.suno.link.JoinCode
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -115,6 +119,45 @@ class PatientScreenshotTest {
     fun pinKeypad() =
         shot("09-helper-pin") {
             PatientTheme(PatientThemeName.STANDARD) { PinScreen(setMode = false, onComplete = { false }, onBack = {}) }
+        }
+
+    private val rahul = CompanionDevice("rahul-1", "Rahul")
+
+    @Test
+    fun joinRequest() =
+        shot("10-join-request") {
+            PatientTheme(PatientThemeName.STANDARD) { JoinApprovalScreen(rahul, {}, {}) }
+        }
+
+    @Test
+    fun personTalkingWithNowHearing() =
+        shot("11-person-talking") {
+            Home(
+                state(running = true).copy(
+                    companions = listOf(rahul),
+                    talkers = listOf(Talker("rahul-1", "Rahul")),
+                    sourceMode = SourceMode.AUTO,
+                ),
+            )
+        }
+
+    @Test
+    @Config(qualifiers = "hi-$PHONE")
+    fun personTalkingHindiNotListening() =
+        shot("12-person-talking-hindi") {
+            Home(
+                state(settings = PatientSettings(homeLevel = 3, pinHash = "set")).copy(
+                    companions = listOf(CompanionDevice("r", "राहुल")),
+                    talkers = listOf(Talker("r", "राहुल")),
+                    sourceMode = SourceMode.PERSON_ONLY,
+                ),
+            )
+        }
+
+    @Test
+    fun joinQrCode() =
+        shot("13-join-qr") {
+            PatientTheme(PatientThemeName.STANDARD) { QrCode(JoinCode.generate("Dadi").toUri(), "Join code") }
         }
 }
 

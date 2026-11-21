@@ -88,6 +88,10 @@ fun PatientRoot(viewModel: PatientStateModel = hiltViewModel()) {
                 PinRoute(route == PatientRoute.SET_PIN, state.hasPin, viewModel) { route = it }
             !state.hasPin || !state.consentAccepted ->
                 WelcomeScreen(onStart = { route = if (state.hasPin) PatientRoute.CHECK_PIN else PatientRoute.SET_PIN })
+            state.joinRequests.isNotEmpty() -> {
+                val request = state.joinRequests.first()
+                JoinApprovalScreen(request, { viewModel.allow(request.clientId) }, { viewModel.deny(request.clientId) })
+            }
             else ->
                 PatientHome(
                     state = state,
@@ -173,6 +177,7 @@ private fun PatientHome(
             scope.launch { onPlaceApplied(viewModel.choosePlace(place)) }
         },
         onHelper = onHelper,
+        onChooseSource = viewModel::chooseSource,
         message =
             message?.let { stringResource(it) }
                 ?: if (state.failed) stringResource(R.string.patient_stopped) else null,

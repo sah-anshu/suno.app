@@ -60,4 +60,27 @@
     <string name="settings_auto_start">ईयरफ़ोन लगते ही शुरू करें</string>
     <string name="settings_auto_start_detail">सुनो खुला हो तो ईयरफ़ोन जुड़ते ही सुनना शुरू होगा।</string>
     <string name="settings_change_pin">मददगार पिन बदलें</string>
+    <!-- Family link -->
+    <string name="family_wants_to_talk">%1$s आपसे बात करना चाहते हैं</string>
+    <string name="family_wants_body">जब आप सुन रहे होंगे, उनकी आवाज़ आपके ईयरफ़ोन में आएगी।</string>
+    <string name="family_allow">हाँ, जोड़ें</string>
+    <string name="family_deny">नहीं</string>
+    <string name="family_now_hearing">अभी सुन रहे हैं</string>
+    <string name="family_room">कमरा</string>
+    <string name="family_auto">ऑटो</string>
+    <string name="family_is_talking">%1$s बोल रहे हैं</string>
+    <string name="family_tap_listen">सुनने के लिए \'सुनें\' दबाएँ।</string>
+    <string name="family_settings_title">कौन मरीज़ से बात कर सकता है</string>
+    <string name="family_name_label">परिवार को दिखने वाला नाम</string>
+    <string name="family_show_code">जुड़ने का कोड दिखाएँ</string>
+    <string name="family_code_title">सुनो साथी से स्कैन करें</string>
+    <string name="family_code_body">परिवार के सदस्य के फ़ोन पर: सुनो साथी खोलें, जुड़ें दबाएँ और कैमरा यहाँ रखें।</string>
+    <string name="family_status_ready">तैयार: %1$s</string>
+    <string name="family_status_off">मरीज़ के सुनते समय या यह कोड खुला होने पर शुरू होता है।</string>
+    <string name="family_status_unavailable">Android 10 या नया और आस-पास के डिवाइस की अनुमति चाहिए।</string>
+    <string name="family_wifi">Wi-Fi Direct</string>
+    <string name="family_bluetooth">ब्लूटूथ</string>
+    <string name="family_none">अभी तक कोई नहीं जुड़ा।</string>
+    <string name="family_remove">हटाएँ</string>
+    <string name="family_close">बंद करें</string>
 </resources>

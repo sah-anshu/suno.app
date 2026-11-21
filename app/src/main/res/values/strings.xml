@@ -430,4 +430,27 @@
     <string name="settings_auto_start">Start when earphones go in</string>
     <string name="settings_auto_start_detail">While Suno is open, listening starts when earphones connect.</string>
     <string name="settings_change_pin">Change helper PIN</string>
+    <!-- Family link -->
+    <string name="family_wants_to_talk">%1$s wants to talk to you</string>
+    <string name="family_wants_body">They will be heard in your earphones while you are listening.</string>
+    <string name="family_allow">Allow</string>
+    <string name="family_deny">Don\'t allow</string>
+    <string name="family_now_hearing">Now hearing</string>
+    <string name="family_room">Room</string>
+    <string name="family_auto">Auto</string>
+    <string name="family_is_talking">%1$s is talking</string>
+    <string name="family_tap_listen">Tap Listen to hear them.</string>
+    <string name="family_settings_title">People who can talk to the patient</string>
+    <string name="family_name_label">Name shown to family</string>
+    <string name="family_show_code">Show join code</string>
+    <string name="family_code_title">Scan with Suno Companion</string>
+    <string name="family_code_body">On the family member\'s phone: open Suno Companion, tap Join, and point the camera here.</string>
+    <string name="family_status_ready">Ready: %1$s</string>
+    <string name="family_status_off">Starts when the patient is listening or this code is open.</string>
+    <string name="family_status_unavailable">Needs Android 10 or later and the Nearby devices permission.</string>
+    <string name="family_wifi">Wi-Fi Direct</string>
+    <string name="family_bluetooth">Bluetooth</string>
+    <string name="family_none">Nobody has joined yet.</string>
+    <string name="family_remove">Remove</string>
+    <string name="family_close">Close</string>
 </resources>

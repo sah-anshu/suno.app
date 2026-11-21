@@ -45,6 +45,8 @@ import au.remotiq.suno.ui.common.SurfaceCard
 import au.remotiq.suno.ui.onboarding.PrivacyDialog
 import au.remotiq.suno.ui.onboarding.SafetySourceLink
 import au.remotiq.suno.ui.onboarding.TermsDialog
+import au.remotiq.suno.ui.patient.FamilyHelperSettings
+import au.remotiq.suno.ui.patient.PatientHelperSettings
 
 @Composable
 fun SettingsScreen(rootViewModel: AppStateModel = hiltViewModel()) {
@@ -57,8 +59,8 @@ fun SettingsScreen(rootViewModel: AppStateModel = hiltViewModel()) {
         PageHeading(stringResource(R.string.nav_settings), stringResource(R.string.ui_settings_subtitle))
         ListeningFeaturesControl(state.listeningFeatures, rootViewModel::setListeningFeatures)
         if (BuildConfig.FLAVOR == "patient") {
-            au.remotiq.suno.ui.patient
-                .PatientHelperSettings()
+            PatientHelperSettings()
+            FamilyHelperSettings()
         }
         SectionGroup(stringResource(R.string.identity_settings_accessibility)) {
             SurfaceCard(Modifier.fillMaxWidth()) {

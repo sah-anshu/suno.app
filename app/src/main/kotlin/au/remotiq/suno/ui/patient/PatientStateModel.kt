@@ -7,13 +7,19 @@ import au.remotiq.suno.assist.LiveAudioController
 import au.remotiq.suno.assist.LiveSessionBuilder
 import au.remotiq.suno.assist.toOptions
 import au.remotiq.suno.assist.toSettings
+import au.remotiq.suno.audiograph.SourceMode
+import au.remotiq.suno.audiograph.Talker
+import au.remotiq.suno.audiograph.VoiceMixer
 import au.remotiq.suno.core.audio.StreamPhase
 import au.remotiq.suno.data.PatientSettings
 import au.remotiq.suno.data.PreferenceStorage
+import au.remotiq.suno.family.PatientLinkHost
+import au.remotiq.suno.link.CompanionDevice
 import au.remotiq.suno.patient.PinCode
 import au.remotiq.suno.patient.Place
 import au.remotiq.suno.patient.VolumeSteps
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -36,6 +42,13 @@ data class PatientUiState(
     val connecting: Boolean = false,
     val failed: Boolean = false,
     val consentAccepted: Boolean = false,
+    /** Phones waiting for the patient to allow them. */
+    val joinRequests: List<CompanionDevice> = emptyList(),
+    /** Connected family members (sources the patient can choose). */
+    val companions: List<CompanionDevice> = emptyList(),
+    /** People talking right now. */
+    val talkers: List<Talker> = emptyList(),
+    val sourceMode: SourceMode = SourceMode.AUTO,
 ) {
     val place: Place get() = Place.fromName(settings.place)
     val volumeStep: Int get() = VolumeSteps.effectiveStep(settings, place)
@@ -59,7 +72,11 @@ class PatientStateModel
         private val controller: LiveAudioController,
         private val preferences: PreferenceStorage,
         private val sessionBuilder: LiveSessionBuilder,
+        private val familyLink: PatientLinkHost,
+        private val voiceMixer: VoiceMixer,
     ) : ViewModel() {
+        private val sourceMode = MutableStateFlow(voiceMixer.mode)
+
         val uiState: StateFlow<PatientUiState> =
             combine(
                 preferences.observePatientSettings(),
@@ -75,7 +92,29 @@ class PatientStateModel
                     failed = status.state == StreamPhase.FAILED,
                     consentAccepted = consent,
                 )
+            }.combine(
+                combine(familyLink.pending, familyLink.connected, familyLink.talkers, sourceMode, ::FamilyState),
+            ) { s, f ->
+                s.copy(joinRequests = f.pending, companions = f.connected, talkers = f.talkers, sourceMode = f.mode)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), PatientUiState())
+
+        fun allow(clientId: String) = familyLink.allow(clientId)
+
+        fun deny(clientId: String) = familyLink.deny(clientId)
+
+        /** Tapping the selected source again returns to Auto (a person talking comes to the front). */
+        fun chooseSource(mode: SourceMode) {
+            val next = if (sourceMode.value == mode) SourceMode.AUTO else mode
+            voiceMixer.mode = next
+            sourceMode.value = next
+        }
+
+        private data class FamilyState(
+            val pending: List<CompanionDevice>,
+            val connected: List<CompanionDevice>,
+            val talkers: List<Talker>,
+            val mode: SourceMode,
+        )
 
         /** Applies the place, prepares the session and sets the patient's volume. Returns true if ready. */
         suspend fun prepare(): Boolean {
