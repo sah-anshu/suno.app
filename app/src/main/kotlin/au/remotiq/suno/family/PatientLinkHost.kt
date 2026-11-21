@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package au.remotiq.suno.family
 
+import android.annotation.SuppressLint
 import android.content.Context
 import au.remotiq.suno.audiograph.RemoteAudioHub
 import au.remotiq.suno.data.PreferenceStorage
@@ -166,6 +167,8 @@ class PatientLinkHost
                     )
             }
 
+        // Link objects are only created on Android 10+ (LinkPermissions.supported()), so these calls never run earlier.
+        @SuppressLint("NewApi")
         private suspend fun stop() =
             mutex.withLock {
                 host?.closeAll()

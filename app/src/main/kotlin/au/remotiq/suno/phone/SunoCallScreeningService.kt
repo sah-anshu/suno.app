@@ -23,7 +23,7 @@ class SunoCallScreeningService : CallScreeningService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override fun onScreenCall(details: Call.Details) {
-        if (details.callDirection != Call.Details.DIRECTION_INCOMING) {
+        if (!details.isIncoming) {
             respondToCall(details, CallResponse.Builder().build())
             return
         }

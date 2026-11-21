@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package au.remotiq.suno.family
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import au.remotiq.suno.audiograph.RemoteAudioHub
@@ -145,6 +146,8 @@ class CompanionLink
             relay = RelayHosting(context, code, via, scope).takeIf { it.start() }
         }
 
+        // Link objects are only created on Android 10+ (LinkPermissions.supported()), so these calls never run earlier.
+        @SuppressLint("NewApi")
         private fun stopRelay() {
             relay?.stop()
             relay = null
@@ -205,6 +208,8 @@ class CompanionLink
             _status.update { it.copy(sharing = source) }
         }
 
+        // Link objects are only created on Android 10+ (LinkPermissions.supported()), so these calls never run earlier.
+        @SuppressLint("NewApi")
         private fun disconnect() {
             stopRelay()
             connecting?.cancel()
@@ -266,11 +271,13 @@ class CompanionLink
          */
         fun setUpTv(scanned: String): Boolean {
             val tvCode = JoinCode.parse(scanned)?.takeIf { it.tvSetup } ?: return false
+            if (!LinkPermissions.supported()) return false
             scope.launch {
                 val patient = savedCode() ?: return@launch
                 settingUpTv = true
                 disconnect()
                 _status.update { it.copy(tvSetup = TvProvisioningClient.State.SENDING) }
+                @SuppressLint("NewApi") // Checked above: setUpTv returns early before Android 10.
                 val tvConnector = LinkConnector(context)
                 val result =
                     tvConnector.open(tvCode)?.let { (channel, _) ->

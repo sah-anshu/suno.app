@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package au.remotiq.suno.tv
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import au.remotiq.suno.audiograph.RemoteAudioHub
 import au.remotiq.suno.data.PreferenceStorage
 import au.remotiq.suno.family.ShareSink
@@ -99,6 +102,7 @@ class TvLink
 
         /** Forget the patient's Suno and show a new setup code. */
         fun reset() {
+            if (!LinkPermissions.supported()) return
             stopAll()
             scope.launch {
                 preferences.setLinkIdentity("")
@@ -114,6 +118,7 @@ class TvLink
             _status.update { it.copy(sharing = source != null) }
         }
 
+        @RequiresApi(Build.VERSION_CODES.Q)
         private suspend fun beginSetup() {
             stopAll()
             val setup = JoinCode.generate(tvName(), tvSetup = true)
@@ -130,6 +135,7 @@ class TvLink
             hosting = LinkHosting(context, setup).also { it.start(host) }
         }
 
+        @RequiresApi(Build.VERSION_CODES.Q)
         private fun connect(patient: JoinCode) {
             stopAll()
             _status.value =
@@ -158,6 +164,8 @@ class TvLink
                 }
         }
 
+        // Link objects are only created on Android 10+ (LinkPermissions.supported()), so these calls never run earlier.
+        @SuppressLint("NewApi")
         private fun stopAll() {
             job?.cancel()
             client?.leave()

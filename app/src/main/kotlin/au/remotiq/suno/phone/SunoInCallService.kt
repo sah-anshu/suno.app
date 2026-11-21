@@ -37,7 +37,7 @@ class SunoInCallService : InCallService() {
     override fun onCallAdded(call: Call) {
         scope.launch {
             if (!calls.onCallAdded(call)) return@launch
-            val incoming = call.details.callDirection == Call.Details.DIRECTION_INCOMING
+            val incoming = call.isIncoming
             if (incoming) showIncoming() else openScreen()
         }
     }

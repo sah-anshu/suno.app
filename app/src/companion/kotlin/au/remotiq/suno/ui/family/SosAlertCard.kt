@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import au.remotiq.suno.R
@@ -77,7 +78,11 @@ fun SosAlertCard(
                     Text(
                         stringResource(
                             R.string.sos_alert_since,
-                            DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(alert.id)),
+                            DateFormat
+                                .getTimeInstance(
+                                    DateFormat.SHORT,
+                                    LocalConfiguration.current.locales[0],
+                                ).format(Date(alert.id)),
                         ),
                         style = MaterialTheme.typography.bodyMedium,
                     )

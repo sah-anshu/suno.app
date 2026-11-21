@@ -188,7 +188,7 @@ class PhoneCalls
         internal suspend fun onCallAdded(call: Call): Boolean {
             if (current != null && current != call) {
                 // One call at a time keeps the screens simple: a second incoming call is declined.
-                if (call.details.callDirection == Call.Details.DIRECTION_INCOMING) call.reject(false, null)
+                if (call.isIncoming) call.reject(false, null)
                 return false
             }
             val number =
@@ -197,7 +197,7 @@ class PhoneCalls
                     .orEmpty()
             val settings = preferences.observeCallSettings().first()
             val caller = CallRules.identify(number, settings.favourites, contactName(number))
-            val incoming = call.details.callDirection == Call.Details.DIRECTION_INCOMING
+            val incoming = call.isIncoming
             if (incoming && CallRules.shouldBlock(caller, settings, sosActive)) {
                 call.reject(false, null)
                 return false
