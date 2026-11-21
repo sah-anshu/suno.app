@@ -93,20 +93,40 @@ fun FamilyScreen(viewModel: FamilyModel = hiltViewModel()) {
             if (granted[Manifest.permission.RECORD_AUDIO] == true) TalkService.start(context)
         }
 
+    FamilyContent(
+        status = status,
+        myName = myName,
+        onName = viewModel::setMyName,
+        onScan = {
+            val missing = LinkPermissions.missing(context, LinkPermissions.companion())
+            if (missing.isEmpty()) scan.launch(scanOptions()) else joinPermissions.launch(missing.toTypedArray())
+        },
+        onTalk = {
+            if (status.talking) TalkService.stop(context) else talkPermissions.launch(talkPermissionList())
+        },
+        onLeave = {
+            TalkService.stop(context)
+            viewModel.leave()
+        },
+        onReconnect = viewModel::reconnect,
+    )
+}
+
+/** Stateless Family tab content (also used by screenshot tests). */
+@Composable
+fun FamilyContent(
+    status: CompanionStatus,
+    myName: String,
+    onName: (String) -> Unit,
+    onScan: () -> Unit,
+    onTalk: () -> Unit,
+    onLeave: () -> Unit,
+    onReconnect: () -> Unit,
+) {
     EarPage {
         PageHeading(stringResource(R.string.nav_family), stringResource(R.string.family_subtitle))
         when (status.state) {
-            ClientState.IDLE ->
-                JoinCard(myName, viewModel::setMyName) {
-                    val missing = LinkPermissions.missing(context, LinkPermissions.companion())
-                    if (missing.isEmpty()) {
-                        scan.launch(
-                            scanOptions(),
-                        )
-                    } else {
-                        joinPermissions.launch(missing.toTypedArray())
-                    }
-                }
+            ClientState.IDLE -> JoinCard(myName, onName, onScan)
             ClientState.CONNECTING, ClientState.WAITING_FOR_APPROVAL ->
                 StatusCard(
                     title =
@@ -121,31 +141,21 @@ fun FamilyScreen(viewModel: FamilyModel = hiltViewModel()) {
                             status.patientName.orEmpty(),
                         ),
                     action = stringResource(R.string.family_cancel),
-                    onAction = viewModel::leave,
+                    onAction = onLeave,
                 )
-            ClientState.CONNECTED ->
-                ConnectedCard(status, onTalk = {
-                    if (status.talking) {
-                        TalkService.stop(context)
-                    } else {
-                        talkPermissions.launch(talkPermissionList())
-                    }
-                }, onLeave = {
-                    TalkService.stop(context)
-                    viewModel.leave()
-                })
+            ClientState.CONNECTED -> ConnectedCard(status, onTalk, onLeave)
             ClientState.DENIED ->
                 StatusCard(
                     stringResource(R.string.family_denied),
                     stringResource(R.string.family_scan_again),
-                    viewModel::leave,
+                    onLeave,
                 )
             ClientState.CLOSED ->
                 StatusCard(
                     stringResource(R.string.family_not_connected, status.patientName.orEmpty()),
                     stringResource(R.string.family_reconnect),
-                    viewModel::reconnect,
-                    secondary = stringResource(R.string.family_forget) to viewModel::leave,
+                    onReconnect,
+                    secondary = stringResource(R.string.family_forget) to onLeave,
                 )
         }
         SectionGroup(stringResource(R.string.family_how_title)) {
