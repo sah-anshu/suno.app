@@ -50,14 +50,19 @@ class FamilyScreenshotTest {
     fun connected() =
         shot(
             "22-companion-connected",
-            CompanionStatus("Dadi", ClientState.CONNECTED, CompanionStatus.Transport.WIFI_DIRECT),
+            CompanionStatus("Dadi", ClientState.CONNECTED, au.remotiq.suno.link.android.LinkTransport.WIFI_DIRECT),
         )
 
     @Test
     fun talking() =
         shot(
             "23-companion-talking",
-            CompanionStatus("Dadi", ClientState.CONNECTED, CompanionStatus.Transport.BLUETOOTH, talking = true),
+            CompanionStatus(
+                "Dadi",
+                ClientState.CONNECTED,
+                au.remotiq.suno.link.android.LinkTransport.BLUETOOTH,
+                talking = true,
+            ),
         )
 
     @Test
@@ -67,8 +72,20 @@ class FamilyScreenshotTest {
             CompanionStatus(
                 "Dadi",
                 ClientState.CONNECTED,
-                CompanionStatus.Transport.WIFI_DIRECT,
+                au.remotiq.suno.link.android.LinkTransport.WIFI_DIRECT,
                 sharing = au.remotiq.suno.link.android.ShareSource.CABLE,
+            ),
+        )
+
+    @Test
+    fun settingUpTv() =
+        shot(
+            "25-companion-tv-setup",
+            CompanionStatus(
+                "Dadi",
+                ClientState.CONNECTED,
+                au.remotiq.suno.link.android.LinkTransport.WIFI_DIRECT,
+                tvSetup = au.remotiq.suno.link.TvProvisioningClient.State.SENDING,
             ),
         )
 }

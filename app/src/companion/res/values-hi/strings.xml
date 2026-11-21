@@ -35,4 +35,10 @@
     <string name="share_playback">इस फ़ोन पर चल रही आवाज़</string>
     <string name="share_now">साझा हो रहा है: %1$s</string>
     <string name="share_stop_sharing">साझा करना बंद करें</string>
+    <string name="tv_setup_title">टीवी सेट करें</string>
+    <string name="tv_setup_body">टीवी पर सुनो टीवी खोलें, फिर उस पर दिख रहा कोड स्कैन करें। फिर टीवी उनसे आवाज़ साझा करने की अनुमति माँगेगा।</string>
+    <string name="tv_setup_sending">टीवी सेट हो रहा है…</string>
+    <string name="tv_setup_done">टीवी सेट हो गया। उनका फ़ोन अनुमति माँगेगा।</string>
+    <string name="tv_setup_failed">टीवी तक नहीं पहुँच पाए। फ़ोन टीवी के पास रखें और फिर कोशिश करें।</string>
+    <string name="tv_setup_scan">टीवी का कोड स्कैन करें</string>
 </resources>

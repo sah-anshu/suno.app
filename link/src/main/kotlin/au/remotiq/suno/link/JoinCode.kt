@@ -31,6 +31,11 @@ class JoinCode(
     val patientName: String,
     val wifiDirect: WifiDirectCredentials?,
     val bluetooth: Boolean,
+    /**
+     * True for a TV's setup code: the TV shows it, and a companion that already knows the patient's
+     * join code scans it to hand that code to the TV (TVs have no camera).
+     */
+    val tvSetup: Boolean = false,
 ) {
     init {
         require(sessionId.matches(SESSION_ID)) { "Invalid session id" }
@@ -47,6 +52,7 @@ class JoinCode(
             append("&n=").append(enc(patientName))
             wifiDirect?.let { append("&w=").append(enc(it.networkName)).append("&p=").append(enc(it.passphrase)) }
             if (bluetooth) append("&b=1")
+            if (tvSetup) append("&t=1")
         }
 
     companion object {
@@ -79,6 +85,7 @@ class JoinCode(
                     patientName = params.getValue("n"),
                     wifiDirect = if (w != null && p != null) WifiDirectCredentials(w, p) else null,
                     bluetooth = params["b"] == "1",
+                    tvSetup = params["t"] == "1",
                 )
             }.getOrNull()
         }
@@ -87,6 +94,7 @@ class JoinCode(
         fun generate(
             patientName: String,
             random: SecureRandom = SecureRandom(),
+            tvSetup: Boolean = false,
         ): JoinCode {
             val id = ByteArray(8).also(random::nextBytes).joinToString("") { "%02x".format(it) }
             val secret = ByteArray(SECRET_BYTES).also(random::nextBytes)
@@ -98,6 +106,7 @@ class JoinCode(
                 patientName = patientName,
                 wifiDirect = WifiDirectCredentials("DIRECT-${chars(2)}-Suno", chars(16)),
                 bluetooth = true,
+                tvSetup = tvSetup,
             )
         }
 

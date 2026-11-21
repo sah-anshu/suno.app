@@ -35,4 +35,10 @@
     <string name="share_playback">Sound playing on this phone</string>
     <string name="share_now">Sharing: %1$s</string>
     <string name="share_stop_sharing">Stop sharing</string>
+    <string name="tv_setup_title">Set up a TV</string>
+    <string name="tv_setup_body">Open Suno TV on the TV, then scan the code it shows. The TV will then ask to share sound with them.</string>
+    <string name="tv_setup_sending">Setting up the TV…</string>
+    <string name="tv_setup_done">The TV is set up. Their phone will ask them to allow it.</string>
+    <string name="tv_setup_failed">Could not reach the TV. Keep this phone near it and try again.</string>
+    <string name="tv_setup_scan">Scan the TV\'s code</string>
 </resources>

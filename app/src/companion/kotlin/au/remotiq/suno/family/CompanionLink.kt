@@ -13,11 +13,12 @@ import au.remotiq.suno.link.LinkChannel
 import au.remotiq.suno.link.LinkClient
 import au.remotiq.suno.link.PcmCodec
 import au.remotiq.suno.link.StreamKinds
-import au.remotiq.suno.link.android.BluetoothJoiner
+import au.remotiq.suno.link.TvProvisioningClient
+import au.remotiq.suno.link.android.LinkConnector
 import au.remotiq.suno.link.android.LinkPermissions
+import au.remotiq.suno.link.android.LinkTransport
 import au.remotiq.suno.link.android.OpusCodec
 import au.remotiq.suno.link.android.ShareSource
-import au.remotiq.suno.link.android.WifiDirectJoiner
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -40,13 +42,13 @@ import javax.inject.Singleton
 data class CompanionStatus(
     val patientName: String? = null,
     val state: ClientState = ClientState.IDLE,
-    val transport: Transport? = null,
+    val transport: LinkTransport? = null,
     val talking: Boolean = false,
     /** What this phone is sharing with the patient, if anything. */
     val sharing: ShareSource? = null,
-) {
-    enum class Transport { WIFI_DIRECT, BLUETOOTH }
-}
+    /** Progress of handing the patient's join code to a TV. */
+    val tvSetup: TvProvisioningClient.State = TvProvisioningClient.State.IDLE,
+)
 
 /**
  * Companion side of the family link: joins the patient's Suno from a scanned code, preferring
@@ -62,7 +64,7 @@ class CompanionLink
     ) : ShareSink {
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         private var client: LinkClient? = null
-        private var wifi: WifiDirectJoiner? = null
+        private var connector: LinkConnector? = null
         private var connecting: Job? = null
 
         private val _status = MutableStateFlow(CompanionStatus())
@@ -118,13 +120,19 @@ class CompanionLink
             connecting?.cancel()
             client?.leave()
             client = null
-            wifi?.leave()
-            wifi = null
+            connector?.leave()
+            connector = null
         }
 
         private fun connect(code: JoinCode) {
             disconnect()
-            _status.value = CompanionStatus(patientName = code.patientName, state = ClientState.CONNECTING)
+            _status.update {
+                CompanionStatus(
+                    patientName = code.patientName,
+                    state = ClientState.CONNECTING,
+                    tvSetup = it.tvSetup,
+                )
+            }
             connecting =
                 scope.launch {
                     if (!LinkPermissions.supported()) {
@@ -147,22 +155,38 @@ class CompanionLink
                 }
         }
 
-        private suspend fun openChannel(code: JoinCode): Pair<LinkChannel, CompanionStatus.Transport>? {
+        private suspend fun openChannel(code: JoinCode): Pair<LinkChannel, LinkTransport>? {
             if (!LinkPermissions.supported()) return null
-            code.wifiDirect?.let { credentials ->
-                val joiner = WifiDirectJoiner(context)
-                runCatching { joiner.join(credentials) }.getOrNull()?.let {
-                    wifi = joiner
-                    return it to CompanionStatus.Transport.WIFI_DIRECT
-                }
-                joiner.leave()
+            return LinkConnector(context).also { connector = it }.open(code)
+        }
+
+        /**
+         * Hands the patient's join code to a TV whose setup code was scanned. The phone briefly leaves
+         * the patient's link (only one Wi-Fi Direct group at a time), then reconnects.
+         */
+        fun setUpTv(scanned: String): Boolean {
+            val tvCode = JoinCode.parse(scanned)?.takeIf { it.tvSetup } ?: return false
+            scope.launch {
+                val patient = savedCode() ?: return@launch
+                disconnect()
+                _status.update { it.copy(tvSetup = TvProvisioningClient.State.SENDING) }
+                val tvConnector = LinkConnector(context)
+                val result =
+                    tvConnector.open(tvCode)?.let { (channel, _) ->
+                        val provisioning = TvProvisioningClient(tvCode, patient)
+                        provisioning.send(channel)
+                        withTimeoutOrNull(SETUP_TIMEOUT_MS) {
+                            provisioning.state.first {
+                                it !=
+                                    TvProvisioningClient.State.SENDING
+                            }
+                        }
+                    } ?: TvProvisioningClient.State.FAILED
+                tvConnector.leave()
+                _status.update { it.copy(tvSetup = result) }
+                connect(patient)
             }
-            if (code.bluetooth) {
-                runCatching { BluetoothJoiner(context).join(code.sessionId) }.getOrNull()?.let {
-                    return it to CompanionStatus.Transport.BLUETOOTH
-                }
-            }
-            return null
+            return true
         }
 
         private fun codecs(): Map<Int, () -> FrameCodec> =
@@ -181,4 +205,8 @@ class CompanionLink
                 .first()
                 .displayName
                 .ifBlank { Build.MODEL ?: "Suno Companion" }
+
+        private companion object {
+            const val SETUP_TIMEOUT_MS = 10_000L
+        }
     }

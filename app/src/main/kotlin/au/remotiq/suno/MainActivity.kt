@@ -14,8 +14,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // The patient app opens the simple layout; companion and TV keep EarCast's screens until their phases.
-            if (BuildConfig.FLAVOR == "patient") PatientRoot() else SunoApp()
+            // Patient: simple layout. TV: Suno TV screen. Companion: EarCast layout with the Family tab.
+            when (BuildConfig.FLAVOR) {
+                "patient" -> PatientRoot()
+                "tv" ->
+                    au.remotiq.suno.ui
+                        .TvEntry()
+                else -> SunoApp()
+            }
         }
     }
 }

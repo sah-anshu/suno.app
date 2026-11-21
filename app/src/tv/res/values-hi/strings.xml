@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<resources>
+    <string name="app_name">सुनो टीवी</string>
+    <string name="tv_title">टीवी की आवाज़, सीधे उनके ईयरफ़ोन में</string>
+    <string name="tv_step1">परिवार के सदस्य के फ़ोन पर सुनो साथी खोलें</string>
+    <string name="tv_step2">परिवार → टीवी सेट करें</string>
+    <string name="tv_step3">कैमरा इस कोड पर रखें</string>
+    <string name="tv_setup_code">टीवी सेटअप कोड</string>
+    <string name="tv_connecting">%1$s के सुनो से जुड़ रहे हैं…</string>
+    <string name="tv_waiting">%1$s के फ़ोन की इस टीवी के लिए मंज़ूरी का इंतज़ार</string>
+    <string name="tv_connected">%1$s के सुनो से जुड़े हैं</string>
+    <string name="tv_via_wifi">Wi-Fi Direct से</string>
+    <string name="tv_via_bluetooth">ब्लूटूथ से</string>
+    <string name="tv_start_sharing">टीवी की आवाज़ साझा करें</string>
+    <string name="tv_stop_sharing">साझा करना बंद करें</string>
+    <string name="tv_sharing_pill">टीवी की आवाज़ साझा हो रही है</string>
+    <string name="tv_denied">%1$s ने इस टीवी को अनुमति नहीं दी।</string>
+    <string name="tv_set_up_again">सेटअप कोड फिर दिखाएँ</string>
+    <string name="tv_not_connected">नहीं जुड़े। %1$s का फ़ोन सुन रहा हो और पास हो।</string>
+    <string name="tv_try_again">फिर कोशिश करें</string>
+    <string name="tv_speakers_note">बाकी सबके लिए टीवी स्पीकर सामान्य आवाज़ पर रहेंगे। हर सुनो फ़ोन अपनी प्रोफ़ाइल लगाता है।</string>
+    <string name="tv_capture_not_allowed">यह टीवी अपनी आवाज़ साझा करने नहीं देता। फ़ोन पर आवाज़ साझा करें → केबल से टीवी इस्तेमाल करें।</string>
+    <string name="tv_unsupported">सुनो टीवी के लिए Android 10 या नया चाहिए।</string>
+</resources>

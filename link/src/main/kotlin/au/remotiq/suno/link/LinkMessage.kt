@@ -30,6 +30,14 @@ sealed interface LinkMessage {
     /** Either side: leaving. */
     data object Bye : LinkMessage
 
+    /** Companion → TV during setup: the patient's join code. */
+    data class Provision(
+        val joinUri: String,
+    ) : LinkMessage
+
+    /** TV → companion: setup received. */
+    data object Provisioned : LinkMessage
+
     /** Companion → patient: one encoded 20 ms frame of a voice or of shared sound. */
     class Audio(
         val sequence: Long,
@@ -46,6 +54,8 @@ sealed interface LinkMessage {
         private const val DENIED: Byte = 4
         private const val BYE: Byte = 5
         private const val AUDIO: Byte = 6
+        private const val PROVISION: Byte = 7
+        private const val PROVISIONED: Byte = 8
         private const val MAX_TEXT = 200
 
         fun encode(message: LinkMessage): ByteArray =
@@ -77,6 +87,8 @@ sealed interface LinkMessage {
                         .array()
                 Denied -> byteArrayOf(DENIED)
                 Bye -> byteArrayOf(BYE)
+                is Provision -> byteArrayOf(PROVISION) + message.joinUri.toByteArray()
+                Provisioned -> byteArrayOf(PROVISIONED)
                 is Audio ->
                     ByteBuffer
                         .allocate(1 + 8 + 1 + 1 + message.payload.size)
@@ -104,6 +116,8 @@ sealed interface LinkMessage {
                     WELCOME -> Welcome(b.get().toInt(), b.int)
                     DENIED -> Denied
                     BYE -> Bye
+                    PROVISION -> Provision(String(ByteArray(b.remaining()).also { b.get(it) }))
+                    PROVISIONED -> Provisioned
                     AUDIO -> {
                         val sequence = b.long
                         val codec = b.get().toInt()

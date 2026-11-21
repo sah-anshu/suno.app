@@ -2,25 +2,16 @@
 package au.remotiq.suno.di
 
 import au.remotiq.suno.family.ShareSink
-import au.remotiq.suno.link.android.ShareSource
+import au.remotiq.suno.tv.TvLink
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
-/** Placeholder until the TV link is wired; replaced by the TV sink. */
+/** Suno TV shares what the TV plays over its link to the patient. */
 @Module
 @InstallIn(SingletonComponent::class)
 object ShareBindings {
     @Provides
-    fun shareSink(): ShareSink =
-        object : ShareSink {
-            override val connected: StateFlow<Boolean> = MutableStateFlow(false)
-
-            override fun sendMedia(frame: ShortArray) = Unit
-
-            override fun onSharing(source: ShareSource?) = Unit
-        }
+    fun shareSink(link: TvLink): ShareSink = link
 }

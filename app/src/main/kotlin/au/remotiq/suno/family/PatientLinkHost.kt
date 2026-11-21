@@ -12,10 +12,10 @@ import au.remotiq.suno.link.FrameCodec
 import au.remotiq.suno.link.JoinCode
 import au.remotiq.suno.link.LinkHost
 import au.remotiq.suno.link.PcmCodec
-import au.remotiq.suno.link.android.BluetoothHost
+import au.remotiq.suno.link.android.LinkHosting
 import au.remotiq.suno.link.android.LinkPermissions
+import au.remotiq.suno.link.android.LinkTransport
 import au.remotiq.suno.link.android.OpusCodec
-import au.remotiq.suno.link.android.WifiDirectHost
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,8 +58,7 @@ class PatientLinkHost
         private val holders = mutableSetOf<String>()
         private val approvedCache = ConcurrentHashMap<String, String>()
         private var host: LinkHost? = null
-        private var wifi: WifiDirectHost? = null
-        private var bluetooth: BluetoothHost? = null
+        private var hosting: LinkHosting? = null
 
         private val _status = MutableStateFlow(HostStatus())
         val status: StateFlow<HostStatus> = _status.asStateFlow()
@@ -126,25 +125,20 @@ class PatientLinkHost
                         scope.launch { created.pending.collect { _pending.value = it } }
                         scope.launch { created.connected.collect { _connected.value = it } }
                     }
-                val wifiReady =
-                    runCatching {
-                        code.wifiDirect?.let { WifiDirectHost(context, it).apply { start(linkHost) } }
-                    }.getOrNull().also { wifi = it } != null
-                val btReady =
-                    code.bluetooth &&
-                        runCatching { BluetoothHost(context, code.sessionId).apply { start(linkHost) } }
-                            .getOrNull()
-                            .also { bluetooth = it } != null
-                _status.value = HostStatus(running = wifiReady || btReady, wifiDirect = wifiReady, bluetooth = btReady)
+                val radios = LinkHosting(context, code).also { hosting = it }.start(linkHost)
+                _status.value =
+                    HostStatus(
+                        running = radios.isNotEmpty(),
+                        wifiDirect = LinkTransport.WIFI_DIRECT in radios,
+                        bluetooth = LinkTransport.BLUETOOTH in radios,
+                    )
             }
 
         private suspend fun stop() =
             mutex.withLock {
                 host?.closeAll()
-                wifi?.stop()
-                bluetooth?.stop()
-                wifi = null
-                bluetooth = null
+                hosting?.stop()
+                hosting = null
                 _status.value = HostStatus()
             }
 

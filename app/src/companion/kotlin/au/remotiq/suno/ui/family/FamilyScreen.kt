@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -37,7 +38,10 @@ import au.remotiq.suno.family.CompanionStatus
 import au.remotiq.suno.family.ShareService
 import au.remotiq.suno.family.TalkService
 import au.remotiq.suno.link.ClientState
+import au.remotiq.suno.link.JoinCode
+import au.remotiq.suno.link.TvProvisioningClient
 import au.remotiq.suno.link.android.LinkPermissions
+import au.remotiq.suno.link.android.LinkTransport
 import au.remotiq.suno.link.android.ShareSource
 import au.remotiq.suno.ui.common.ActionButton
 import au.remotiq.suno.ui.common.ActionStyle
@@ -77,7 +81,10 @@ class FamilyModel
             }
         }
 
-        fun join(scanned: String) = link.join(scanned)
+        /** A scanned code is either the patient's join code or a TV's setup code. */
+        fun onScanned(scanned: String) {
+            if (JoinCode.parse(scanned)?.tvSetup == true) link.setUpTv(scanned) else link.join(scanned)
+        }
 
         fun reconnect() = link.reconnect()
 
@@ -90,7 +97,8 @@ fun FamilyScreen(viewModel: FamilyModel = hiltViewModel()) {
     val status by viewModel.status.collectAsStateWithLifecycle()
     val myName by viewModel.myName.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val scan = rememberLauncherForActivityResult(ScanContract()) { result -> result.contents?.let(viewModel::join) }
+    val scan =
+        rememberLauncherForActivityResult(ScanContract()) { result -> result.contents?.let(viewModel::onScanned) }
     val joinPermissions =
         rememberLauncherForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions(),
@@ -141,6 +149,7 @@ fun FamilyScreen(viewModel: FamilyModel = hiltViewModel()) {
             }
         },
         onStopShare = { ShareService.stop(context) },
+        onSetUpTv = { scan.launch(scanOptions()) },
     )
 }
 
@@ -156,6 +165,7 @@ fun FamilyContent(
     onReconnect: () -> Unit,
     onShare: (ShareSource) -> Unit = {},
     onStopShare: () -> Unit = {},
+    onSetUpTv: () -> Unit = {},
 ) {
     EarPage {
         PageHeading(stringResource(R.string.nav_family), stringResource(R.string.family_subtitle))
@@ -180,6 +190,7 @@ fun FamilyContent(
             ClientState.CONNECTED -> {
                 ConnectedCard(status, onTalk, onLeave)
                 ShareCard(status.sharing, onShare, onStopShare)
+                TvSetupCard(status.tvSetup, onSetUpTv)
             }
             ClientState.DENIED ->
                 StatusCard(
@@ -244,7 +255,7 @@ private fun ConnectedCard(
     val via =
         stringResource(
             if (status.transport ==
-                CompanionStatus.Transport.BLUETOOTH
+                LinkTransport.BLUETOOTH
             ) {
                 R.string.family_via_bluetooth
             } else {
@@ -321,6 +332,37 @@ private fun ShareSource.label(): Int =
         ShareSource.MICROPHONE -> R.string.share_microphone
         ShareSource.PLAYBACK -> R.string.share_playback
     }
+
+@Composable
+private fun TvSetupCard(
+    state: TvProvisioningClient.State,
+    onSetUp: () -> Unit,
+) {
+    SurfaceCard(Modifier.fillMaxWidth()) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(stringResource(R.string.tv_setup_title), style = MaterialTheme.typography.titleLarge)
+            Text(
+                stringResource(
+                    when (state) {
+                        TvProvisioningClient.State.IDLE -> R.string.tv_setup_body
+                        TvProvisioningClient.State.SENDING -> R.string.tv_setup_sending
+                        TvProvisioningClient.State.DONE -> R.string.tv_setup_done
+                        TvProvisioningClient.State.FAILED -> R.string.tv_setup_failed
+                    },
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            ActionButton(
+                stringResource(R.string.tv_setup_scan),
+                onSetUp,
+                modifier = Modifier.fillMaxWidth(),
+                style = ActionStyle.SECONDARY,
+                enabled = state != TvProvisioningClient.State.SENDING,
+                icon = Icons.Filled.Tv,
+            )
+        }
+    }
+}
 
 @Composable
 private fun StatusCard(
