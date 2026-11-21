@@ -3,7 +3,7 @@
 Reference document for the Suno project. Update it when a decision changes, and add a line to the
 [decision log](#16-decision-log).
 
-- **Status (2026-11-21):** Phases 0 and 1 complete in code (not yet on a device). The patient app opens Suno's own Home; Helper mode uses EarCast's screens behind a PIN. Screenshots: `docs/images/suno/`.
+- **Status (2026-11-21):** Phases 0–2 complete in code, **not yet run on a device**. The patient app opens Suno's own Home; Helper mode uses EarCast's screens behind a PIN; a companion can join by QR (Wi-Fi Direct or Bluetooth LE) and talk to the patient. Screenshots: `docs/images/suno/`.
 - **Licence:** GPL-3.0-only ([section 13](#13-licensing)).
 - **Baseline:** [EarCast](https://github.com/octavian-negru/ear-cast) at commit `0a2213b` (GPLv3), which Suno forks.
 - **UI mockup (v10):** https://claude.ai/artifact/PSLPf47Vd5DeC63ac5v3xH (private to its owner until shared).
@@ -137,9 +137,9 @@ min SDK 26, NDK 30, CMake 4.1.2, ktlint and detekt.
 | `audio-engine` | EarCast | Android + NDK | Streams, routing, DSP chain, noise reduction, media EQ |
 | `local-storage` | EarCast | Android | Profiles and preferences (DataStore) |
 | `audio-quality` | EarCast | Tooling | Offline audio regression bench |
-| `audio-graph` | New | Kotlin/JVM | `AudioSource` / `AudioSink`, `Mixer` with priority ducking, `JitterBuffer`, `OutputPolicy` |
-| `link` | New | Android | Transport abstraction, QR pairing, session and membership, Opus framing, message relay |
-| `link-direct` | New | Android | Default transport without Google services: Wi-Fi Direct / LAN, BLE L2CAP |
+| `audio-graph` | New (Phase 2) | Kotlin/JVM | `Resampler`, `JitterBuffer`, `RemoteAudioHub` (companions' voices), `VoiceMixer` (ducks the room while a person talks). `OutputPolicy` comes with hearing-aid mode |
+| `link` | New (Phase 2) | Kotlin/JVM | `JoinCode` (QR payload), `LinkCrypto` (HKDF + AES-GCM), `LinkMessage`, `LinkHost` / `LinkClient`, `StreamChannel`, socket transport. Relay comes in Phase 4 |
+| `link-android` | New (Phase 2) | Android | Default transports without Google services: `WifiDirectHost/Joiner`, `BluetoothHost/Joiner` (L2CAP), `OpusCodec`, `LinkPermissions` |
 | `link-nearby` | New, optional | Android | Google Nearby Connections, only in the optional `gms` build |
 | `sender-core` | New | Android | Playback capture and mic capture → Opus → `link`. Used by `companion` and `tv` |
 | `telephony` | New | Android | Phone-app role, call screens, call routing, call screening. `patient` only |
@@ -212,14 +212,18 @@ Java `AudioRecord` / `AudioTrack`; moving to Oboe / AAudio is an option if measu
 
 ## 8. Link layer and mesh
 
-### 8.1 Joining by QR
+### 8.1 Joining by QR (built in Phase 2)
 
-1. The patient's phone (or the TV app) shows a QR code and a 4-digit code. The code carries the service id, session id
-   and a one-time token.
-2. The companion scans it. The patient's phone asks: "*Name* wants to join · Allow / Don't allow".
-3. After approval the companion can talk to the patient from anywhere inside mesh range.
+1. The helper opens Helper mode → Settings → **Show join code**. The QR code is
+   `suno://join?v=1&id=<session>&k=<secret>&n=<name>&w=<Wi-Fi Direct name>&p=<passphrase>&b=1`. The identity is
+   created once and stored, so the code and remembered companions stay valid.
+2. The companion scans it in Suno Companion → Family. It joins the patient's private **Wi-Fi Direct** group by name and
+   passphrase (no discovery), and falls back to **Bluetooth LE** (finds the advert for the session id, opens L2CAP).
+3. The companion sends Hello. The patient's phone shows **"*Name* wants to talk to you · Allow / Don't allow"**.
+4. After Allow, the companion is remembered and its voice is played whenever the patient is listening.
 
-Join policy is a helper setting: ask on the patient's phone, ask the helper (PIN), or contacts join without asking.
+Built: ask on the patient's phone. *Proposed:* typed 4-digit code, "ask the helper (PIN)", "contacts join without
+asking".
 
 ### 8.2 Topology
 
@@ -244,8 +248,14 @@ phone shows who changed what.
 
 | Transport | Used for | Notes |
 |---|---|---|
-| Wi-Fi Direct / LAN, BLE L2CAP (`link-direct`) | **Default in every build (Decided)** | No Google services. Works on Fire TV and phones without Play Services, suits F-Droid, avoids the licensing question in [section 13](#13-licensing) |
-| Google Nearby Connections (`link-nearby`) | Optional extra, in a separate `gms` build only **(Decided)** | Needs Google Play Services |
+| Wi-Fi Direct (`link-android`) | **Default, preferred (built)** | Patient phone hosts a private group with fixed name and passphrase; TCP control + UDP audio on port 47620, bound to the group address only; 16-bit PCM |
+| Bluetooth LE L2CAP (`link-android`) | **Default, fallback (built)** | Insecure L2CAP channel (no pairing) found through an advert with the session id; Opus via MediaCodec for the lower bandwidth |
+| Google Nearby Connections (`link-nearby`) | Optional extra, in a separate `gms` build only **(Decided, not built)** | Needs Google Play Services |
+
+Every frame on every transport is encrypted with AES-256-GCM. Each connection has its own key, derived with
+HKDF-SHA256 from the join secret and a random salt from the companion, with replay protection. Audio from a phone that
+is not approved, or that fails decryption, is dropped. The link needs **Android 10+** on both phones (Wi-Fi Direct
+join by name, L2CAP, Opus encoder); on older phones the link options are hidden.
 
 ## 9. TV platforms
 
@@ -335,7 +345,9 @@ Treat a violation of any of these as a critical bug.
 - Amplified sound never plays through the phone speaker. Listening pauses when earphones disconnect.
 - Gain starts from silence and ramps. Volume cannot exceed the helper's cap, locally or by remote help.
 - The patient's microphone audio never leaves the patient's phone, except in SOS and calls.
-- No recording, no upload, no analytics, no account. Aim for no `INTERNET` permission *(To verify with Nearby)*.
+- No recording, no upload, no analytics, no account. The patient and companion apps declare `INTERNET` only because
+  Android requires it for any socket, including the local Wi-Fi Direct group; Suno makes no internet connections and
+  binds only to the group address. The TV app declares no network permission yet.
 - Joining requires approval. The patient's phone shows who is connected and what a companion changed.
 - Helper mode locks again when it is left.
 - Hearing-aid output never receives Suno's profile gain.
@@ -400,6 +412,9 @@ Either way, `link` hides the transport behind one interface, so the choice can w
 10. Offline Hindi speech recognition quality and cost (captions).
 11. CPU, heat and battery of each noise-reduction engine on budget phones.
 12. Calibration: all levels are digital, not dB SPL.
+13. Family link: Wi-Fi Direct group creation and join by name on real phones, with and without home Wi-Fi; Bluetooth
+    LE advert and L2CAP on different brands; Opus encoder frame size and the decoder's output rate; end-to-end voice
+    delay; several companions at once; reconnect after screen-off; battery and heat while hosting.
 
 ## 15. Build order
 
@@ -439,3 +454,7 @@ Anything involving real sound, radios or calls needs physical devices and a writ
 | 2026-11-21 | The device-to-device link works without Google services by default (Wi-Fi Direct / Bluetooth); Nearby is an optional `gms` build. |
 | 2026-11-21 | Phase 0 done: EarCast merged with history, renamed, three flavours, safety fixes. |
 | 2026-11-21 | Phase 1 done: patient Home (Listen, volume, places, home levels, pictures/words, three themes, Hindi), helper PIN, Helper mode with Lock, Patient screen settings, screenshot tests. Auto place and the Now-hearing card wait for Phase 2 sources. |
+| 2026-11-21 | Phase 2 builds both offline transports, Wi-Fi Direct (preferred) and Bluetooth LE (fallback). |
+| 2026-11-21 | Every link frame is encrypted (HKDF + AES-GCM per connection); the link needs Android 10+. |
+| 2026-11-21 | Patient and companion apps declare INTERNET only for local sockets; no internet connections are made. |
+| 2026-11-21 | Phase 2 done: join by QR with Allow / Don't allow, companion Talk, voices mixed before the patient's chain, Now-hearing card and talking banner, companion Family tab, screenshot tests. Not on a device yet. |

@@ -9,6 +9,29 @@ checks and emulator runs do not validate acoustic loudness, latency or clarity.
 adb install -r app/build/outputs/apk/patient/debug/app-patient-debug.apk
 ```
 
+## Suno family link (Phase 2, not yet checked on a device)
+
+Needs two Android 10+ phones: the patient app on one, Suno Companion on the other.
+
+```sh
+./gradlew assemblePatientDebug assembleCompanionDebug
+adb -s <patient> install -r app/build/outputs/apk/patient/debug/app-patient-debug.apk
+adb -s <companion> install -r app/build/outputs/apk/companion/debug/app-companion-debug.apk
+```
+
+- Patient: Helper mode → Settings → Show join code; grant Nearby devices (or location on Android 10–12) and Bluetooth.
+  The status line should say Ready with Wi-Fi Direct and Bluetooth.
+- Companion: Family → enter a name → Scan join code. The patient's phone shows "<name> wants to talk to you". Check
+  Allow (connected, transport shown) and Don't allow (companion shows refused).
+- With the patient listening, tap Talk. Check the voice in the patient's earphones, the talking banner, the Now
+  hearing card, and that the room is turned down while talking. Measure the delay.
+- Repeat with the patient phone connected to home Wi-Fi, and with Wi-Fi Direct unavailable so Bluetooth is used
+  (Opus). Note any phone where creating or joining the group fails.
+- Lock both screens while talking; voice should continue. Stop from the companion's notification.
+- Remove the companion in Helper settings; it should be disconnected and asked again next time.
+- Two companions at once; leave and rejoin; patient stops listening (companion shows not connected).
+- Battery and heat on the patient phone after 30 minutes of hosting and listening.
+
 ## Suno patient app (Phase 1, not yet checked on a device)
 
 Screenshots rendered by `PatientScreenshotTest` (Robolectric) are in `docs/images/suno/`. On a phone, check:

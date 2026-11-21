@@ -12,9 +12,10 @@ Suno is a sound-amplification tool. **It is not a medical device** and does not 
 
 ## Status
 
-Early development. Phase 0 is done: the EarCast code base is imported, renamed and split into three apps, with
-safety fixes. Suno's own screens come next. The architecture, decisions and build plan are in [arch.md](arch.md).
-Nothing has been validated on real hardware yet.
+Early development. Phases 0–2 are built: the EarCast code base imported, renamed and split into three apps with
+safety fixes; the patient's simple Home with a helper PIN; and the family link, where a companion joins by QR and
+talks to the patient. The architecture, decisions and build plan are in [arch.md](arch.md). Nothing has been validated
+on real hardware yet.
 
 ## Build
 
@@ -35,7 +36,10 @@ Requirements: Android SDK with platform 37, NDK 30.0.16248370 and CMake 4.1.2 (s
 ## Privacy
 
 Suno is designed to work without internet, an account, analytics or recordings. Sound moves only between nearby
-devices that the user has approved.
+devices that the user has approved, over Wi-Fi Direct or Bluetooth, and every frame is encrypted. The patient and
+companion apps declare the `INTERNET` permission only because Android requires it for any network socket, including the
+local Wi-Fi Direct group; Suno makes no internet connections. A companion can only send its voice; nobody can listen
+through the patient's phone.
 
 ## License
 
