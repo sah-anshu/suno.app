@@ -135,4 +135,26 @@
         <item quantity="one">आपकी जगह का संदेश %1$d व्यक्ति को भेजा</item>
         <item quantity="other">आपकी जगह का संदेश %1$d लोगों को भेजा</item>
     </plurals>
+    <string name="call_channel">कॉल</string>
+    <string name="call_incoming_title">%1$s का फ़ोन</string>
+    <string name="call_hidden_number">छिपा नंबर</string>
+    <string name="call_is_calling">आपको फ़ोन कर रहे हैं</string>
+    <string name="call_calling">फ़ोन लग रहा है…</string>
+    <string name="call_on_hold">होल्ड पर</string>
+    <string name="call_ended">कॉल ख़त्म</string>
+    <string name="call_duration">%1$d:%2$02d</string>
+    <string name="call_unknown_warning">अनजान नंबर। बैंक जानकारी, PIN या OTP कभी न बताएँ।</string>
+    <string name="call_answer">उठाएँ</string>
+    <string name="call_decline">काटें</string>
+    <string name="call_sound_to">कॉल यहाँ सुनें</string>
+    <string name="call_quieter">धीमा</string>
+    <string name="call_louder">तेज़</string>
+    <string name="call_volume">कॉल आवाज़ %2$d में से %1$d</string>
+    <string name="call_mute">मेरी आवाज़ बंद करें</string>
+    <string name="call_unmute">आवाज़ बंद है। फिर बोलने के लिए दबाएँ</string>
+    <string name="call_end">कॉल ख़त्म करें</string>
+    <string name="call_route_phone">फ़ोन</string>
+    <string name="call_route_speaker">स्पीकर</string>
+    <string name="call_route_earphones">ईयरफ़ोन</string>
+    <string name="call_route_bluetooth">ब्लूटूथ</string>
 </resources>

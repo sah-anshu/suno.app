@@ -23,6 +23,11 @@ interface PreferenceStorage {
 
     suspend fun setPatientSettings(settings: PatientSettings)
 
+    /** People, call screening and auto-answer for the patient's phone calls (helper setting). */
+    fun observeCallSettings(): Flow<CallSettings>
+
+    suspend fun setCallSettings(settings: CallSettings)
+
     /** What the patient's SOS does (helper setting). */
     fun observeSosSettings(): Flow<SosSettings>
 

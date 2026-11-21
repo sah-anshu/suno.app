@@ -58,6 +58,10 @@ private object PreferenceKeys {
     val LINK_IDENTITY = stringPreferencesKey("link_identity")
     val LINK_CLIENT_ID = stringPreferencesKey("link_client_id")
     val APPROVED_COMPANIONS = stringPreferencesKey("approved_companions")
+    val CALL_FAVOURITES = stringPreferencesKey("call_favourites")
+    val CALL_CONTACTS_ONLY = booleanPreferencesKey("call_contacts_only")
+    val CALL_AUTO_ANSWER = booleanPreferencesKey("call_auto_answer")
+    val CALL_EMERGENCY_IF_NO_ANSWER = booleanPreferencesKey("call_emergency_if_no_answer")
     val SOS_HELPER_NAME = stringPreferencesKey("sos_helper_name")
     val SOS_HELPER_NUMBER = stringPreferencesKey("sos_helper_number")
     val SOS_EMERGENCY_NUMBER = stringPreferencesKey("sos_emergency_number")
@@ -148,6 +152,27 @@ class PreferencesStore(
 
     override suspend fun setApprovedCompanions(companions: List<StoredCompanion>) {
         dataStore.edit { it[PreferenceKeys.APPROVED_COMPANIONS] = StoredCompanion.encode(companions) }
+    }
+
+    override fun observeCallSettings(): Flow<CallSettings> =
+        dataStore.observe {
+            val defaults = CallSettings()
+            CallSettings(
+                favourites = CallSettings.decodeFavourites(it[PreferenceKeys.CALL_FAVOURITES]),
+                contactsOnly = it[PreferenceKeys.CALL_CONTACTS_ONLY] ?: defaults.contactsOnly,
+                autoAnswer = it[PreferenceKeys.CALL_AUTO_ANSWER] ?: defaults.autoAnswer,
+                emergencyIfNoAnswer = it[PreferenceKeys.CALL_EMERGENCY_IF_NO_ANSWER] ?: defaults.emergencyIfNoAnswer,
+            ).normalized()
+        }
+
+    override suspend fun setCallSettings(settings: CallSettings) {
+        val s = settings.normalized()
+        dataStore.edit {
+            it[PreferenceKeys.CALL_FAVOURITES] = CallSettings.encodeFavourites(s.favourites)
+            it[PreferenceKeys.CALL_CONTACTS_ONLY] = s.contactsOnly
+            it[PreferenceKeys.CALL_AUTO_ANSWER] = s.autoAnswer
+            it[PreferenceKeys.CALL_EMERGENCY_IF_NO_ANSWER] = s.emergencyIfNoAnswer
+        }
     }
 
     override fun observeSosSettings(): Flow<SosSettings> =

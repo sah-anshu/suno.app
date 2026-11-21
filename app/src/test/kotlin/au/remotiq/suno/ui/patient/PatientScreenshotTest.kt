@@ -229,6 +229,59 @@ class PatientScreenshotTest {
                 )
             }
         }
+
+    private fun call(
+        phase: au.remotiq.suno.phone.CallPhase,
+        caller: au.remotiq.suno.phone.Caller,
+    ) = au.remotiq.suno.phone.CallUi(
+        caller = caller,
+        phase = phase,
+        incoming = true,
+        connectedAt = 1_000L,
+        routes =
+            au.remotiq.suno.phone.CallRoute.entries
+                .toSet(),
+        route = au.remotiq.suno.phone.CallRoute.EARPHONES,
+        volume = 4,
+        maxVolume = 7,
+    )
+
+    private val son =
+        au.remotiq.suno.phone
+            .Caller("+919876543210", "Rahul", "Son", inPeople = true)
+
+    @Test
+    fun incomingKnown() =
+        shot("40-call-incoming") {
+            PatientTheme(PatientThemeName.STANDARD) {
+                CallScreen(call(au.remotiq.suno.phone.CallPhase.RINGING, son), CallCallbacks())
+            }
+        }
+
+    @Test
+    @Config(qualifiers = "hi-$PHONE")
+    fun incomingUnknownHindi() =
+        shot("41-call-unknown-hindi") {
+            PatientTheme(PatientThemeName.STANDARD) {
+                CallScreen(
+                    call(
+                        au.remotiq.suno.phone.CallPhase.RINGING,
+                        au.remotiq.suno.phone
+                            .Caller("+911401234567"),
+                    ),
+                    CallCallbacks(),
+                )
+            }
+        }
+
+    @Test
+    @Config(qualifiers = "w400dp-h1000dp-xxhdpi")
+    fun inCall() =
+        shot("42-call-active") {
+            PatientTheme(PatientThemeName.STANDARD) {
+                CallScreen(call(au.remotiq.suno.phone.CallPhase.ACTIVE, son), CallCallbacks(), now = { 96_000L })
+            }
+        }
 }
 
 private const val PHONE = "w400dp-h860dp-xxhdpi"

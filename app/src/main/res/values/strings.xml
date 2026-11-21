@@ -505,4 +505,26 @@
         <item quantity="one">Text with your place sent to %1$d person</item>
         <item quantity="other">Text with your place sent to %1$d people</item>
     </plurals>
+    <string name="call_channel">Calls</string>
+    <string name="call_incoming_title">%1$s is calling</string>
+    <string name="call_hidden_number">Hidden number</string>
+    <string name="call_is_calling">is calling you</string>
+    <string name="call_calling">Calling…</string>
+    <string name="call_on_hold">On hold</string>
+    <string name="call_ended">Call ended</string>
+    <string name="call_duration">%1$d:%2$02d</string>
+    <string name="call_unknown_warning">Unknown number. Never share bank details, PINs or OTP codes.</string>
+    <string name="call_answer">Answer</string>
+    <string name="call_decline">Decline</string>
+    <string name="call_sound_to">Hear the call on</string>
+    <string name="call_quieter">Quieter</string>
+    <string name="call_louder">Louder</string>
+    <string name="call_volume">Call volume %1$d of %2$d</string>
+    <string name="call_mute">Mute my voice</string>
+    <string name="call_unmute">Muted. Tap to talk again</string>
+    <string name="call_end">End call</string>
+    <string name="call_route_phone">Phone</string>
+    <string name="call_route_speaker">Speaker</string>
+    <string name="call_route_earphones">Earphones</string>
+    <string name="call_route_bluetooth">Bluetooth</string>
 </resources>
