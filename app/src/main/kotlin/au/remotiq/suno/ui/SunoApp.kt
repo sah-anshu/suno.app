@@ -59,7 +59,11 @@ import au.remotiq.suno.ui.profile.ProfileSetupScreen
 import au.remotiq.suno.ui.settings.SettingsScreen
 import au.remotiq.suno.ui.theme.SunoTheme
 
-private enum class AppDestination { MEDIA, PROFILE, HEARING_TEST, MANUAL_ENTRY, ASSIST, DIN_TEST, SETTINGS }
+private enum class AppDestination { FAMILY, MEDIA, PROFILE, HEARING_TEST, MANUAL_ENTRY, ASSIST, DIN_TEST, SETTINGS }
+
+/** The companion app opens on Family; the others on Listen. */
+private val homeDestination =
+    if (au.remotiq.suno.BuildConfig.FLAVOR == "companion") AppDestination.FAMILY else AppDestination.ASSIST
 
 @Composable
 fun SunoApp(rootViewModel: AppStateModel = hiltViewModel()) {
@@ -94,9 +98,9 @@ private fun MainNav(
     onSetMediaBoost: (Float) -> Unit,
     onSetMediaProcessingMode: (MediaProcessingMode) -> Unit,
 ) {
-    var screen by rememberSaveable { mutableStateOf(AppDestination.ASSIST) }
+    var screen by rememberSaveable { mutableStateOf(homeDestination) }
     val visibleScreen = screen.availableFor(state.listeningFeatures)
-    val listenScreen = AppDestination.ASSIST.availableFor(state.listeningFeatures)
+    val listenScreen = homeDestination.availableFor(state.listeningFeatures)
     val listenViewModel: ListenStateModel = hiltViewModel()
     val listening by listenViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -244,6 +248,9 @@ private fun DestinationContent(
         AppDestination.MANUAL_ENTRY -> ProfileEditorScreen(onBack = { onNavigate(AppDestination.PROFILE) })
         AppDestination.DIN_TEST -> SpeechCheckScreen(onBack = { onNavigate(AppDestination.PROFILE) })
         AppDestination.SETTINGS -> SettingsScreen()
+        AppDestination.FAMILY ->
+            au.remotiq.suno.ui.family
+                .FamilyScreen()
     }
 }
 
@@ -275,13 +282,15 @@ private fun AppDestination.isProfileSetupFlow(): Boolean =
     this == AppDestination.HEARING_TEST || this == AppDestination.MANUAL_ENTRY || this == AppDestination.DIN_TEST
 
 private fun AppDestination.showsPrimaryNavigation(): Boolean =
-    this == AppDestination.MEDIA ||
+    this == AppDestination.FAMILY ||
+        this == AppDestination.MEDIA ||
         this == AppDestination.PROFILE ||
         this == AppDestination.ASSIST ||
         this == AppDestination.SETTINGS
 
 private fun AppDestination.primaryDestination(): PrimaryDestination =
     when (this) {
+        AppDestination.FAMILY -> PrimaryDestination.FAMILY
         AppDestination.MEDIA -> PrimaryDestination.ASSIST
         AppDestination.ASSIST -> PrimaryDestination.ASSIST
         AppDestination.SETTINGS -> PrimaryDestination.SETTINGS
@@ -294,6 +303,7 @@ private fun AppDestination.primaryDestination(): PrimaryDestination =
 
 private fun PrimaryDestination.toAppDestination(): AppDestination =
     when (this) {
+        PrimaryDestination.FAMILY -> AppDestination.FAMILY
         PrimaryDestination.ASSIST -> AppDestination.ASSIST
         PrimaryDestination.PROFILE -> AppDestination.PROFILE
         PrimaryDestination.SETTINGS -> AppDestination.SETTINGS

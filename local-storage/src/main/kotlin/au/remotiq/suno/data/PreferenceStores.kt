@@ -56,6 +56,7 @@ private object PreferenceKeys {
     val PATIENT_PIN_HASH = stringPreferencesKey("patient_pin_hash")
     val PATIENT_DISPLAY_NAME = stringPreferencesKey("patient_display_name")
     val LINK_IDENTITY = stringPreferencesKey("link_identity")
+    val LINK_CLIENT_ID = stringPreferencesKey("link_client_id")
     val APPROVED_COMPANIONS = stringPreferencesKey("approved_companions")
 
     // Legacy single-profile keys (pre-multi-profile builds).
@@ -141,6 +142,12 @@ class PreferencesStore(
 
     override suspend fun setApprovedCompanions(companions: List<StoredCompanion>) {
         dataStore.edit { it[PreferenceKeys.APPROVED_COMPANIONS] = StoredCompanion.encode(companions) }
+    }
+
+    override fun observeLinkClientId(): Flow<String?> = dataStore.observe { it[PreferenceKeys.LINK_CLIENT_ID] }
+
+    override suspend fun setLinkClientId(id: String) {
+        dataStore.edit { it[PreferenceKeys.LINK_CLIENT_ID] = id }
     }
 
     override fun observeHighContrast(): Flow<Boolean> = dataStore.observe { it[PreferenceKeys.HIGH_CONTRAST] ?: false }

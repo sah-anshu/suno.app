@@ -3,6 +3,11 @@ package au.remotiq.suno.data
 import kotlinx.coroutines.flow.Flow
 
 interface PreferenceStorage {
+    /** Companion app: this phone's random link id, created once. */
+    fun observeLinkClientId(): Flow<String?>
+
+    suspend fun setLinkClientId(id: String)
+
     /** The patient's join code (see the link module), created once; null until first needed. */
     fun observeLinkIdentity(): Flow<String?>
 

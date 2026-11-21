@@ -2,4 +2,30 @@
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
 <resources>
     <string name="app_name">Suno Companion</string>
+    <string name="family_subtitle">Talk to the person you care for, from anywhere in range.</string>
+    <string name="family_join_title">Join their Suno</string>
+    <string name="family_join_body">Ask their helper to open Helper mode → Settings → Show join code, then scan it. Their phone will ask them to allow you.</string>
+    <string name="family_my_name">Your name (shown to them)</string>
+    <string name="family_scan">Scan join code</string>
+    <string name="family_needs_android10">Joining needs Android 10 or later.</string>
+    <string name="family_connecting">Connecting to %1$s…</string>
+    <string name="family_waiting">Waiting for %1$s\'s phone to say yes</string>
+    <string name="family_cancel">Cancel</string>
+    <string name="family_connected">Connected to %1$s</string>
+    <string name="family_via_wifi">Over Wi-Fi Direct</string>
+    <string name="family_via_bluetooth">Over Bluetooth</string>
+    <string name="family_talk">Talk to %1$s</string>
+    <string name="family_talking">Speaking to %1$s · tap to stop</string>
+    <string name="family_clean_audio">Your voice is sent clean. Their phone applies their own hearing profile before they hear it.</string>
+    <string name="family_leave">Leave</string>
+    <string name="family_denied">They did not allow this phone to join.</string>
+    <string name="family_scan_again">Scan again</string>
+    <string name="family_not_connected">Not connected to %1$s. Their phone must be listening and nearby.</string>
+    <string name="family_reconnect">Try again</string>
+    <string name="family_forget">Forget</string>
+    <string name="family_how_title">How it works</string>
+    <string name="family_how_body">Suno works offline: phones talk directly over Wi-Fi Direct or Bluetooth. Nothing goes over the internet and nothing is recorded. You can only send your voice; you cannot listen through their phone.</string>
+    <string name="talk_channel">Talking</string>
+    <string name="talk_notification">Speaking to your family member</string>
+    <string name="talk_stop">Stop</string>
 </resources>

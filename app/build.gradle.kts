@@ -156,6 +156,8 @@ dependencies {
     implementation(project(":audio-graph"))
     implementation(project(":link-android"))
     implementation(libs.zxing.core)
+    // QR scanning only in the companion app (it declares the camera permission).
+    add("companionImplementation", libs.zxing.android.embedded)
     implementation(project(":local-storage"))
 
     implementation(libs.androidx.core.ktx)

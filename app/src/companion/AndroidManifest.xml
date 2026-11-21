@@ -40,4 +40,11 @@
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="false" />
+
+    <application>
+        <service
+            android:name="au.remotiq.suno.family.TalkService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+    </application>
 </manifest>

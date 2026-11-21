@@ -21,6 +21,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +39,15 @@ import androidx.compose.ui.unit.dp
 import au.remotiq.suno.R
 import au.remotiq.suno.ui.common.SoundOrbit
 
-enum class PrimaryDestination { ASSIST, PROFILE, SETTINGS }
+enum class PrimaryDestination { FAMILY, ASSIST, PROFILE, SETTINGS }
+
+/** Family is the first tab in the companion app only (arch.md section 11.1). */
+fun primaryDestinations(): List<PrimaryDestination> =
+    if (au.remotiq.suno.BuildConfig.FLAVOR == "companion") {
+        PrimaryDestination.entries
+    } else {
+        PrimaryDestination.entries - PrimaryDestination.FAMILY
+    }
 
 @Composable
 fun navigationBarContent(
@@ -55,7 +64,7 @@ fun navigationBarContent(
                 .padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            PrimaryDestination.entries.forEach { destination ->
+            primaryDestinations().forEach { destination ->
                 DockItem(
                     destination,
                     selected == destination,
@@ -86,7 +95,7 @@ fun primaryNavigationRail(
     ) {
         SoundOrbit(Modifier.padding(top = 16.dp).size(44.dp), color = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.weight(1f))
-        PrimaryDestination.entries.forEach { destination ->
+        primaryDestinations().forEach { destination ->
             DockItem(
                 destination,
                 selected == destination,
@@ -130,6 +139,7 @@ private fun DockItem(
 
 private fun PrimaryDestination.label(): Int =
     when (this) {
+        PrimaryDestination.FAMILY -> R.string.nav_family
         PrimaryDestination.PROFILE -> R.string.ui_profiles
         PrimaryDestination.ASSIST -> R.string.nav_listen
         PrimaryDestination.SETTINGS -> R.string.nav_settings
@@ -137,6 +147,7 @@ private fun PrimaryDestination.label(): Int =
 
 private fun PrimaryDestination.icon(): ImageVector =
     when (this) {
+        PrimaryDestination.FAMILY -> Icons.Filled.People
         PrimaryDestination.PROFILE -> Icons.Filled.GraphicEq
         PrimaryDestination.ASSIST -> Icons.Filled.Headphones
         PrimaryDestination.SETTINGS -> Icons.Filled.Settings

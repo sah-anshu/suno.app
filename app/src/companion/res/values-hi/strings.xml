@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<resources>
+    <string name="app_name">सुनो साथी</string>
+    <string name="family_subtitle">जिनकी आप देखभाल करते हैं, उनसे पहुँच में कहीं से भी बात करें।</string>
+    <string name="family_join_title">उनके सुनो से जुड़ें</string>
+    <string name="family_join_body">उनके मददगार से मददगार मोड → सेटिंग → जुड़ने का कोड दिखाएँ खोलने को कहें, फिर स्कैन करें। उनका फ़ोन आपको अनुमति देने के लिए पूछेगा।</string>
+    <string name="family_my_name">आपका नाम (उन्हें दिखेगा)</string>
+    <string name="family_scan">जुड़ने का कोड स्कैन करें</string>
+    <string name="family_needs_android10">जुड़ने के लिए Android 10 या नया चाहिए।</string>
+    <string name="family_connecting">%1$s से जुड़ रहे हैं…</string>
+    <string name="family_waiting">%1$s के फ़ोन की मंज़ूरी का इंतज़ार</string>
+    <string name="family_cancel">रद्द करें</string>
+    <string name="family_connected">%1$s से जुड़े हैं</string>
+    <string name="family_via_wifi">Wi-Fi Direct से</string>
+    <string name="family_via_bluetooth">ब्लूटूथ से</string>
+    <string name="family_talk">%1$s से बात करें</string>
+    <string name="family_talking">%1$s से बात हो रही है · रोकने के लिए दबाएँ</string>
+    <string name="family_clean_audio">आपकी आवाज़ बिना बदलाव के जाती है। सुनने से पहले उनका फ़ोन उनकी अपनी प्रोफ़ाइल लगाता है।</string>
+    <string name="family_leave">छोड़ें</string>
+    <string name="family_denied">उन्होंने इस फ़ोन को जुड़ने की अनुमति नहीं दी।</string>
+    <string name="family_scan_again">फिर से स्कैन करें</string>
+    <string name="family_not_connected">%1$s से नहीं जुड़े। उनका फ़ोन सुन रहा हो और पास हो।</string>
+    <string name="family_reconnect">फिर कोशिश करें</string>
+    <string name="family_forget">भूल जाएँ</string>
+    <string name="family_how_title">यह कैसे काम करता है</string>
+    <string name="family_how_body">सुनो बिना इंटरनेट के चलता है: फ़ोन सीधे Wi-Fi Direct या ब्लूटूथ से जुड़ते हैं। कुछ भी इंटरनेट पर नहीं जाता और कुछ रिकॉर्ड नहीं होता। आप सिर्फ़ अपनी आवाज़ भेज सकते हैं; उनके फ़ोन से सुन नहीं सकते।</string>
+    <string name="talk_channel">बात</string>
+    <string name="talk_notification">अपने परिवार के सदस्य से बात हो रही है</string>
+    <string name="talk_stop">रोकें</string>
+</resources>
