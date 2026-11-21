@@ -64,7 +64,8 @@ class FeedbackSuppressorTest {
     fun `engages at the live 192-frame block for common howl pitches`() {
         listOf(600.0, 1_500.0, 2_000.0, 3_000.0).forEach { hz ->
             val guard = FeedbackSuppressor(sampleRate)
-            val gain = processBlocks(guard, LIVE_BLOCK, { i -> (0.6 * sin(2.0 * PI * hz * i / sampleRate)).toFloat() }, 60)
+            val howl = { i: Int -> (0.6 * sin(2.0 * PI * hz * i / sampleRate)).toFloat() }
+            val gain = processBlocks(guard, LIVE_BLOCK, howl, 60)
             assertTrue(gain < 0.5f, "guard should duck a $hz Hz howl at 192-frame blocks, gain=$gain")
         }
     }
@@ -93,7 +94,8 @@ class FeedbackSuppressorTest {
     @Test
     fun `stays mostly open on low rumble at the live block size`() {
         val guard = FeedbackSuppressor(sampleRate)
-        val gain = processBlocks(guard, LIVE_BLOCK, { i -> (0.6 * sin(2.0 * PI * 80.0 * i / sampleRate)).toFloat() }, 120)
+        val rumble = { i: Int -> (0.6 * sin(2.0 * PI * 80.0 * i / sampleRate)).toFloat() }
+        val gain = processBlocks(guard, LIVE_BLOCK, rumble, 120)
         assertTrue(gain > 0.8f, "an 80 Hz rumble is not feedback, gain=$gain")
     }
 
