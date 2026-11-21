@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -57,6 +58,7 @@ import au.remotiq.suno.link.ClientState
 import au.remotiq.suno.link.android.LinkPermissions
 import au.remotiq.suno.link.android.LinkTransport
 import au.remotiq.suno.ui.patient.LocalPatientColors
+import au.remotiq.suno.ui.patient.OctagonShape
 import au.remotiq.suno.ui.patient.PatientTheme
 import au.remotiq.suno.ui.patient.PatientThemeName
 import au.remotiq.suno.ui.patient.QrCode
@@ -150,6 +152,7 @@ fun TvScreen(
                 Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium, color = c.ink)
                 if (status.sharing) StatusPill(stringResource(R.string.tv_sharing_pill))
             }
+            if (status.sosActive) SosBanner(patient)
             Row(
                 Modifier.weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(48.dp),
@@ -239,6 +242,37 @@ private fun TvContent(
         }
     }
 }
+
+/** The patient's SOS, in the same vermillion and octagon as on every Suno screen. */
+@Composable
+private fun SosBanner(patient: String) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(SOS_VERMILLION, RoundedCornerShape(24.dp))
+            .padding(horizontal = 32.dp, vertical = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        Box(Modifier.size(72.dp).background(Color.White, OctagonShape), contentAlignment = Alignment.Center) {
+            Text("SOS", style = MaterialTheme.typography.titleLarge, color = SOS_VERMILLION)
+        }
+        Column {
+            Text(
+                stringResource(R.string.tv_sos_title, patient),
+                style = MaterialTheme.typography.displaySmall,
+                color = Color.White,
+            )
+            Text(
+                stringResource(R.string.tv_sos_body),
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
+            )
+        }
+    }
+}
+
+private val SOS_VERMILLION = Color(0xFFA84A00)
 
 @Composable
 private fun Title(text: String) {

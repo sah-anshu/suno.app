@@ -25,6 +25,11 @@
         android:usesPermissionFlags="neverForLocation"
         tools:targetApi="31" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Relay: advertise the patient's session for family phones out of the patient's range. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <!-- Stay linked in the background so SOS alerts arrive, and show them full screen. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
@@ -51,5 +56,9 @@
             android:name="au.remotiq.suno.family.ShareService"
             android:exported="false"
             android:foregroundServiceType="microphone|mediaProjection" />
+        <service
+            android:name="au.remotiq.suno.family.FamilyLinkService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
     </application>
 </manifest>

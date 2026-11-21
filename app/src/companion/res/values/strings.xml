@@ -42,4 +42,19 @@
     <string name="tv_setup_failed">Could not reach the TV. Keep this phone near it and try again.</string>
     <string name="tv_setup_scan">Scan the TV\'s code</string>
     <string name="family_via_relay">Through another family phone</string>
+    <string name="link_notice_channel">Family link</string>
+    <string name="link_notice_connected">Linked to %1$s\'s Suno</string>
+    <string name="link_notice_waiting">Waiting for %1$s\'s Suno</string>
+    <string name="link_notice_text">SOS alerts are on. Leave in the Family tab to stop.</string>
+    <string name="sos_alert_channel">SOS alerts</string>
+    <string name="sos_alert_title">%1$s needs help</string>
+    <string name="sos_alert_text">Open Suno Companion to say you are on your way.</string>
+    <string name="sos_alert_safe">%1$s is safe now</string>
+    <string name="sos_alert_since">SOS since %1$s</string>
+    <string name="sos_alert_place">Place: %1$s (within about %2$d m)</string>
+    <string name="sos_alert_no_place">Their place is not known yet.</string>
+    <string name="sos_alert_on_my_way">I\'m on my way</string>
+    <string name="sos_alert_you_said">You said you are on your way.</string>
+    <string name="sos_alert_map">Open map</string>
+    <string name="sos_alert_dismiss">Dismiss</string>
 </resources>

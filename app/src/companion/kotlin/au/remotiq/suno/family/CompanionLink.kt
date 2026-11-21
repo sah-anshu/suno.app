@@ -12,22 +12,27 @@ import au.remotiq.suno.link.JoinCode
 import au.remotiq.suno.link.LinkChannel
 import au.remotiq.suno.link.LinkClient
 import au.remotiq.suno.link.PcmCodec
+import au.remotiq.suno.link.SosAlert
 import au.remotiq.suno.link.StreamKinds
 import au.remotiq.suno.link.TvProvisioningClient
 import au.remotiq.suno.link.android.LinkConnector
 import au.remotiq.suno.link.android.LinkPermissions
 import au.remotiq.suno.link.android.LinkTransport
 import au.remotiq.suno.link.android.OpusCodec
+import au.remotiq.suno.link.android.RelayHosting
 import au.remotiq.suno.link.android.ShareSource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -48,6 +53,10 @@ data class CompanionStatus(
     val sharing: ShareSource? = null,
     /** Progress of handing the patient's join code to a TV. */
     val tvSetup: TvProvisioningClient.State = TvProvisioningClient.State.IDLE,
+    /** The patient's latest SOS; kept when it ends (inactive) until dismissed. */
+    val sos: SosAlert? = null,
+    /** This phone's name, to tell whether it already answered the SOS. */
+    val myName: String = "",
 )
 
 /**
@@ -66,12 +75,79 @@ class CompanionLink
         private var client: LinkClient? = null
         private var connector: LinkConnector? = null
         private var connecting: Job? = null
+        private var retry: Job? = null
+        private var relay: RelayHosting? = null
+        private var currentCode: JoinCode? = null
+
+        /** True while this phone should stay linked (joined and not left). */
+        @Volatile private var wanted = false
+
+        /** True while handing the code to a TV, when the link is down on purpose. */
+        @Volatile private var settingUpTv = false
+        private var attempt = 0
 
         private val _status = MutableStateFlow(CompanionStatus())
         val status: StateFlow<CompanionStatus> = _status.asStateFlow()
 
         init {
-            scope.launch { savedCode()?.let { code -> _status.update { it.copy(patientName = code.patientName) } } }
+            scope.launch {
+                savedCode()?.let { code ->
+                    _status.update { it.copy(patientName = code.patientName) }
+                    wanted = true
+                    FamilyLinkService.start(context)
+                    connect(code)
+                }
+            }
+            // Reconnect on its own while linked, waiting longer after each failed attempt.
+            scope.launch {
+                _status.map { it.state }.distinctUntilChanged().collect { state ->
+                    when (state) {
+                        ClientState.CONNECTED -> {
+                            attempt = 0
+                            startRelay()
+                        }
+                        ClientState.CLOSED -> {
+                            stopRelay()
+                            if (wanted && !settingUpTv) scheduleRetry()
+                        }
+                        ClientState.DENIED -> wanted = false
+                        else -> Unit
+                    }
+                }
+            }
+        }
+
+        /** "I'm on my way" for the patient's current SOS. */
+        fun replyOnMyWay() {
+            client?.replyOnMyWay()
+        }
+
+        /** Hides an SOS that has ended. */
+        fun dismissSos() {
+            _status.update { if (it.sos?.active == true) it else it.copy(sos = null) }
+        }
+
+        private fun scheduleRetry() {
+            retry?.cancel()
+            val wait = RETRY_MS[minOf(attempt, RETRY_MS.lastIndex)]
+            attempt++
+            retry =
+                scope.launch {
+                    delay(wait)
+                    savedCode()?.let { if (wanted) connect(it) }
+                }
+        }
+
+        private fun startRelay() {
+            val code = currentCode ?: return
+            val via = connector ?: return
+            if (relay != null || _status.value.transport == LinkTransport.RELAY || !LinkPermissions.supported()) return
+            relay = RelayHosting(context, code, via, scope).takeIf { it.start() }
+        }
+
+        private fun stopRelay() {
+            relay?.stop()
+            relay = null
         }
 
         suspend fun savedCode(): JoinCode? = preferences.observeLinkIdentity().first()?.let(JoinCode::parse)
@@ -81,18 +157,31 @@ class CompanionLink
             val code = JoinCode.parse(scanned) ?: return false
             scope.launch {
                 preferences.setLinkIdentity(code.toUri())
+                wanted = true
+                attempt = 0
+                FamilyLinkService.start(context)
                 connect(code)
             }
             return true
         }
 
         fun reconnect() {
-            scope.launch { savedCode()?.let { connect(it) } }
+            scope.launch {
+                savedCode()?.let {
+                    wanted = true
+                    attempt = 0
+                    FamilyLinkService.start(context)
+                    connect(it)
+                }
+            }
         }
 
         /** Disconnect and forget the patient's Suno on this phone. */
         fun leave() {
+            wanted = false
+            retry?.cancel()
             disconnect()
+            FamilyLinkService.stop(context)
             scope.launch { preferences.setLinkIdentity("") }
             _status.value = CompanionStatus()
         }
@@ -117,6 +206,7 @@ class CompanionLink
         }
 
         private fun disconnect() {
+            stopRelay()
             connecting?.cancel()
             client?.leave()
             client = null
@@ -125,12 +215,16 @@ class CompanionLink
         }
 
         private fun connect(code: JoinCode) {
+            retry?.cancel()
             disconnect()
+            currentCode = code
             _status.update {
                 CompanionStatus(
                     patientName = code.patientName,
                     state = ClientState.CONNECTING,
                     tvSetup = it.tvSetup,
+                    sos = it.sos,
+                    myName = it.myName,
                 )
             }
             connecting =
@@ -144,12 +238,18 @@ class CompanionLink
                             _status.update { it.copy(state = ClientState.CLOSED) }
                             return@launch
                         }
-                    val linkClient = LinkClient(code, clientId(), deviceName(), codecs())
+                    val name = deviceName()
+                    val linkClient = LinkClient(code, clientId(), name, codecs())
                     client = linkClient
+                    _status.update { it.copy(myName = name) }
                     launch {
                         linkClient.state.collect { s ->
                             _status.update { it.copy(state = s, transport = transport) }
                         }
+                    }
+                    launch {
+                        // A new connection starts with no SOS; keep the last one until a new message.
+                        linkClient.sos.filterNotNull().collect { alert -> _status.update { it.copy(sos = alert) } }
                     }
                     linkClient.connect(channel)
                 }
@@ -168,6 +268,7 @@ class CompanionLink
             val tvCode = JoinCode.parse(scanned)?.takeIf { it.tvSetup } ?: return false
             scope.launch {
                 val patient = savedCode() ?: return@launch
+                settingUpTv = true
                 disconnect()
                 _status.update { it.copy(tvSetup = TvProvisioningClient.State.SENDING) }
                 val tvConnector = LinkConnector(context)
@@ -184,6 +285,7 @@ class CompanionLink
                     } ?: TvProvisioningClient.State.FAILED
                 tvConnector.leave()
                 _status.update { it.copy(tvSetup = result) }
+                settingUpTv = false
                 connect(patient)
             }
             return true
@@ -208,5 +310,8 @@ class CompanionLink
 
         private companion object {
             const val SETUP_TIMEOUT_MS = 10_000L
+
+            /** Waits between reconnect attempts: the patient's phone hosts while listening or in SOS. */
+            val RETRY_MS = longArrayOf(15_000L, 30_000L, 60_000L)
         }
     }

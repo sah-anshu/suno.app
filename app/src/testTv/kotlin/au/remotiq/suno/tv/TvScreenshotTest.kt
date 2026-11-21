@@ -70,4 +70,17 @@ class TvScreenshotTest {
 
     @Test
     fun notConnected() = shot("34-tv-not-connected", TvStatus(patientName = "Dadi", state = ClientState.CLOSED))
+
+    @Test
+    fun sos() =
+        shot(
+            "35-tv-sos",
+            TvStatus(
+                patientName = "Dadi",
+                state = ClientState.CONNECTED,
+                transport = LinkTransport.WIFI_DIRECT,
+                sharing = true,
+                sosActive = true,
+            ),
+        )
 }

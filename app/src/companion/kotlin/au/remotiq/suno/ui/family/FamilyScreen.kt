@@ -38,6 +38,7 @@ import au.remotiq.suno.family.CompanionStatus
 import au.remotiq.suno.family.ShareService
 import au.remotiq.suno.family.TalkService
 import au.remotiq.suno.link.ClientState
+import au.remotiq.suno.link.GeoPoint
 import au.remotiq.suno.link.JoinCode
 import au.remotiq.suno.link.TvProvisioningClient
 import au.remotiq.suno.link.android.LinkPermissions
@@ -88,6 +89,10 @@ class FamilyModel
 
         fun reconnect() = link.reconnect()
 
+        fun onMyWay() = link.replyOnMyWay()
+
+        fun dismissSos() = link.dismissSos()
+
         fun leave() = link.leave()
     }
 
@@ -128,7 +133,15 @@ fun FamilyScreen(viewModel: FamilyModel = hiltViewModel()) {
         myName = myName,
         onName = viewModel::setMyName,
         onScan = {
-            val missing = LinkPermissions.missing(context, LinkPermissions.companion())
+            val notifications =
+                if (Build.VERSION.SDK_INT >=
+                    Build.VERSION_CODES.TIRAMISU
+                ) {
+                    listOf(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
+                    emptyList()
+                }
+            val missing = LinkPermissions.missing(context, LinkPermissions.companion() + notifications)
             if (missing.isEmpty()) scan.launch(scanOptions()) else joinPermissions.launch(missing.toTypedArray())
         },
         onTalk = {
@@ -150,7 +163,24 @@ fun FamilyScreen(viewModel: FamilyModel = hiltViewModel()) {
         },
         onStopShare = { ShareService.stop(context) },
         onSetUpTv = { scan.launch(scanOptions()) },
+        onOnMyWay = viewModel::onMyWay,
+        onOpenMap = { place -> openMap(context, place) },
+        onDismissSos = viewModel::dismissSos,
     )
+}
+
+/** Opens any installed map app (many work offline) at the patient's place. */
+private fun openMap(
+    context: android.content.Context,
+    place: GeoPoint,
+) {
+    val latLon = String.format(java.util.Locale.ROOT, "%.6f,%.6f", place.latitude, place.longitude)
+    val intent =
+        android.content.Intent(
+            android.content.Intent.ACTION_VIEW,
+            android.net.Uri.parse("geo:$latLon?q=$latLon"),
+        )
+    runCatching { context.startActivity(intent) }
 }
 
 /** Stateless Family tab content (also used by screenshot tests). */
@@ -166,9 +196,15 @@ fun FamilyContent(
     onShare: (ShareSource) -> Unit = {},
     onStopShare: () -> Unit = {},
     onSetUpTv: () -> Unit = {},
+    onOnMyWay: () -> Unit = {},
+    onOpenMap: (GeoPoint) -> Unit = {},
+    onDismissSos: () -> Unit = {},
 ) {
     EarPage {
         PageHeading(stringResource(R.string.nav_family), stringResource(R.string.family_subtitle))
+        status.sos?.let { alert ->
+            SosAlertCard(alert, status.patientName.orEmpty(), status.myName, onOnMyWay, onOpenMap, onDismissSos)
+        }
         when (status.state) {
             ClientState.IDLE -> JoinCard(myName, onName, onScan)
             ClientState.CONNECTING, ClientState.WAITING_FOR_APPROVAL ->

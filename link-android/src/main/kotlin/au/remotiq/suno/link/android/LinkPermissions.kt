@@ -23,13 +23,17 @@ object LinkPermissions {
             }
         }
 
-    /** A companion joins a Wi-Fi Direct group or scans for the patient's Bluetooth LE advert. */
+    /**
+     * A companion joins a Wi-Fi Direct group or scans for the patient's Bluetooth LE advert, and
+     * advertises as a relay for phones out of the patient's range.
+     */
     fun companion(): List<String> =
         buildList {
             addAll(wifi())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 add(Manifest.permission.BLUETOOTH_SCAN)
                 add(Manifest.permission.BLUETOOTH_CONNECT)
+                add(Manifest.permission.BLUETOOTH_ADVERTISE)
             }
         }.distinct()
 

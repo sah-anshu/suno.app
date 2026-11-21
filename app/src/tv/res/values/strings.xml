@@ -22,4 +22,6 @@
     <string name="tv_speakers_note">TV speakers stay at normal volume for everyone else. Each Suno phone applies its own hearing profile.</string>
     <string name="tv_capture_not_allowed">This TV does not allow sharing its sound. Use Share sound → TV by cable on a phone instead.</string>
     <string name="tv_unsupported">Suno TV needs Android 10 or later.</string>
+    <string name="tv_sos_title">%1$s needs help</string>
+    <string name="tv_sos_body">Check on them now. Family phones have been told.</string>
 </resources>

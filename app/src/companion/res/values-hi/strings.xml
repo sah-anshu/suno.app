@@ -42,4 +42,19 @@
     <string name="tv_setup_failed">टीवी तक नहीं पहुँच पाए। फ़ोन टीवी के पास रखें और फिर कोशिश करें।</string>
     <string name="tv_setup_scan">टीवी का कोड स्कैन करें</string>
     <string name="family_via_relay">परिवार के दूसरे फ़ोन के ज़रिए</string>
+    <string name="link_notice_channel">परिवार लिंक</string>
+    <string name="link_notice_connected">%1$s के सुनो से जुड़े</string>
+    <string name="link_notice_waiting">%1$s के सुनो का इंतज़ार</string>
+    <string name="link_notice_text">SOS सूचनाएँ चालू हैं। बंद करने के लिए परिवार टैब में छोड़ें।</string>
+    <string name="sos_alert_channel">SOS सूचनाएँ</string>
+    <string name="sos_alert_title">%1$s को मदद चाहिए</string>
+    <string name="sos_alert_text">आ रहे हैं बताने के लिए सुनो साथी खोलें।</string>
+    <string name="sos_alert_safe">%1$s अब ठीक हैं</string>
+    <string name="sos_alert_since">%1$s से SOS</string>
+    <string name="sos_alert_place">जगह: %1$s (लगभग %2$d मीटर के अंदर)</string>
+    <string name="sos_alert_no_place">उनकी जगह अभी पता नहीं है।</string>
+    <string name="sos_alert_on_my_way">मैं आ रहा/रही हूँ</string>
+    <string name="sos_alert_you_said">आपने बताया कि आप आ रहे हैं।</string>
+    <string name="sos_alert_map">नक्शा खोलें</string>
+    <string name="sos_alert_dismiss">हटाएँ</string>
 </resources>

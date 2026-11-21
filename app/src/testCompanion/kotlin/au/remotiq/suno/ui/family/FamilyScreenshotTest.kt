@@ -88,4 +88,40 @@ class FamilyScreenshotTest {
                 tvSetup = au.remotiq.suno.link.TvProvisioningClient.State.SENDING,
             ),
         )
+
+    private val alert =
+        au.remotiq.suno.link.SosAlert(
+            id = 1_763_700_000_000,
+            active = true,
+            location =
+                au.remotiq.suno.link
+                    .GeoPoint(28.61394, 77.20902, 12f),
+            responders = listOf("Nana"),
+        )
+
+    @Test
+    fun sosAlert() =
+        shot(
+            "26-companion-sos",
+            CompanionStatus(
+                "Dadi",
+                ClientState.CONNECTED,
+                au.remotiq.suno.link.android.LinkTransport.WIFI_DIRECT,
+                sos = alert,
+                myName = "Rahul",
+            ),
+        )
+
+    @Test
+    fun sosEnded() =
+        shot(
+            "27-companion-sos-safe",
+            CompanionStatus(
+                "Dadi",
+                ClientState.CONNECTED,
+                au.remotiq.suno.link.android.LinkTransport.RELAY,
+                sos = alert.copy(active = false),
+                myName = "Rahul",
+            ),
+        )
 }

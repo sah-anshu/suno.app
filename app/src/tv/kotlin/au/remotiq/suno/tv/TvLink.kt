@@ -50,6 +50,8 @@ data class TvStatus(
     val tvName: String = "TV",
     /** True when this TV is older than Android 10 or lacks the radios Suno needs. */
     val unsupported: Boolean = false,
+    /** True while the patient's SOS is on: the TV shows a banner (it cannot answer). */
+    val sosActive: Boolean = false,
 )
 
 /**
@@ -145,6 +147,11 @@ class TvLink
                     launch {
                         linkClient.state.collect { s ->
                             _status.update { it.copy(state = s, transport = transport) }
+                        }
+                    }
+                    launch {
+                        linkClient.sos.collect { alert ->
+                            if (alert != null) _status.update { it.copy(sosActive = alert.active) }
                         }
                     }
                     linkClient.connect(channel)

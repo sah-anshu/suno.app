@@ -22,4 +22,6 @@
     <string name="tv_speakers_note">बाकी सबके लिए टीवी स्पीकर सामान्य आवाज़ पर रहेंगे। हर सुनो फ़ोन अपनी प्रोफ़ाइल लगाता है।</string>
     <string name="tv_capture_not_allowed">यह टीवी अपनी आवाज़ साझा करने नहीं देता। फ़ोन पर आवाज़ साझा करें → केबल से टीवी इस्तेमाल करें।</string>
     <string name="tv_unsupported">सुनो टीवी के लिए Android 10 या नया चाहिए।</string>
+    <string name="tv_sos_title">%1$s को मदद चाहिए</string>
+    <string name="tv_sos_body">अभी उन्हें देखें। परिवार के फ़ोन को बता दिया गया है।</string>
 </resources>
