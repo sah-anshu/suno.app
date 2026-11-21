@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<resources>
+    <!-- Same Suno mark on a different Okabe–Ito background per app. -->
+    <color name="ic_launcher_background">#182230</color>
+</resources>

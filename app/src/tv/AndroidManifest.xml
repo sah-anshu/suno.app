@@ -60,7 +60,7 @@
         android:name="android.hardware.microphone"
         android:required="false" />
 
-    <application android:banner="@mipmap/ic_launcher">
+    <application android:banner="@drawable/tv_banner">
         <activity
             android:name=".MainActivity"
             android:exported="true"

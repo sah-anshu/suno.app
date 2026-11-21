@@ -272,8 +272,8 @@
     <string name="preview_section">Try your sound profile</string>
     <string name="details_section">Detailed results</string>
     <string name="privacy_title">Privacy &amp; credits</string>
-    <string name="privacy_body">Live audio is processed on your phone. Sound profiles and preferences are stored locally. Microphone audio is not saved. You choose whether to share your hearing-check results. Suno does not upload your audio or sound profiles. All features are free, with no purchases, advertisements or account required.</string>
-    <string name="credits_body">Suno is based on EarCast by Octavian Negru, which was inspired by OpenHearing. It is free software under GPL v3 and includes RNNoise, SpeexDSP, DPDFNet8 and sherpa-onnx. Original copyright and third-party license notices are retained with the source.</string>
+    <string name="privacy_body">Live audio is processed on the patient\'s phone and never sent anywhere. Profiles, settings, People and SOS numbers are stored only on the phone. Family devices connect directly (Wi-Fi Direct or Bluetooth) after the patient\'s phone allows them, and every message is encrypted. Suno has no account, server, analytics, purchases or advertisements.</string>
+    <string name="credits_body">Suno is based on EarCast by Octavian Negru, which was inspired by OpenHearing. It is free software under GPL v3 and includes RNNoise, SpeexDSP, DPDFNet8, sherpa-onnx, ONNX Runtime and ZXing. Original copyright and third-party license notices are retained with the source (THIRD_PARTY_NOTICES.md).</string>
     <string name="listen_subtitle">Connect headphones, then start listening.</string>
     <string name="settings_subtitle">Small adjustments. More comfortable listening.</string>
     <string name="manual_subtitle">Choose an ear and place its points on the chart.</string>
@@ -346,7 +346,7 @@
     <string name="terms_limits_title">Use with care</string>
     <string name="terms_limits_body">Suno cannot measure the sound level at your ear or guarantee safe listening. Output limits and the listening meter are relative guides. Use headphones to reduce feedback, and keep the microphone away from speakers. Do not rely on Suno for alarms, traffic awareness or situations where hearing is essential to safety.</string>
     <string name="terms_privacy_title">Privacy</string>
-    <string name="terms_privacy_body">Live audio is processed on your phone. Sound profiles and preferences are stored locally. Microphone audio is not saved. You choose whether to share your hearing-check results. Suno does not upload your audio or sound profiles. All features are free, with no purchases, advertisements or account required.</string>
+    <string name="terms_privacy_body">Live audio is processed on the patient\'s phone and never sent anywhere. Profiles, settings, People and SOS numbers are stored only on the phone. Family devices connect directly (Wi-Fi Direct or Bluetooth) after the patient\'s phone allows them, and every message is encrypted. Suno has no account, server, analytics, purchases or advertisements.</string>
     <string name="terms_agreement_title">Your agreement</string>
     <string name="terms_agreement_body">By selecting the consent boxes and continuing, you acknowledge these limitations and agree to follow the safe-use guidance. Acceptance is saved on this device with the terms version and time. You can review these terms in Settings. If the terms change, you will be asked to review them again. If you do not agree, close the app. These terms do not limit rights you have under applicable law.</string>
     <string name="consent_medical">I understand that Suno is not a medical device and does not replace professional hearing care.</string>
@@ -358,7 +358,21 @@
     <string name="safety_source">Safe listening guidance: World Health Organization</string>
     <string name="safety_source_url" translatable="false">https://www.who.int/news-room/questions-and-answers/item/deafness-and-hearing-loss-safe-listening</string>
     <string name="privacy_policy_title">Privacy policy</string>
-    <string name="privacy_policy_body">Suno processes microphone audio on your phone to play amplified sound to your headset. Assist can continue while the screen is off or you use other apps, with an ongoing notification. Stop assist to stop microphone access. Live audio is discarded after processing and is not saved.\n\nSound profiles, hearing-check results and settings remain in app-private storage. Suno excludes its data from Android cloud backup and device transfer.\n\nHearing-check results leave the app only when you choose to share them. The receiving app then handles that copy under its own policies. Suno has no account, backend or analytics and does not upload your hearing data.\n\nAll features are free. Suno contains no billing or advertising SDK in any build.\n\nRecordings saved by older versions remain in private storage until you clear app storage or uninstall. Clear app storage in Android Settings or uninstall Suno to remove its local data. Copies you exported are not removed by this. Reinstalling does not restore local profiles.\n\nFor privacy questions, use the support contact in the Play store listing or the published policy below.</string>
+    <string name="privacy_policy_body">Suno processes microphone audio on the patient\'s phone to play amplified sound to the earphones or hearing aid. Listening can continue while the screen is off, with an ongoing notification. Live audio is discarded after processing, is not saved and never leaves the patient\'s phone.
+
+Sound profiles, hearing-check results, settings, People and SOS numbers remain in app-private storage. Suno excludes its data from Android cloud backup and device transfer.
+
+Family link: family phones and TVs connect directly over Wi-Fi Direct or Bluetooth, only after scanning the QR code and the patient\'s phone allowing them. They send voice, shared sound, SOS alerts and answers. Everything is encrypted; a phone that relays for another cannot read it. Nothing goes over the internet.
+
+SOS: alerts linked family devices with the phone\'s GPS position, texts that position to the numbers the helper chose (if allowed), and calls the helper and, if set, the emergency number. These are ordinary calls and texts made by the phone.
+
+Calls: as the phone app, Suno shows caller names from your contacts and controls call screens and routing. It never gets the call sound.
+
+Hearing-check results leave the app only when you choose to share them. Suno has no account, backend or analytics, and contains no billing or advertising SDK.
+
+Clear app storage in Android Settings or uninstall Suno to remove its local data. Reinstalling does not restore local data.
+
+For privacy questions, use the support contact in the store listing or the published policy below.</string>
     <string name="privacy_policy_online">Read published privacy policy</string>
     <string name="privacy_support">Privacy contact: %1$s</string>
     <string name="background_listening_title">Background listening</string>

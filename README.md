@@ -49,10 +49,18 @@ local Wi-Fi Direct group; Suno makes no internet connections. A companion can on
 through the patient's phone. In an SOS the patient's phone texts its GPS place to the numbers the helper chose, through
 the phone's own SMS.
 
+## Release
+
+Version **0.1.0** is the first Suno test release (see [CHANGELOG.md](CHANGELOG.md)). It has not been checked on real
+devices yet: install it only to test. How to build and sign the three apps, and the plan for GitHub Releases, F-Droid
+and Google Play, are in [docs/RELEASE.md](docs/RELEASE.md). Privacy: [docs/PRIVACY.md](docs/PRIVACY.md). Safety:
+[docs/SAFETY.md](docs/SAFETY.md).
+
 ## License
 
 Suno is free software, licensed under the [GNU General Public License v3.0 only](LICENSE) (`GPL-3.0-only`).
-Bundled third-party libraries and models keep their own licences.
+Bundled third-party libraries and models keep their own licences; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Credits
 

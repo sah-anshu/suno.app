@@ -32,6 +32,17 @@ constants, never redefine its own limits.
 6. **Fail safe, not loud.** On any error, glitch, or uncertainty (including
    uncalibrated output), attenuate or mute — never pass audio through at full gain.
 
+## SOS and calls
+
+- SOS helps get attention; it is **not** a replacement for emergency services and can fail: no mobile signal, no SIM,
+  airplane mode, an empty battery, a phone maker that stops background apps, or family devices out of range.
+- Suno calls the emergency number by itself only when it is the phone app and the helper turned that on. Otherwise the
+  emergency number is a button that opens the phone app.
+- The SOS alarm plays only on the phone's built-in speaker, never in earphones or hearing aids. If the speaker cannot be
+  chosen, it stays silent.
+- Never test SOS with a real emergency number. Use a family member's number as the emergency number while testing.
+- Call sound is handled by Android, not by Suno's limiter or hearing profile. Check call volume with the patient.
+
 ## Calibration caveat
 
 The mapping from digital level (dBFS) to real-world loudness (dB SPL) depends on

@@ -435,7 +435,7 @@ Treat a violation of any of these as a critical bug.
 |---|---|---|
 | Google Play | GPL apps are allowed | Policy review for the phone-app role, SMS and background microphone |
 | F-Droid | Natural home for a GPL app | No proprietary libraries, so a build without Google Play Services (`link-direct`). Native code built from source: EarCast ships a **prebuilt** sherpa-onnx / ONNX Runtime archive, which F-Droid normally does not accept *(To verify)* |
-| GitHub releases | Simple | Signed APKs per flavour |
+| GitHub releases | Simple; **first channel for 0.x** | Signed APKs per flavour and CPU type; `release.yml` builds them on a `v*` tag |
 
 ### 13.2 Open risk: Google Play Services and the GPL
 
@@ -486,6 +486,7 @@ Each slice is usable on its own.
 | 3 | TV sound: cable sender in `companion`, then the `tv` flavour **(built, not on a device)** |
 | 4 | SOS and companion alerts; mesh relay **(built, not on a device)** |
 | 5 | Phone app, contacts, home-screen role (store policy review needed) **(phone app and People built, not on a device; launcher not built)** |
+| 6 | Release: clean release builds and lint for all three apps, signing for all three, store listings (en, hi), privacy policy, notices, Suno brand mark, CI and tag release workflow **(0.1.0 prepared; publishing waits for device tests)** |
 
 Checks for every slice: `./gradlew ktlintCheck detekt test testDebugUnitTest` plus assembling all three flavours.
 Anything involving real sound, radios or calls needs physical devices and a written device-test checklist.
@@ -530,3 +531,5 @@ Anything involving real sound, radios or calls needs physical devices and a writ
 | 2026-11-21 | With "contacts only", unknown callers are declined before ringing, except during an SOS. One call at a time. |
 | 2026-11-21 | SOS escalation: with Suno as the phone app, an unanswered helper call leads to an automatic emergency call (helper setting, on by default). |
 | 2026-11-21 | Phase 5 done: Suno as the phone app (incoming and in-call screens, routes, volume, mute, screening, auto-answer), People and keypad, Home call dock, helper People and calls settings, SOS escalation, screenshot tests. Launcher role not built. Not on a device yet. |
+| 2026-11-21 | Release 0.1.0 prepared: GitHub Releases first (signed APKs of all three apps), F-Droid next, Play later with SEND_SMS removed. Same signing key for all three apps. |
+| 2026-11-21 | Suno brand mark (a listener dot with sound arcs) replaces EarCast's ring mark; one background colour per app (blue patient, bluish green companion, dark TV). |
