@@ -38,7 +38,7 @@ class VoiceMixerTest {
         }
         assertEquals(0.3, level(out.drop(9_600).toFloatArray(), 1_000.0, rate), 0.03)
         assertEquals(0.25f, mixer.roomGain, 0.01f)
-        assertEquals(listOf("rahul"), hub.talkers.value.map { it.id })
+        assertEquals(listOf("rahul"), hub.talkers.map { it.id })
     }
 
     @Test
@@ -48,7 +48,7 @@ class VoiceMixerTest {
         talk(hub, 5)
         repeat(200) { mixer.mix(room(), block, rate) }
         assertEquals(1f, mixer.roomGain, 0.001f)
-        assertTrue(hub.talkers.value.isEmpty())
+        assertTrue(hub.active.value.isEmpty())
     }
 
     @Test
@@ -78,5 +78,44 @@ class VoiceMixerTest {
             mixer.mix(b, block, rate)
             assertTrue(b.all { it > 0 }, "no wrap-around to negative values")
         }
+    }
+
+    private fun tv(
+        hub: RemoteAudioHub,
+        seq: Long,
+    ) = hub.push("tv", "TV", seq, sine(400.0, 16_000, RemoteAudioHub.FRAME_SAMPLES, 0.3), StreamKind.MEDIA)
+
+    @Test
+    fun `TV sound turns the room down, and a person talking turns the TV down`() {
+        val hub = RemoteAudioHub()
+        val mixer = VoiceMixer(hub)
+        (0L until 3L).forEach { tv(hub, it) }
+        repeat(100) { i ->
+            if (i % 5 == 0) tv(hub, 3L + i / 5)
+            mixer.mix(room(), block, rate)
+        }
+        assertEquals(0.25f, mixer.roomGain, 0.01f)
+        assertEquals(1f, mixer.mediaGain, 0.01f)
+        assertTrue(hub.talkers.isEmpty(), "TV is not a person talking")
+        assertEquals(listOf(StreamKind.MEDIA), hub.active.value.map { it.kind })
+
+        talk(hub, 3, start = 0)
+        repeat(100) { i ->
+            if (i % 5 == 0) {
+                tv(hub, 23L + i / 5)
+                talk(hub, 1, start = 3L + i / 5)
+            }
+            mixer.mix(room(), block, rate)
+        }
+        assertEquals(0.25f, mixer.mediaGain, 0.01f)
+    }
+
+    @Test
+    fun `TV only silences the room but still lets a person through`() {
+        val hub = RemoteAudioHub()
+        val mixer = VoiceMixer(hub).apply { mode = SourceMode.TV_ONLY }
+        repeat(50) { mixer.mix(room(), block, rate) }
+        assertEquals(0f, mixer.roomGain, 0.001f)
+        assertEquals(1f, mixer.mediaGain, 0.001f)
     }
 }

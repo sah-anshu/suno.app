@@ -8,6 +8,7 @@ import au.remotiq.suno.assist.LiveSessionBuilder
 import au.remotiq.suno.assist.toOptions
 import au.remotiq.suno.assist.toSettings
 import au.remotiq.suno.audiograph.SourceMode
+import au.remotiq.suno.audiograph.StreamKind
 import au.remotiq.suno.audiograph.Talker
 import au.remotiq.suno.audiograph.VoiceMixer
 import au.remotiq.suno.core.audio.StreamPhase
@@ -15,6 +16,7 @@ import au.remotiq.suno.data.PatientSettings
 import au.remotiq.suno.data.PreferenceStorage
 import au.remotiq.suno.family.PatientLinkHost
 import au.remotiq.suno.link.CompanionDevice
+import au.remotiq.suno.link.DeviceKinds
 import au.remotiq.suno.patient.PinCode
 import au.remotiq.suno.patient.Place
 import au.remotiq.suno.patient.VolumeSteps
@@ -46,8 +48,8 @@ data class PatientUiState(
     val joinRequests: List<CompanionDevice> = emptyList(),
     /** Connected family members (sources the patient can choose). */
     val companions: List<CompanionDevice> = emptyList(),
-    /** People talking right now. */
-    val talkers: List<Talker> = emptyList(),
+    /** Remote sources sounding right now: people talking and shared sound such as TV. */
+    val remote: List<Talker> = emptyList(),
     val sourceMode: SourceMode = SourceMode.AUTO,
 ) {
     val place: Place get() = Place.fromName(settings.place)
@@ -55,6 +57,17 @@ data class PatientUiState(
     val volumeCap: Int get() = minOf(settings.maxVolumeStep, place.maxVolumeStep ?: PatientSettings.VOLUME_STEPS)
     val theme: PatientThemeName get() = PatientThemeName.fromName(settings.theme)
     val hasPin: Boolean get() = settings.pinHash != null
+
+    /** People talking right now. */
+    val talkers: List<Talker> get() = remote.filter { it.kind == StreamKind.VOICE }
+
+    /** True when a TV (or other shared sound) is connected or playing. */
+    val hasTv: Boolean get() =
+        companions.any { it.deviceKind == DeviceKinds.TV } ||
+            remote.any { it.kind == StreamKind.MEDIA }
+
+    /** Family members' phones (not TVs). */
+    val people: List<CompanionDevice> get() = companions.filter { it.deviceKind != DeviceKinds.TV }
 
     /** True when connecting earphones should start listening on its own. */
     val autoStartReady: Boolean get() = settings.autoStart && consentAccepted && !running && !connecting
@@ -93,9 +106,9 @@ class PatientStateModel
                     consentAccepted = consent,
                 )
             }.combine(
-                combine(familyLink.pending, familyLink.connected, familyLink.talkers, sourceMode, ::FamilyState),
+                combine(familyLink.pending, familyLink.connected, familyLink.remote, sourceMode, ::FamilyState),
             ) { s, f ->
-                s.copy(joinRequests = f.pending, companions = f.connected, talkers = f.talkers, sourceMode = f.mode)
+                s.copy(joinRequests = f.pending, companions = f.connected, remote = f.remote, sourceMode = f.mode)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), PatientUiState())
 
         fun allow(clientId: String) = familyLink.allow(clientId)
@@ -112,7 +125,7 @@ class PatientStateModel
         private data class FamilyState(
             val pending: List<CompanionDevice>,
             val connected: List<CompanionDevice>,
-            val talkers: List<Talker>,
+            val remote: List<Talker>,
             val mode: SourceMode,
         )
 

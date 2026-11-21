@@ -125,6 +125,27 @@ class LinkEndToEndTest {
         }
     }
 
+    @Test
+    fun `a TV shares media that the patient hears as TV, not as a person`() {
+        val code = JoinCode.generate("Dadi")
+        val hub = RemoteAudioHub()
+        val host = LinkHost(code, hub, Store(), codecs)
+        val link = InMemoryLink()
+        host.onConnection(link.host)
+        val tv = LinkClient(code, "tv-1", "Living room TV", codecs, deviceKind = DeviceKinds.TV)
+        tv.connect(link.client)
+        assertEquals(
+            DeviceKinds.TV,
+            host.pending.value
+                .single()
+                .deviceKind,
+        )
+        host.allow("tv-1")
+        (0L until 10L).forEach { tv.sendFrame(tone(it), StreamKinds.MEDIA) }
+        assertTrue(heard(hub))
+        assertTrue(hub.talkers.isEmpty())
+    }
+
     private fun waitFor(condition: () -> Boolean) {
         val deadline = System.currentTimeMillis() + 3_000
         while (!condition()) {

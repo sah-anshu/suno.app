@@ -11,6 +11,8 @@ sealed interface LinkMessage {
         val clientId: String,
         val deviceName: String,
         val codecs: List<Int>,
+        /** [DeviceKinds.PHONE] or [DeviceKinds.TV]; changes how the patient's phone asks. */
+        val deviceKind: Int = DeviceKinds.PHONE,
     ) : LinkMessage
 
     /** Patient → companion: waiting for the patient's phone to allow the join. */
@@ -28,11 +30,13 @@ sealed interface LinkMessage {
     /** Either side: leaving. */
     data object Bye : LinkMessage
 
-    /** Companion → patient: one encoded 20 ms frame. */
+    /** Companion → patient: one encoded 20 ms frame of a voice or of shared sound. */
     class Audio(
         val sequence: Long,
         val codec: Int,
         val payload: ByteArray,
+        /** [StreamKinds.VOICE] or [StreamKinds.MEDIA]. */
+        val kind: Int = StreamKinds.VOICE,
     ) : LinkMessage
 
     companion object {
@@ -50,7 +54,7 @@ sealed interface LinkMessage {
                     val id = message.clientId.toByteArray()
                     val name = message.deviceName.take(MAX_TEXT).toByteArray()
                     ByteBuffer
-                        .allocate(1 + 1 + 2 + id.size + 2 + name.size + 1 + message.codecs.size)
+                        .allocate(1 + 1 + 2 + id.size + 2 + name.size + 1 + message.codecs.size + 1)
                         .put(HELLO)
                         .put(message.version.toByte())
                         .putShort(id.size.toShort())
@@ -59,6 +63,7 @@ sealed interface LinkMessage {
                         .put(name)
                         .put(message.codecs.size.toByte())
                         .apply { message.codecs.forEach { put(it.toByte()) } }
+                        .put(message.deviceKind.toByte())
                         .array()
                 }
                 Pending -> byteArrayOf(PENDING)
@@ -74,10 +79,11 @@ sealed interface LinkMessage {
                 Bye -> byteArrayOf(BYE)
                 is Audio ->
                     ByteBuffer
-                        .allocate(1 + 8 + 1 + message.payload.size)
+                        .allocate(1 + 8 + 1 + 1 + message.payload.size)
                         .put(AUDIO)
                         .putLong(message.sequence)
                         .put(message.codec.toByte())
+                        .put(message.kind.toByte())
                         .put(message.payload)
                         .array()
             }
@@ -92,15 +98,30 @@ sealed interface LinkMessage {
                         val id = String(ByteArray(b.short.toInt()).also { b.get(it) })
                         val name = String(ByteArray(b.short.toInt()).also { b.get(it) })
                         val codecs = List(b.get().toInt()) { b.get().toInt() }
-                        Hello(version, id, name, codecs)
+                        Hello(version, id, name, codecs, b.get().toInt())
                     }
                     PENDING -> Pending
                     WELCOME -> Welcome(b.get().toInt(), b.int)
                     DENIED -> Denied
                     BYE -> Bye
-                    AUDIO -> Audio(b.long, b.get().toInt(), ByteArray(b.remaining()).also { b.get(it) })
+                    AUDIO -> {
+                        val sequence = b.long
+                        val codec = b.get().toInt()
+                        val kind = b.get().toInt()
+                        Audio(sequence, codec, ByteArray(b.remaining()).also { b.get(it) }, kind)
+                    }
                     else -> null
                 }
             }.getOrNull()
     }
+}
+
+object DeviceKinds {
+    const val PHONE = 0
+    const val TV = 1
+}
+
+object StreamKinds {
+    const val VOICE = 0
+    const val MEDIA = 1
 }

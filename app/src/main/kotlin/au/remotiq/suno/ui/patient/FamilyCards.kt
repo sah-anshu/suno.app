@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Hearing
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -39,8 +40,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import au.remotiq.suno.R
 import au.remotiq.suno.audiograph.SourceMode
+import au.remotiq.suno.audiograph.StreamKind
 import au.remotiq.suno.audiograph.Talker
 import au.remotiq.suno.link.CompanionDevice
+import au.remotiq.suno.link.DeviceKinds
 
 /** Full screen over Home when a new phone asks to join. Two large answers, no timeout. */
 @Composable
@@ -62,13 +65,30 @@ fun JoinApprovalScreen(
         ) {
             Initial(device.deviceName, 120)
             Text(
-                stringResource(R.string.family_wants_to_talk, device.deviceName),
+                stringResource(
+                    if (device.deviceKind ==
+                        DeviceKinds.TV
+                    ) {
+                        R.string.family_wants_to_share
+                    } else {
+                        R.string.family_wants_to_talk
+                    },
+                    device.deviceName,
+                ),
                 style = MaterialTheme.typography.headlineMedium,
                 color = c.ink,
                 textAlign = TextAlign.Center,
             )
             Text(
-                stringResource(R.string.family_wants_body),
+                stringResource(
+                    if (device.deviceKind ==
+                        DeviceKinds.TV
+                    ) {
+                        R.string.family_share_body
+                    } else {
+                        R.string.family_wants_body
+                    },
+                ),
                 style = MaterialTheme.typography.bodyLarge,
                 color = c.muted,
                 textAlign = TextAlign.Center,
@@ -115,39 +135,35 @@ fun TalkingBanner(
 }
 
 /**
- * What the patient is hearing, and the choice between the room and family members. Only connected
- * sources appear. Tapping the chosen source again returns to Auto.
+ * What the patient is hearing, and the choice between the room, the TV and family members. Only
+ * connected sources appear. Tapping the chosen source again returns to Auto (person, then TV, then room).
  */
 @Composable
 fun NowHearingCard(
-    companions: List<CompanionDevice>,
-    talkers: List<Talker>,
+    people: List<CompanionDevice>,
+    hasTv: Boolean,
+    remote: List<Talker>,
     mode: SourceMode,
     onChoose: (SourceMode) -> Unit,
 ) {
     val c = LocalPatientColors.current
-    val talking = talkers.firstOrNull()?.takeIf { mode != SourceMode.ROOM_ONLY }
+    val hearing = nowHearing(people, remote, mode)
     val current =
-        when {
-            talking != null -> talking.name
-            mode == SourceMode.PERSON_ONLY -> companions.joinToString { it.deviceName }
-            else -> stringResource(R.string.family_room)
+        when (hearing.source) {
+            HeardSource.PERSON -> hearing.personName
+            HeardSource.TV -> stringResource(R.string.family_tv)
+            HeardSource.ROOM -> stringResource(R.string.family_room)
+        }
+    val icon =
+        when (hearing.source) {
+            HeardSource.PERSON -> Icons.Filled.Person
+            HeardSource.TV -> Icons.Filled.Tv
+            HeardSource.ROOM -> Icons.Filled.Hearing
         }
     PatientCard(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(Modifier.size(56.dp).background(c.onSoft, CircleShape), contentAlignment = Alignment.Center) {
-                Icon(
-                    if (talking !=
-                        null
-                    ) {
-                        Icons.Filled.Person
-                    } else {
-                        Icons.Filled.Hearing
-                    },
-                    null,
-                    tint = c.ink,
-                    modifier = Modifier.size(30.dp),
-                )
+                Icon(icon, null, tint = c.ink, modifier = Modifier.size(30.dp))
             }
             Column(Modifier.weight(1f)) {
                 Text(
@@ -169,20 +185,44 @@ fun NowHearingCard(
                 )
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            SourceChip(
-                Icons.Filled.Hearing,
-                stringResource(R.string.family_room),
-                mode == SourceMode.ROOM_ONLY,
-                Modifier.weight(1f),
-            ) {
-                onChoose(SourceMode.ROOM_ONLY)
+        val personLabel = people.joinToString { it.deviceName }
+        val chips =
+            buildList {
+                add(Triple(SourceMode.ROOM_ONLY, Icons.Filled.Hearing, stringResource(R.string.family_room)))
+                if (hasTv) add(Triple(SourceMode.TV_ONLY, Icons.Filled.Tv, stringResource(R.string.family_tv)))
+                if (people.isNotEmpty()) add(Triple(SourceMode.PERSON_ONLY, Icons.Filled.Person, personLabel))
             }
-            val names = companions.joinToString { it.deviceName }
-            SourceChip(Icons.Filled.Person, names, mode == SourceMode.PERSON_ONLY, Modifier.weight(1f)) {
-                onChoose(SourceMode.PERSON_ONLY)
+        // Two per row, so labels stay whole at large text sizes.
+        chips.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                row.forEach { (chipMode, chipIcon, label) ->
+                    SourceChip(chipIcon, label, mode == chipMode, Modifier.weight(1f)) { onChoose(chipMode) }
+                }
             }
         }
+    }
+}
+
+internal enum class HeardSource { ROOM, TV, PERSON }
+
+internal data class Heard(
+    val source: HeardSource,
+    val personName: String = "",
+)
+
+/** What the patient hears now, following the mixer's priorities (person, then TV, then room). */
+internal fun nowHearing(
+    people: List<CompanionDevice>,
+    remote: List<Talker>,
+    mode: SourceMode,
+): Heard {
+    val person = remote.firstOrNull { it.kind == StreamKind.VOICE }?.takeIf { mode != SourceMode.ROOM_ONLY }
+    val tvPlaying = remote.any { it.kind == StreamKind.MEDIA }
+    return when {
+        person != null -> Heard(HeardSource.PERSON, person.name)
+        mode == SourceMode.PERSON_ONLY -> Heard(HeardSource.PERSON, people.joinToString { it.deviceName })
+        mode == SourceMode.TV_ONLY || (mode == SourceMode.AUTO && tvPlaying) -> Heard(HeardSource.TV)
+        else -> Heard(HeardSource.ROOM)
     }
 }
 

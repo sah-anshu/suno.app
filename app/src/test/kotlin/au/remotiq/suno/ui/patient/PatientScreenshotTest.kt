@@ -135,7 +135,7 @@ class PatientScreenshotTest {
             Home(
                 state(running = true).copy(
                     companions = listOf(rahul),
-                    talkers = listOf(Talker("rahul-1", "Rahul")),
+                    remote = listOf(Talker("rahul-1", "Rahul")),
                     sourceMode = SourceMode.AUTO,
                 ),
             )
@@ -148,7 +148,7 @@ class PatientScreenshotTest {
             Home(
                 state(settings = PatientSettings(homeLevel = 3, pinHash = "set")).copy(
                     companions = listOf(CompanionDevice("r", "राहुल")),
-                    talkers = listOf(Talker("r", "राहुल")),
+                    remote = listOf(Talker("r", "राहुल")),
                     sourceMode = SourceMode.PERSON_ONLY,
                 ),
             )
@@ -158,6 +158,25 @@ class PatientScreenshotTest {
     fun joinQrCode() =
         shot("13-join-qr") {
             PatientTheme(PatientThemeName.STANDARD) { QrCode(JoinCode.generate("Dadi").toUri(), "Join code") }
+        }
+
+    private val tv = CompanionDevice("tv-1", "Living room TV", au.remotiq.suno.link.DeviceKinds.TV)
+
+    @Test
+    fun tvJoinRequest() =
+        shot("14-tv-join-request") {
+            PatientTheme(PatientThemeName.STANDARD) { JoinApprovalScreen(tv, {}, {}) }
+        }
+
+    @Test
+    fun tvPlaying() =
+        shot("15-tv-playing") {
+            Home(
+                state(running = true).copy(
+                    companions = listOf(tv, rahul),
+                    remote = listOf(Talker("tv-1", "Living room TV", au.remotiq.suno.audiograph.StreamKind.MEDIA)),
+                ),
+            )
         }
 }
 

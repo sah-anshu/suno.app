@@ -6,10 +6,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.ConcurrentHashMap
 
-/** A person whose voice is currently reaching the patient. */
+/** What a remote stream carries. Voices take priority over media such as TV sound. */
+enum class StreamKind { VOICE, MEDIA }
+
+/** A remote source currently reaching the patient: a person's voice, or shared sound such as a TV. */
 data class Talker(
     val id: String,
     val name: String,
+    val kind: StreamKind = StreamKind.VOICE,
+)
+
+/** Which kinds of remote sound were added to a block. */
+data class RemoteActivity(
+    val voice: Boolean,
+    val media: Boolean,
 )
 
 /**
@@ -26,6 +36,7 @@ class RemoteAudioHub(
     private class Stream(
         val id: String,
         val name: String,
+        val kind: StreamKind,
         frameSamples: Int,
     ) {
         val jitter = JitterBuffer(frameSamples)
@@ -35,48 +46,68 @@ class RemoteAudioHub(
     }
 
     private val streams = ConcurrentHashMap<String, Stream>()
-    private val _talkers = MutableStateFlow<List<Talker>>(emptyList())
+    private val _active = MutableStateFlow<List<Talker>>(emptyList())
 
-    /** People talking right now, in the order they started. */
-    val talkers: StateFlow<List<Talker>> = _talkers.asStateFlow()
+    /** Every remote source sounding right now (voices and media), in the order they started. */
+    val active: StateFlow<List<Talker>> = _active.asStateFlow()
 
-    /** Queue one decoded 20 ms frame (floats in [-1, 1]) from companion [id]. */
+    /** People talking right now. */
+    val talkers: List<Talker> get() = _active.value.filter { it.kind == StreamKind.VOICE }
+
+    /** Queue one decoded 20 ms frame (floats in [-1, 1]) of [kind] from companion [id]. */
     fun push(
         id: String,
         name: String,
         sequence: Long,
         samples: FloatArray,
+        kind: StreamKind = StreamKind.VOICE,
     ) {
-        streams.getOrPut(id) { Stream(id, name, frameSamples) }.jitter.push(sequence, samples)
+        streams.getOrPut(key(id, kind)) { Stream(id, name, kind, frameSamples) }.jitter.push(sequence, samples)
     }
 
-    /** Forget a companion that left or was removed. */
+    /** Forget a companion that left or was removed, with all its streams. */
     fun remove(id: String) {
-        streams.remove(id)
-        publish(_talkers.value.filterNot { it.id == id })
+        StreamKind.entries.forEach { streams.remove(key(id, it)) }
+        publish(_active.value.filterNot { it.id == id })
     }
 
     /**
-     * Adds every active voice into the first [frames] samples of [out] at [sampleRateHz].
-     * Returns true when at least one person contributed sound to this block.
+     * Adds every active source into the first [frames] samples of [voiceOut] (people) or
+     * [mediaOut] (shared sound such as TV) at [sampleRateHz], so the mixer can give voices priority.
      */
+    fun read(
+        voiceOut: FloatArray,
+        mediaOut: FloatArray,
+        frames: Int,
+        sampleRateHz: Int,
+    ): RemoteActivity {
+        var voice = false
+        var media = false
+        var now: MutableList<Talker>? = null
+        for (stream in streams.values) {
+            if (!fill(stream, frames, sampleRateHz)) continue
+            if (stream.kind == StreamKind.VOICE) {
+                stream.fifo.addInto(voiceOut, frames)
+                voice = true
+            } else {
+                stream.fifo.addInto(mediaOut, frames)
+                media = true
+            }
+            (now ?: mutableListOf<Talker>().also { now = it }) += Talker(stream.id, stream.name, stream.kind)
+        }
+        val list = now.orEmpty()
+        if (list.map { it.id to it.kind } != _active.value.map { it.id to it.kind }) publish(list)
+        return RemoteActivity(voice, media)
+    }
+
+    /** Voices and media summed into one buffer (for callers that do not need priorities). */
     fun read(
         out: FloatArray,
         frames: Int,
         sampleRateHz: Int,
     ): Boolean {
-        var anyone = false
-        var talking: MutableList<Talker>? = null
-        for (stream in streams.values) {
-            if (fill(stream, frames, sampleRateHz)) {
-                stream.fifo.addInto(out, frames)
-                anyone = true
-                (talking ?: mutableListOf<Talker>().also { talking = it }) += Talker(stream.id, stream.name)
-            }
-        }
-        val now = talking.orEmpty()
-        if (now.map { it.id } != _talkers.value.map { it.id }) publish(now)
-        return anyone
+        val activity = read(out, out, frames, sampleRateHz)
+        return activity.voice || activity.media
     }
 
     private fun fill(
@@ -98,8 +129,13 @@ class RemoteAudioHub(
     }
 
     private fun publish(list: List<Talker>) {
-        _talkers.value = list
+        _active.value = list
     }
+
+    private fun key(
+        id: String,
+        kind: StreamKind,
+    ) = "$id#${kind.name}"
 
     companion object {
         const val STREAM_RATE_HZ = 16_000

@@ -2,6 +2,7 @@
 package au.remotiq.suno.link
 
 import au.remotiq.suno.audiograph.RemoteAudioHub
+import au.remotiq.suno.audiograph.StreamKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 data class CompanionDevice(
     val clientId: String,
     val deviceName: String,
+    val deviceKind: Int = DeviceKinds.PHONE,
 )
 
 /** Companions the patient's phone has allowed before. They rejoin without asking again. */
@@ -75,7 +77,8 @@ class LinkHost(
                 ?.let(LinkMessage::decode) as? LinkMessage.Audio
         val samples = audio?.let { a -> connection.codec?.takeIf { it.id == a.codec }?.decode(a.payload) }
         if (device != null && audio != null && samples != null) {
-            hub.push(device.clientId, device.deviceName, audio.sequence, samples)
+            val kind = if (audio.kind == StreamKinds.MEDIA) StreamKind.MEDIA else StreamKind.VOICE
+            hub.push(device.clientId, device.deviceName, audio.sequence, samples, kind)
         }
     }
 
@@ -141,7 +144,7 @@ class LinkHost(
 
         @Volatile var codec: FrameCodec? = null
 
-        val device: CompanionDevice? get() = hello?.let { CompanionDevice(it.clientId, it.deviceName) }
+        val device: CompanionDevice? get() = hello?.let { CompanionDevice(it.clientId, it.deviceName, it.deviceKind) }
 
         fun send(message: LinkMessage) {
             val c = crypto ?: return

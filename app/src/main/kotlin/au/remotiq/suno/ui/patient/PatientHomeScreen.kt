@@ -110,7 +110,7 @@ fun PatientHomeScreen(
             if (message != null) MessageCard(message)
             state.talkers.firstOrNull()?.let { TalkingBanner(it, listening = state.running) }
             if (state.settings.homeLevel >= 2 && state.companions.isNotEmpty()) {
-                NowHearingCard(state.companions, state.talkers, state.sourceMode, onChooseSource)
+                NowHearingCard(state.people, state.hasTv, state.remote, state.sourceMode, onChooseSource)
             }
             when (state.settings.homeLevel) {
                 2 -> PlaceRow(state.place, state.settings.picturesMode, onOpenPlaces)

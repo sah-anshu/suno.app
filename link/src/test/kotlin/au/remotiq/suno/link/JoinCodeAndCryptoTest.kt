@@ -77,7 +77,7 @@ class JoinCodeAndCryptoTest {
 
     @Test
     fun `messages round-trip`() {
-        val hello = LinkMessage.Hello(1, "id-1", "Rahul's phone", listOf(CodecIds.PCM16, CodecIds.OPUS))
+        val hello = LinkMessage.Hello(1, "id-1", "Rahul's phone", listOf(CodecIds.PCM16, CodecIds.OPUS), DeviceKinds.TV)
         assertEquals(hello, LinkMessage.decode(LinkMessage.encode(hello)))
         assertEquals(LinkMessage.Welcome(2, -7), LinkMessage.decode(LinkMessage.encode(LinkMessage.Welcome(2, -7))))
         val audio =

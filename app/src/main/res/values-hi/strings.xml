@@ -84,4 +84,7 @@
     <string name="family_remove">हटाएँ</string>
     <string name="family_close">बंद करें</string>
     <string name="nav_family">परिवार</string>
+    <string name="family_tv">टीवी</string>
+    <string name="family_wants_to_share">%1$s टीवी की आवाज़ भेजना चाहता है</string>
+    <string name="family_share_body">जब आप सुन रहे होंगे, टीवी की आवाज़ आपके ईयरफ़ोन में आएगी। बाकी सबके लिए टीवी स्पीकर वैसे ही रहेंगे।</string>
 </resources>

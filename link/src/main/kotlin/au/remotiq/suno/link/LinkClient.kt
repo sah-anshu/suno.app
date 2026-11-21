@@ -19,6 +19,7 @@ class LinkClient(
     private val deviceName: String,
     private val codecs: Map<Int, () -> FrameCodec>,
     private val random: SecureRandom = SecureRandom(),
+    private val deviceKind: Int = DeviceKinds.PHONE,
 ) : LinkChannel.Receiver {
     private val _state = MutableStateFlow(ClientState.IDLE)
     val state: StateFlow<ClientState> = _state.asStateFlow()
@@ -30,7 +31,9 @@ class LinkClient(
     @Volatile private var tag = 0
 
     @Volatile private var codec: FrameCodec? = null
-    private var sequence = 0L
+
+    /** Each stream kind has its own sequence (the patient's phone buffers them separately). */
+    private val sequences = LongArray(2)
 
     /** Name of the codec in use, for status display. */
     val codecId: Int? get() = codec?.id
@@ -42,16 +45,23 @@ class LinkClient(
         _state.value = ClientState.CONNECTING
         channel.start(this)
         channel.sendControl(salt)
-        send(LinkMessage.Hello(JoinCode.VERSION, clientId, deviceName, codecs.keys.toList()))
+        send(LinkMessage.Hello(JoinCode.VERSION, clientId, deviceName, codecs.keys.toList(), deviceKind))
     }
 
-    /** Sends one 20 ms, 16 kHz frame. Ignored unless connected. */
-    fun sendFrame(pcm: ShortArray) {
+    /** Sends one 20 ms, 16 kHz frame of [kind] ([StreamKinds]). Ignored unless connected. */
+    fun sendFrame(
+        pcm: ShortArray,
+        kind: Int = StreamKinds.VOICE,
+    ) {
         val c = crypto ?: return
         val active = codec ?: return
         val ch = channel ?: return
         if (_state.value != ClientState.CONNECTED) return
-        val message = LinkMessage.Audio(sequence++, active.id, active.encode(pcm))
+        val index = if (kind == StreamKinds.MEDIA) 1 else 0
+        val message =
+            synchronized(sequences) {
+                LinkMessage.Audio(sequences[index]++, active.id, active.encode(pcm), kind)
+            }
         val sealed = c.seal(Lane.CLIENT_AUDIO, LinkMessage.encode(message))
         runCatching {
             ch.sendAudio(

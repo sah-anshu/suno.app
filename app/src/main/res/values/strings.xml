@@ -454,4 +454,7 @@
     <string name="family_none">Nobody has joined yet.</string>
     <string name="family_remove">Remove</string>
     <string name="family_close">Close</string>
+    <string name="family_tv">TV</string>
+    <string name="family_wants_to_share">%1$s wants to share TV sound</string>
+    <string name="family_share_body">TV sound will play in your earphones while you are listening. The TV speakers stay as they are for everyone else.</string>
 </resources>

@@ -70,7 +70,8 @@ class PatientLinkHost
         private val _connected = MutableStateFlow<List<CompanionDevice>>(emptyList())
         val connected: StateFlow<List<CompanionDevice>> = _connected.asStateFlow()
 
-        val talkers get() = hub.talkers
+        /** Remote sources sounding right now: voices and shared sound such as TV. */
+        val remote get() = hub.active
 
         /** The join code with the patient's current display name. */
         suspend fun joinCode(): JoinCode {
