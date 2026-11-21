@@ -2,6 +2,8 @@ package au.remotiq.suno.di
 
 import au.remotiq.suno.audiogram.ProfileFitting
 import au.remotiq.suno.audiogram.halfGainFitting
+import au.remotiq.suno.audiograph.RemoteAudioHub
+import au.remotiq.suno.audiograph.VoiceMixer
 import au.remotiq.suno.core.audio.PreviewPlayer
 import au.remotiq.suno.core.audio.TestSignalGenerator
 import au.remotiq.suno.core.audio.TestSignalPlayer
@@ -38,4 +40,13 @@ object PlaybackBindings {
     @Provides
     @Singleton
     fun fittingStrategy(): ProfileFitting = halfGainFitting()
+
+    /** Voices from approved companions, shared by the link layer and the listening session. */
+    @Provides
+    @Singleton
+    fun remoteAudioHub(): RemoteAudioHub = RemoteAudioHub()
+
+    @Provides
+    @Singleton
+    fun voiceMixer(hub: RemoteAudioHub): VoiceMixer = VoiceMixer(hub)
 }

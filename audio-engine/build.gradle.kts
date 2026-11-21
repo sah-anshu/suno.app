@@ -55,6 +55,8 @@ androidComponents.onVariants { variant ->
 
 dependencies {
     implementation(project(":foundation"))
+    // InputMixer is part of the engine's constructor, so callers see audio-graph types.
+    api(project(":audio-graph"))
     implementation(project(":sound-profile"))
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

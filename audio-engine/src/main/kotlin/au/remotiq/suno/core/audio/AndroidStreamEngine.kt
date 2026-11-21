@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.os.SystemClock
+import au.remotiq.suno.audiograph.InputMixer
 
 enum class StreamPhase { STOPPED, CONNECTING, RUNNING, FAILED }
 
@@ -23,6 +24,8 @@ data class StreamStatus(
 class AndroidStreamEngine(
     private val context: Context,
     private val bypassEffects: () -> AutoCloseable = { AutoCloseable {} },
+    /** Adds companions' voices to each microphone block before the listening chain (arch.md section 6.1). */
+    private val inputMixer: InputMixer? = null,
     private val onStatus: (StreamStatus) -> Unit = {},
 ) : StreamEngine {
     @Volatile private var requested = false
@@ -289,6 +292,8 @@ class AndroidStreamEngine(
                         ),
                     )
                 }
+                // Remote voices join here, so the patient's audiogram and limiter shape every source.
+                inputMixer?.mix(input, input.size, format.sampleRateHz)
                 buffers.process(processor)
                 // Keep processing during a short focus pause so state stays continuous; only the output fades.
                 focusGate.apply(buffers.output, route.focusPaused)

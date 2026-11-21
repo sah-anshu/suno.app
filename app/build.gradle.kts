@@ -153,6 +153,7 @@ dependencies {
     implementation(project(":foundation"))
     implementation(project(":sound-profile"))
     implementation(project(":audio-engine"))
+    implementation(project(":audio-graph"))
     implementation(project(":local-storage"))
 
     implementation(libs.androidx.core.ktx)

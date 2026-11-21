@@ -3,6 +3,7 @@ package au.remotiq.suno.assist
 import android.content.Context
 import android.media.AudioManager
 import au.remotiq.suno.audiogram.FrequencyGainCurve
+import au.remotiq.suno.audiograph.VoiceMixer
 import au.remotiq.suno.core.audio.AndroidStreamEngine
 import au.remotiq.suno.core.audio.InputSource
 import au.remotiq.suno.core.audio.StreamPhase
@@ -77,6 +78,7 @@ class LiveAudioController
     constructor(
         @ApplicationContext context: Context,
         mediaEq: MediaSoundController,
+        voiceMixer: VoiceMixer,
     ) {
         private val applicationContext = context.applicationContext
         private val manager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -84,7 +86,11 @@ class LiveAudioController
         val sessionStatus: StateFlow<StreamStatus> = _sessionStatus.asStateFlow()
 
         private val engine =
-            AndroidStreamEngine(context, bypassEffects = mediaEq::bypassForPlayback) { status ->
+            AndroidStreamEngine(
+                context,
+                bypassEffects = mediaEq::bypassForPlayback,
+                inputMixer = voiceMixer,
+            ) { status ->
                 _sessionStatus.value = status
                 when (status.state) {
                     StreamPhase.RUNNING -> _running.value = true
