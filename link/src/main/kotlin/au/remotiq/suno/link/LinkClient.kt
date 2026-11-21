@@ -17,7 +17,7 @@ class LinkClient(
     private val code: JoinCode,
     private val clientId: String,
     private val deviceName: String,
-    private val codecs: Map<Int, FrameCodec>,
+    private val codecs: Map<Int, () -> FrameCodec>,
     private val random: SecureRandom = SecureRandom(),
 ) : LinkChannel.Receiver {
     private val _state = MutableStateFlow(ClientState.IDLE)
@@ -74,7 +74,7 @@ class LinkClient(
         when (val message = crypto?.open(Lane.HOST_CONTROL, frame)?.let(LinkMessage::decode)) {
             LinkMessage.Pending -> _state.value = ClientState.WAITING_FOR_APPROVAL
             is LinkMessage.Welcome -> {
-                codec = codecs[message.codec]
+                codec = codecs[message.codec]?.invoke()
                 tag = message.audioTag
                 _state.value = if (codec != null) ClientState.CONNECTED else ClientState.CLOSED
             }
@@ -90,6 +90,7 @@ class LinkClient(
     override fun onAudio(frame: ByteArray) = Unit
 
     override fun onClosed() {
+        (codec as? AutoCloseable)?.let { runCatching { it.close() } }
         if (_state.value != ClientState.DENIED) _state.value = ClientState.CLOSED
     }
 

@@ -154,6 +154,8 @@ dependencies {
     implementation(project(":sound-profile"))
     implementation(project(":audio-engine"))
     implementation(project(":audio-graph"))
+    implementation(project(":link-android"))
+    implementation(libs.zxing.core)
     implementation(project(":local-storage"))
 
     implementation(libs.androidx.core.ktx)

@@ -3,6 +3,16 @@ package au.remotiq.suno.data
 import kotlinx.coroutines.flow.Flow
 
 interface PreferenceStorage {
+    /** The patient's join code (see the link module), created once; null until first needed. */
+    fun observeLinkIdentity(): Flow<String?>
+
+    suspend fun setLinkIdentity(joinCodeUri: String)
+
+    /** Companions the patient's phone has allowed. They rejoin without asking again. */
+    fun observeApprovedCompanions(): Flow<List<StoredCompanion>>
+
+    suspend fun setApprovedCompanions(companions: List<StoredCompanion>)
+
     /** Settings for the patient's simple layout and the helper PIN. */
     fun observePatientSettings(): Flow<PatientSettings>
 

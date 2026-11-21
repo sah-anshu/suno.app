@@ -12,7 +12,7 @@ import kotlin.math.sin
 
 class LinkEndToEndTest {
     private val frame = RemoteAudioHub.FRAME_SAMPLES
-    private val codecs = mapOf(CodecIds.PCM16 to PcmCodec(frame))
+    private val codecs: Map<Int, () -> FrameCodec> = mapOf(CodecIds.PCM16 to { PcmCodec(frame) })
 
     private class Store : ApprovedCompanions {
         val ids = mutableSetOf<String>()

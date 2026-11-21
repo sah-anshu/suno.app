@@ -53,6 +53,9 @@ class LiveAudioService : Service() {
     @Inject
     lateinit var settingsRepository: PreferenceStorage
 
+    @Inject
+    lateinit var familyLink: au.remotiq.suno.family.PatientLinkHost
+
     private var consentJob: Job? = null
 
     private var wakeLock: PowerManager.WakeLock? = null
@@ -116,6 +119,8 @@ class LiveAudioService : Service() {
         // microphone is being used as a remote listening microphone.
         acquireWakeLock()
         controller.startEngine()
+        // Family members can talk to the patient while the patient is listening.
+        if (au.remotiq.suno.BuildConfig.FLAVOR == "patient") familyLink.acquire(LINK_HOLDER)
         if (statusJob?.isActive != true) {
             statusJob =
                 serviceScope.launch {
@@ -138,6 +143,7 @@ class LiveAudioService : Service() {
             runBlocking { settingsRepository.addExposureUnits(leftover, todayEpochDay()) }
         }
         controller.stopEngine()
+        familyLink.release(LINK_HOLDER)
         serviceScope.cancel()
         releaseWakeLock()
         super.onDestroy()
@@ -243,6 +249,7 @@ class LiveAudioService : Service() {
         private const val NOTIFICATION_ID = 1
         const val ACTION_STOP = "au.remotiq.suno.assist.STOP"
         private const val WAKE_LOCK_TAG = "suno:listen"
+        private const val LINK_HOLDER = "listening"
 
         // Backstop, not a lifecycle: refreshed only by restarting the session.
         private const val WAKE_LOCK_TIMEOUT_MS = 4 * 60 * 60 * 1000L

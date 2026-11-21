@@ -54,6 +54,9 @@ private object PreferenceKeys {
     val PATIENT_HOME_LEVEL = intPreferencesKey("patient_home_level")
     val PATIENT_AUTO_START = booleanPreferencesKey("patient_auto_start")
     val PATIENT_PIN_HASH = stringPreferencesKey("patient_pin_hash")
+    val PATIENT_DISPLAY_NAME = stringPreferencesKey("patient_display_name")
+    val LINK_IDENTITY = stringPreferencesKey("link_identity")
+    val APPROVED_COMPANIONS = stringPreferencesKey("approved_companions")
 
     // Legacy single-profile keys (pre-multi-profile builds).
     val PROFILE_NAME = stringPreferencesKey("profile_name")
@@ -107,6 +110,7 @@ class PreferencesStore(
                 homeLevel = it[PreferenceKeys.PATIENT_HOME_LEVEL] ?: defaults.homeLevel,
                 autoStart = it[PreferenceKeys.PATIENT_AUTO_START] ?: defaults.autoStart,
                 pinHash = it[PreferenceKeys.PATIENT_PIN_HASH],
+                displayName = it[PreferenceKeys.PATIENT_DISPLAY_NAME] ?: defaults.displayName,
             ).normalized()
         }
 
@@ -120,9 +124,23 @@ class PreferencesStore(
             it[PreferenceKeys.PATIENT_THEME] = s.theme
             it[PreferenceKeys.PATIENT_HOME_LEVEL] = s.homeLevel
             it[PreferenceKeys.PATIENT_AUTO_START] = s.autoStart
+            it[PreferenceKeys.PATIENT_DISPLAY_NAME] = s.displayName
             val pin = s.pinHash
             if (pin == null) it.remove(PreferenceKeys.PATIENT_PIN_HASH) else it[PreferenceKeys.PATIENT_PIN_HASH] = pin
         }
+    }
+
+    override fun observeLinkIdentity(): Flow<String?> = dataStore.observe { it[PreferenceKeys.LINK_IDENTITY] }
+
+    override suspend fun setLinkIdentity(joinCodeUri: String) {
+        dataStore.edit { it[PreferenceKeys.LINK_IDENTITY] = joinCodeUri }
+    }
+
+    override fun observeApprovedCompanions(): Flow<List<StoredCompanion>> =
+        dataStore.observe { StoredCompanion.decode(it[PreferenceKeys.APPROVED_COMPANIONS]) }
+
+    override suspend fun setApprovedCompanions(companions: List<StoredCompanion>) {
+        dataStore.edit { it[PreferenceKeys.APPROVED_COMPANIONS] = StoredCompanion.encode(companions) }
     }
 
     override fun observeHighContrast(): Flow<Boolean> = dataStore.observe { it[PreferenceKeys.HIGH_CONTRAST] ?: false }

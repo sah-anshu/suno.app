@@ -24,6 +24,8 @@ data class PatientSettings(
     val autoStart: Boolean = false,
     /** Salted hash of the helper PIN, or null before a PIN is set. Never the PIN itself. */
     val pinHash: String? = null,
+    /** Name shown to family on their phones and in the join code; empty means "Suno". */
+    val displayName: String = "",
 ) {
     fun normalized(): PatientSettings {
         val cap = maxVolumeStep.coerceIn(1, VOLUME_STEPS)
@@ -31,11 +33,13 @@ data class PatientSettings(
             maxVolumeStep = cap,
             volumeStep = volumeStep.coerceIn(1, cap),
             homeLevel = homeLevel.coerceIn(1, HOME_LEVELS),
+            displayName = displayName.trim().take(MAX_NAME),
         )
     }
 
     companion object {
         const val VOLUME_STEPS = 6
         const val HOME_LEVELS = 3
+        const val MAX_NAME = 40
     }
 }

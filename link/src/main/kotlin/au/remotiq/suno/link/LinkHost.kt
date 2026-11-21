@@ -33,7 +33,8 @@ class LinkHost(
     private val code: JoinCode,
     private val hub: RemoteAudioHub,
     private val approved: ApprovedCompanions,
-    private val codecs: Map<Int, FrameCodec>,
+    /** One new codec per connection: decoders such as Opus keep state per stream. */
+    private val codecs: Map<Int, () -> FrameCodec>,
     private val random: SecureRandom = SecureRandom(),
 ) : LinkServer.Listener {
     private val _pending = MutableStateFlow<List<CompanionDevice>>(emptyList())
@@ -72,7 +73,7 @@ class LinkHost(
                 ?.crypto
                 ?.open(Lane.CLIENT_AUDIO, frame.copyOfRange(Int.SIZE_BYTES, frame.size))
                 ?.let(LinkMessage::decode) as? LinkMessage.Audio
-        val samples = audio?.let { codecs[it.codec]?.decode(it.payload) }
+        val samples = audio?.let { a -> connection.codec?.takeIf { it.id == a.codec }?.decode(a.payload) }
         if (device != null && audio != null && samples != null) {
             hub.push(device.clientId, device.deviceName, audio.sequence, samples)
         }
@@ -120,6 +121,7 @@ class LinkHost(
             tag = random.nextInt()
         } while (byTag.putIfAbsent(tag, connection) != null)
         connection.tag = tag
+        connection.codec = codecs.getValue(codec)()
         connection.welcomed = true
         _pending.update { list -> list.filterNot { it.clientId == device.clientId } }
         _connected.update { list -> list.filterNot { it.clientId == device.clientId } + device }
@@ -136,6 +138,8 @@ class LinkHost(
         @Volatile var welcomed = false
 
         @Volatile var tag: Int? = null
+
+        @Volatile var codec: FrameCodec? = null
 
         val device: CompanionDevice? get() = hello?.let { CompanionDevice(it.clientId, it.deviceName) }
 
@@ -174,6 +178,7 @@ class LinkHost(
 
         override fun onClosed() {
             connections -= this
+            (codec as? AutoCloseable)?.let { runCatching { it.close() } }
             tag?.let { byTag.remove(it) }
             val device = device ?: return
             _pending.update { list -> list.filterNot { it.clientId == device.clientId } }
