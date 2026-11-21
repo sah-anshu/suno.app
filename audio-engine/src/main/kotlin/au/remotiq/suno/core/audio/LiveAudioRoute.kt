@@ -54,6 +54,11 @@ internal class LiveAudioRoute(
         private set
     val sco: Boolean get() = output?.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
 
+    /** True while another app holds audio focus for a short time; output fades to silence. */
+    @Volatile
+    var focusPaused: Boolean = false
+        private set
+
     val attributes: AudioAttributes
         get() =
             AudioAttributes
@@ -84,7 +89,12 @@ internal class LiveAudioRoute(
                 .Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
                 .setAudioAttributes(attributes)
                 .setOnAudioFocusChangeListener({ change ->
-                    if (change < AudioManager.AUDIOFOCUS_GAIN) onLost()
+                    when (FocusPolicy.actionFor(change)) {
+                        FocusAction.STOP -> onLost()
+                        FocusAction.PAUSE -> focusPaused = true
+                        FocusAction.RESUME -> focusPaused = false
+                        FocusAction.CONTINUE -> Unit
+                    }
                 }, Handler(Looper.getMainLooper()))
                 .build()
         focus = request

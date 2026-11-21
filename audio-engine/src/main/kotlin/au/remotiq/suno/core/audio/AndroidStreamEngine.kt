@@ -259,6 +259,7 @@ class AndroidStreamEngine(
         val buffers = StereoPcmBuffer(format, outputChannels)
         val input = buffers.input
         val deadline = SystemClock.elapsedRealtime() + ROUTE_TIMEOUT_MS
+        val focusGate = FocusGate(format.sampleRateHz * FOCUS_RAMP_MS / 1000 * outputChannels)
         var frames = 0
         while (requested && !routeLost) {
             val read = capture.read(input, frames, input.size - frames, AudioRecord.READ_BLOCKING)
@@ -289,6 +290,8 @@ class AndroidStreamEngine(
                     )
                 }
                 buffers.process(processor)
+                // Keep processing during a short focus pause so state stays continuous; only the output fades.
+                focusGate.apply(buffers.output, route.focusPaused)
             }
             writeAll(playback, buffers.output)
         }
@@ -315,5 +318,6 @@ class AndroidStreamEngine(
     private companion object {
         const val STOP_JOIN_TIMEOUT_MS = 500L
         const val ROUTE_TIMEOUT_MS = 5_000L
+        const val FOCUS_RAMP_MS = 30
     }
 }
