@@ -189,7 +189,10 @@ val verifyPlayRelease =
         description = "Checks signing and public privacy contact before packaging a Play bundle."
         val auditOnly = unsignedAudit.get().toBoolean()
         val apkSplitsEnabled = splitApks
-        val signingValues = listOf("storeFile", "storePassword", "keyAlias", "keyPassword").map { keystoreProps.getProperty(it) }
+        val signingValues =
+            listOf("storeFile", "storePassword", "keyAlias", "keyPassword").map {
+                keystoreProps.getProperty(it)
+            }
         val uploadStore = keystoreProps.getProperty("storeFile")?.let { rootProject.file(it) }
         val policyUrl = privacyPolicyUrl.get()
         val contactEmail = supportEmail.get()
@@ -255,14 +258,19 @@ val assembleLocalRelease =
         description = "Builds signed, optimized APKs for installation on a local device."
         val localSigningAllowed = localRelease
         val configuredReleaseSigning = keystoreProps.isNotEmpty()
-        val apks = localApkNames.mapValues { (_, name) -> layout.buildDirectory.file("outputs/apk/patient/release/$name") }
+        val apks =
+            localApkNames.mapValues { (_, name) ->
+                layout.buildDirectory.file("outputs/apk/patient/release/$name")
+            }
         dependsOn(verifyLocalReleaseApk)
         doLast {
             check(configuredReleaseSigning || localSigningAllowed) {
                 "Use just build-prod or pass -PsunoLocalRelease=true for local signing."
             }
             if (!configuredReleaseSigning) {
-                logger.lifecycle("LOCAL TEST APK: signed with the debug key; configure keystore.properties before publishing.")
+                logger.lifecycle(
+                    "LOCAL TEST APK: signed with the debug key; configure keystore.properties before publishing.",
+                )
             }
             apks.forEach { (abi, output) ->
                 val apk = output.get().asFile

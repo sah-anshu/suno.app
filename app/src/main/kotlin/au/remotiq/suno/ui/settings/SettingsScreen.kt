@@ -56,6 +56,10 @@ fun SettingsScreen(rootViewModel: AppStateModel = hiltViewModel()) {
     EarPage {
         PageHeading(stringResource(R.string.nav_settings), stringResource(R.string.ui_settings_subtitle))
         ListeningFeaturesControl(state.listeningFeatures, rootViewModel::setListeningFeatures)
+        if (BuildConfig.FLAVOR == "patient") {
+            au.remotiq.suno.ui.patient
+                .PatientHelperSettings()
+        }
         SectionGroup(stringResource(R.string.identity_settings_accessibility)) {
             SurfaceCard(Modifier.fillMaxWidth()) {
                 AppearanceControl(state.highContrast, rootViewModel::setHighContrast)

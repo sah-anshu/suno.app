@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Hindi for the patient layout. Other screens fall back to English until they are translated. -->
+<resources>
+    <string name="patient_hello">नमस्ते</string>
+    <string name="patient_off">बंद</string>
+    <string name="patient_listening">सुन रहे हैं</string>
+    <string name="patient_connecting">शुरू हो रहा है…</string>
+    <string name="patient_tap_start">सुनने के लिए दबाएँ</string>
+    <string name="patient_tap_stop">रोकने के लिए दबाएँ</string>
+    <string name="patient_volume">आवाज़ %2$d में से %1$d</string>
+    <string name="patient_softer">धीमा</string>
+    <string name="patient_louder">तेज़</string>
+    <string name="patient_place">आप कहाँ हैं?</string>
+    <string name="place_home">घर</string>
+    <string name="place_park">पार्क</string>
+    <string name="place_traffic">ट्रैफ़िक</string>
+    <string name="place_night">रात</string>
+    <string name="place_home_detail">घर के अंदर, टीवी और बातचीत</string>
+    <string name="place_park_detail">खुली हवा, हवा का शोर कम</string>
+    <string name="place_traffic_detail">सड़क का शोर कम</string>
+    <string name="place_night_detail">धीमी आवाज़, अचानक तेज़ नहीं</string>
+    <string name="patient_earphones_ok">ईयरफ़ोन ठीक</string>
+    <string name="patient_earphones_missing">ईयरफ़ोन नहीं</string>
+    <string name="patient_profile_on">प्रोफ़ाइल चालू</string>
+    <string name="patient_helper">मददगार</string>
+    <string name="patient_plug_title">अपने ईयरफ़ोन लगाएँ</string>
+    <string name="patient_plug_body">आपके कानों की सुरक्षा के लिए सुनो सिर्फ़ ईयरफ़ोन में बजता है।</string>
+    <string name="patient_stopped">सुनना रुक गया। ईयरफ़ोन देखें और फिर से दबाएँ।</string>
+    <string name="patient_mic_needed">सुनो को माइक्रोफ़ोन चाहिए। अपने मददगार से पूछें।</string>
+    <string name="patient_close">बंद करें</string>
+    <string name="patient_selected">चुना गया</string>
+    <string name="pin_title">मददगार पिन</string>
+    <string name="pin_hint">अपने मददगार से पिन डालने को कहें</string>
+    <string name="pin_wrong">पिन सही नहीं है। फिर से कोशिश करें।</string>
+    <string name="pin_set_title">मददगार पिन बनाएँ</string>
+    <string name="pin_set_hint">4 अंक। सेटिंग सिर्फ़ मददगार बदल सकते हैं।</string>
+    <string name="pin_delete">मिटाएँ</string>
+    <string name="pin_back">पीछे</string>
+    <string name="pin_progress">4 में से %1$d अंक</string>
+    <string name="patient_welcome_title">सुनो में आपका स्वागत है</string>
+    <string name="patient_welcome_body">मददगार एक बार सुनो सेट करते हैं। उसके बाद बस यही स्क्रीन चाहिए।</string>
+    <string name="patient_welcome_start">सेटअप शुरू करें</string>
+    <string name="helper_mode">मददगार मोड</string>
+    <string name="helper_lock">लॉक</string>
+    <string name="settings_patient">मरीज़ की स्क्रीन</string>
+    <string name="settings_home_level">होम स्तर</string>
+    <string name="home_level_1">सबसे आसान</string>
+    <string name="home_level_2">सामान्य</string>
+    <string name="home_level_3">पूरा</string>
+    <string name="settings_home_level_detail">सबसे आसान में सिर्फ़ सुनना और आवाज़। पूरा में सभी जगहें भी।</string>
+    <string name="settings_home_style">होम शैली</string>
+    <string name="home_style_pictures">चित्र</string>
+    <string name="home_style_words">शब्द</string>
+    <string name="settings_colours">रंग</string>
+    <string name="theme_standard">सामान्य</string>
+    <string name="theme_dark">गहरा</string>
+    <string name="theme_yellow">काले पर पीला</string>
+    <string name="settings_max_volume">सबसे तेज़ आवाज़</string>
+    <string name="settings_auto_start">ईयरफ़ोन लगते ही शुरू करें</string>
+    <string name="settings_auto_start_detail">सुनो खुला हो तो ईयरफ़ोन जुड़ते ही सुनना शुरू होगा।</string>
+    <string name="settings_change_pin">मददगार पिन बदलें</string>
+</resources>
